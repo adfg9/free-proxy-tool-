@@ -1,8 +1,8 @@
 {
   "name": "free-proxy-tool",
   "version": "2.0.0",
-  "description": "Free Internet Access Tool | Cloudflare WARP + Free Proxy Pool + Web Management Panel + CLI + TUI",
-  "main": "index.js",
+  "description": "Free Internet Access Tool | Cloudflare WARP + Free Proxy Pool + Web GUI + CLI + TUI",
+  "main": "electron/main.js",
   "bin": {
     "fpt": "./index.js"
   },
@@ -15,7 +15,10 @@
     "server": "node index.js start",
     "stats": "node index.js stats",
     "tui": "node index.js tui",
-    "browser": "node index.js browser"
+    "browser": "node index.js browser",
+    "electron": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win"
   },
   "keywords": [
     "proxy",
@@ -53,7 +56,27 @@
   },
   "devDependencies": {
     "@neutralinojs/neu": "^11.7.2",
+    "electron-builder": "^25.0.0",
     "png-to-ico": "^3.0.2",
     "sharp": "^0.35.3"
+  },
+  "build": {
+    "appId": "com.freeproxytool.app",
+    "productName": "FreeProxyTool",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "gui/**/*",
+      "lib/**/*",
+      "index.js",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "icon.ico"
+    }
   }
 }

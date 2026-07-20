@@ -10,6 +10,8 @@ const PROJECT_ROOT = path.join(__dirname, '..');
 const stats = require(path.join(PROJECT_ROOT, 'lib', 'stats'));
 const ProxyServer = require(path.join(PROJECT_ROOT, 'lib', 'proxy-server'));
 const proxyCore = require(path.join(PROJECT_ROOT, 'lib', 'proxy-core'));
+const i18n = require(path.join(PROJECT_ROOT, 'lib', 'i18n'));
+const { t } = i18n;
 
 // Inline core functions to avoid circular deps
 const { execSync, spawn } = require('child_process');
@@ -205,7 +207,7 @@ async function fetchProxies() {
     const proxies = await proxyCore.fetchProxies();
     return proxies.map(p => ({ ...p, source: p.source || 'Unknown' }));
   } catch (e) {
-    console.error('GUI: Failed to fetch proxies via proxy-core, falling back to built-in proxies');
+    console.error(t('apiError', 'Failed to fetch proxies via proxy-core'));
     return BUILTIN_PROXIES.map(p => ({ ...p, source: 'Built-in' }));
   }
 }
@@ -372,6 +374,22 @@ async function handleRequest(req, res) {
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
   // API routes
+  
+  if (pathname === '/api/lang') {
+    if (req.method === 'POST') {
+      const body = await parseBody(req);
+      if (body.lang && i18n.setLang(body.lang)) {
+        return sendJSON(res, { lang: i18n.getLang(), translations: i18n.getTranslations(i18n.getLang()) });
+      }
+      return sendJSON(res, { error: 'invalid language' }, 400);
+    }
+    const requestedLang = url.searchParams.get('lang');
+    if (requestedLang && i18n.SUPPORTED_LANGS.includes(requestedLang)) {
+      i18n.setLang(requestedLang);
+    }
+    return sendJSON(res, { lang: i18n.getLang(), translations: i18n.getTranslations(i18n.getLang()) });
+  }
+
   if (pathname === '/api/status') {
     const ws = WARP.status();
     const sysProxy = getSystemProxy();
@@ -429,7 +447,7 @@ async function handleRequest(req, res) {
       stats.recordTest(result);
       return sendJSON(res, result);
     }
-    return sendJSON(res, { error: 'host and port required' }, 400);
+    return sendJSON(res, { error: t('enterHostPort') }, 400);
   }
 
   if (pathname === '/api/proxy/test-all' && req.method === 'POST') {
@@ -443,7 +461,7 @@ async function handleRequest(req, res) {
   }
 
   if (pathname === '/api/warp/connect' && req.method === 'POST') {
-    if (!IS_WIN) return sendJSON(res, { connected: false, error: 'WARP is only supported on Windows desktop' });
+    if (!IS_WIN) return sendJSON(res, { connected: false, error: t('windowsOnly') });
     WARP.connect();
     await new Promise(r => setTimeout(r, 2000));
     const s = WARP.status();
@@ -466,7 +484,7 @@ async function handleRequest(req, res) {
   }
 
   if (pathname === '/api/warp/register' && req.method === 'POST') {
-    if (!IS_WIN) return sendJSON(res, { success: false, error: 'WARP is only supported on Windows desktop' });
+    if (!IS_WIN) return sendJSON(res, { success: false, error: t('windowsOnly') });
     const r = WARP.register();
     return sendJSON(res, { success: r && !r.toLowerCase().includes('error'), raw: r });
   }
@@ -475,7 +493,7 @@ async function handleRequest(req, res) {
     const body = await parseBody(req);
     let requestedPort = parseInt(body.port);
     if (!Number.isFinite(requestedPort) || requestedPort < 1 || requestedPort > 65535) {
-      return sendJSON(res, { error: `Invalid port: ${body.port}. Please enter a number between 1-65535.` }, 400);
+      return sendJSON(res, { error: t('invalidPort') }, 400);
     }
     // Start proxy server in-process (works on all platforms including Android)
     try {
@@ -504,11 +522,11 @@ async function handleRequest(req, res) {
 
   if (pathname === '/api/server/set-upstream' && req.method === 'POST') {
     const body = await parseBody(req);
-    if (!body.proxy) return sendJSON(res, { error: 'proxy required' }, 400);
+    if (!body.proxy) return sendJSON(res, { error: t('invalidUpstream') }, 400);
     // Parse proxy string like "socks5://host:port", "socks4://host:port", "http://host:port"
     let proxyStr = body.proxy;
     const m = proxyStr.match(/^(?:socks[45]|https?):\/\/(.+):(\d+)$/i);
-    if (!m) return sendJSON(res, { error: 'invalid proxy format' }, 400);
+    if (!m) return sendJSON(res, { error: t('invalidUpstream') }, 400);
     const upstreamHost = m[1];
     const upstreamPort = parseInt(m[2]);
     const upstreamType = proxyStr.match(/^(socks[45]|https?):\/\//i)?.[1].toLowerCase() || 'socks5';
@@ -560,7 +578,7 @@ async function handleRequest(req, res) {
   // ===== Auto-find stable proxies =====
   // Strategy: fetch proxy list → test a batch → re-test survivors to confirm stability → save low-latency stable ones
   if (pathname === '/api/proxy/auto-find' && req.method === 'POST') {
-    if (autoFinding) return sendJSON(res, { error: 'An auto-find task is already in progress' }, 409);
+    if (autoFinding) return sendJSON(res, { error: t('loading') }, 409);
     const body = await parseBody(req);
     const maxTest = body.max || 80;        // initial sample size
     const maxLatency = body.maxLatency || 800; // stability latency threshold (ms)
@@ -568,7 +586,7 @@ async function handleRequest(req, res) {
     (async () => {
       autoFinding = true;
       try {
-        broadcast({ type: 'auto-find-stage', stage: 'fetch', message: 'Fetching proxy list...' });
+        broadcast({ type: 'auto-find-stage', stage: 'fetch', message: t('loading') });
         const cache = await getFreeProxies(true);
         let proxyList = cache.proxies;
         // Fallback to built-in proxies if cache is empty
@@ -581,7 +599,7 @@ async function handleRequest(req, res) {
         const others = proxyList.filter(p => !builtinSet.has(p.host + ':' + p.port));
         const sampled = others.sort(() => Math.random() - 0.5).slice(0, Math.max(0, maxTest - builtinsToTest.length));
         const toTest = [...builtinsToTest, ...sampled];
-        broadcast({ type: 'auto-find-stage', stage: 'test', message: `Initial testing of ${toTest.length} proxies (including ${builtinsToTest.length} built-in)...`, tested: 0, total: toTest.length });
+        broadcast({ type: 'auto-find-stage', stage: 'test', message: t('autoFindStarted', toTest.length), tested: 0, total: toTest.length });
 
         // Round 1: initial test (batch for speed)
         let survivors = [];
@@ -599,7 +617,7 @@ async function handleRequest(req, res) {
 
         // Confirmation rounds: re-test survivors to confirm stability
         for (let round = 2; round <= confirmRounds; round++) {
-          broadcast({ type: 'auto-find-stage', stage: 'confirm', message: `Round ${round}/${confirmRounds} stability verification (${survivors.length} remaining)...`, tested: 0, total: survivors.length });
+          broadcast({ type: 'auto-find-stage', stage: 'confirm', message: t('loading'), tested: 0, total: survivors.length });
           const confirmed = [];
           for (let i = 0; i < survivors.length; i += batchSize) {
             const batch = survivors.slice(i, i + batchSize);
@@ -652,7 +670,7 @@ async function handleRequest(req, res) {
 
         broadcast({ type: 'auto-find-complete', found: survivors.length, total: merged.length, proxies: merged.slice(0, 50), newProxies: survivors.slice(0, 50) });
       } catch (e) {
-        broadcast({ type: 'auto-find-complete', error: e.message });
+        broadcast({ type: 'auto-find-complete', error: t('apiError', e.message) });
       } finally {
         autoFinding = false;
       }
@@ -676,7 +694,7 @@ async function handleRequest(req, res) {
     const body = await parseBody(req);
     // Prevent removal of built-in proxies
     const isBuiltin = BUILTIN_PROXIES.some(p => p.host === body.host && parseInt(p.port) === parseInt(body.port));
-    if (isBuiltin) return sendJSON(res, { error: 'Built-in proxies cannot be removed' }, 400);
+    if (isBuiltin) return sendJSON(res, { error: t('invalidProxyData') }, 400);
     const list = loadStableProxies().filter(p => !(p.host === body.host && parseInt(p.port) === parseInt(body.port)));
     saveStableProxies(list);
     return sendJSON(res, { success: true, count: list.length });
@@ -684,7 +702,7 @@ async function handleRequest(req, res) {
 
   if (pathname === '/api/proxy/stable/add' && req.method === 'POST') {
     const body = await parseBody(req);
-    if (!body.host || !body.port) return sendJSON(res, { error: 'host and port required' }, 400);
+    if (!body.host || !body.port) return sendJSON(res, { error: t('enterHostPort') }, 400);
     const list = loadStableProxies();
     const exists = list.some(p => p.host === body.host && parseInt(p.port) === parseInt(body.port));
     if (!exists) {
@@ -831,9 +849,9 @@ async function handleRequest(req, res) {
   }
   if (pathname === '/api/proxy/apps' && req.method === 'POST') {
     const body = await parseBody(req);
-    if (!body.name || !body.path) return sendJSON(res, { error: 'name and path required' }, 400);
+    if (!body.name || !body.path) return sendJSON(res, { error: t('invalidProxyData') }, 400);
     const apps = loadProxyApps();
-    if (apps.find(a => a.name === body.name)) return sendJSON(res, { error: 'app already exists' }, 409);
+    if (apps.find(a => a.name === body.name)) return sendJSON(res, { error: t('appNotFound') }, 409);
     const app = { name: body.name, path: body.path, mode: body.mode || 'http', process: body.process || '', added: Date.now() };
     apps.push(app);
     saveProxyApps(apps);
@@ -841,10 +859,10 @@ async function handleRequest(req, res) {
   }
   if (pathname === '/api/proxy/apps/edit' && req.method === 'POST') {
     const body = await parseBody(req);
-    if (!body.name || !body.path) return sendJSON(res, { error: 'name and path required' }, 400);
+    if (!body.name || !body.path) return sendJSON(res, { error: t('invalidProxyData') }, 400);
     let apps = loadProxyApps();
     const idx = apps.findIndex(a => a.name === body.oldName || a.name === body.name);
-    if (idx < 0) return sendJSON(res, { error: 'app not found' }, 404);
+    if (idx < 0) return sendJSON(res, { error: t('appNotFound') }, 404);
     apps[idx] = { name: body.name, path: body.path, mode: body.mode || apps[idx].mode || 'http', process: body.process || '', added: apps[idx].added };
     saveProxyApps(apps);
     return sendJSON(res, { success: true, apps });
@@ -860,7 +878,7 @@ async function handleRequest(req, res) {
     return sendJSON(res, { presets: getAppPresets() });
   }
   if (pathname === '/api/proxy/apps/browse' && req.method === 'POST') {
-    if (!IS_WIN) return sendJSON(res, { error: 'Windows only' }, 400);
+    if (!IS_WIN) return sendJSON(res, { error: t('windowsOnly') }, 400);
     try {
       const psScript = "Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.OpenFileDialog; $f.Filter = 'Program files (*.exe;*.bat;*.cmd;*.lnk)|*.exe;*.bat;*.cmd;*.lnk|All files (*.*)|*.*'; $f.Title = 'Select Application'; if ($f.ShowDialog() -eq 'OK') { Write-Output $f.FileName }";
       const encoded = Buffer.from(psScript, 'utf16le').toString('base64');
@@ -869,14 +887,14 @@ async function handleRequest(req, res) {
       if (filePath) return sendJSON(res, { path: filePath });
       return sendJSON(res, { cancelled: true });
     } catch (e) {
-      return sendJSON(res, { error: 'File selection failed' }, 500);
+      return sendJSON(res, { error: t('fileSelectFailed') }, 500);
     }
   }
   if (pathname === '/api/proxy/apps/launch' && req.method === 'POST') {
-    if (!IS_WIN) return sendJSON(res, { error: 'App launch is only supported on Windows desktop' }, 400);
+    if (!IS_WIN) return sendJSON(res, { error: t('windowsOnly') }, 400);
     const body = await parseBody(req);
     const app = loadProxyApps().find(a => a.name === body.name);
-    if (!app) return sendJSON(res, { error: 'app not found' }, 404);
+    if (!app) return sendJSON(res, { error: t('appNotFound') }, 404);
     const proxyPort = serverPort || 1080;
     const safeName = app.name.replace(/[^a-zA-Z0-9]/g, '_');
     const batPath = path.join(APPS_DIR, 'launch_' + safeName + '.bat');
@@ -903,17 +921,17 @@ async function handleRequest(req, res) {
     try {
       fs.writeFileSync(batPath, batContent);
       spawn('cmd.exe', ['/c', 'start', '', '/min', batPath], { detached: true, stdio: 'ignore' }).unref();
-      return sendJSON(res, { success: true, message: killLog + 'Launched' });
+      return sendJSON(res, { success: true, message: killLog + t('appLaunched', app.name) });
     } catch (e) {
       return sendJSON(res, { error: e.message }, 500);
     }
   }
   // Launch an app directly with a specific proxy (no local proxy server needed)
   if (pathname === '/api/proxy/launch-app' && req.method === 'POST') {
-    if (!IS_WIN) return sendJSON(res, { error: 'Windows desktop only' }, 400);
+    if (!IS_WIN) return sendJSON(res, { error: t('windowsOnly') }, 400);
     const body = await parseBody(req);
     const { host, port, type, appPath, appName, processName } = body;
-    if (!host || !port || !appPath) return sendJSON(res, { error: 'host, port, appPath are required' }, 400);
+    if (!host || !port || !appPath) return sendJSON(res, { error: t('invalidProxyData') }, 400);
     let killLog = '';
     const proc = (processName || '').trim();
     if (proc) {
@@ -941,7 +959,7 @@ async function handleRequest(req, res) {
       fs.writeFileSync(batPath, batContent);
       spawn('cmd.exe', ['/c', 'start', '', '/min', batPath], { detached: true, stdio: 'ignore' }).unref();
       setTimeout(() => { try { fs.unlinkSync(batPath); } catch {} }, 10000);
-      return sendJSON(res, { success: true, message: killLog + 'Launched', proxy: proxyUrl, app: appPath });
+      return sendJSON(res, { success: true, message: killLog + t('appLaunched', appName || 'app'), proxy: proxyUrl, app: appPath });
     } catch (e) {
       return sendJSON(res, { error: e.message }, 500);
     }
@@ -1122,7 +1140,7 @@ function start(port = 3000) {
   });
 
   server.listen(port, '127.0.0.1', () => {
-    console.log(`  [*] Web GUI started: http://127.0.0.1:${port}`);
+    console.log(t('serverRunningOn', port));
     // Auto-open browser
     const cmd = os.platform() === 'win32'
       ? `start "" "http://127.0.0.1:${port}"`
@@ -1134,7 +1152,7 @@ function start(port = 3000) {
 
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
-      console.log(`  [!] Port ${port} is already in use, trying ${port + 1}...`);
+      console.log(t('portInUse', port));
       start(port + 1);
     } else {
       console.error('  [✗] Server error:', err.message);

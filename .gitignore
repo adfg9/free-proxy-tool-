@@ -22,3 +22,7 @@ Thumbs.db
 # User data (generated at runtime)
 ~*.json
 *.bat
+
+# Build output
+dist/
+dist2/
