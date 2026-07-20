@@ -1,0 +1,59 @@
+{
+  "name": "free-proxy-tool",
+  "version": "2.0.0",
+  "description": "Free Internet Access Tool | Cloudflare WARP + Free Proxy Pool + Web Management Panel + CLI + TUI",
+  "main": "index.js",
+  "bin": {
+    "fpt": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "gui": "node index.js gui",
+    "setup": "node setup.js",
+    "warp": "node index.js warp",
+    "proxy": "node index.js proxy",
+    "server": "node index.js start",
+    "stats": "node index.js stats",
+    "tui": "node index.js tui",
+    "browser": "node index.js browser"
+  },
+  "keywords": [
+    "proxy",
+    "vpn",
+    "warp",
+    "cloudflare",
+    "socks5",
+    "http-proxy",
+    "free-proxy",
+    "privacy",
+    "networking"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "homepage": "",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "asciichart": "^1.5.25",
+    "chalk": "^4.1.2",
+    "commander": "^11.0.0",
+    "http-proxy-agent": "^9.1.0",
+    "inquirer": "^14.0.2",
+    "ora": "^5.4.1",
+    "socks-proxy-agent": "^10.1.0",
+    "ws": "^8.21.0"
+  },
+  "optionalDependencies": {
+    "electron": "^43.0.0"
+  },
+  "devDependencies": {
+    "@neutralinojs/neu": "^11.7.2",
+    "png-to-ico": "^3.0.2",
+    "sharp": "^0.35.3"
+  }
+}

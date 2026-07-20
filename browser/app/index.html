@@ -1,0 +1,3336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Proxy Browser</title>
+<style>
+:root {
+  --primary: #1677ff;
+  --primary-hover: #4096ff;
+  --primary-bg: rgba(22,119,255,0.08);
+  --bg: #141414;
+  --surface: #1f1f1f;
+  --surface2: #2a2a2a;
+  --border: #303030;
+  --text: #e8e8e8;
+  --text2: #a0a0a0;
+  --text3: #666666;
+  --success: #52c41a;
+  --danger: #ff4d4f;
+  --warning: #faad14;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --fast: 0.2s;
+  --tile-bg: rgba(0,0,0,0.3);
+  --overlay-bg: rgba(0,0,0,0.5);
+  --hover-shade: rgba(0,0,0,0.25);
+  --hover-tile: rgba(0,0,0,0.5);
+}
+body.light-theme {
+  --primary: #1677ff;
+  --primary-hover: #4096ff;
+  --primary-bg: rgba(22,119,255,0.12);
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #f5f6f8;
+  --border: #d9d9d9;
+  --text: #1f1f1f;
+  --text2: #595959;
+  --text3: #8c8c8c;
+  --success: #52c41a;
+  --danger: #ff4d4f;
+  --warning: #faad14;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --tile-bg: rgba(0,0,0,0.05);
+  --overlay-bg: rgba(0,0,0,0.45);
+  --hover-shade: rgba(0,0,0,0.1);
+  --hover-tile: rgba(0,0,0,0.1);
+}
+body.pixel-theme {
+  --primary: #00d4ff;
+  --primary-hover: #4de8ff;
+  --primary-bg: rgba(0,212,255,0.1);
+  --bg: #001a12;
+  --surface: #00281a;
+  --surface2: #003322;
+  --border: #004d36;
+  --text: #b3ffcc;
+  --text2: #66cc88;
+  --text3: #339966;
+  --success: #ff3333;
+  --danger: #ff3333;
+  --warning: #ffaa00;
+  --shadow: none;
+  --radius: 0;
+  --radius-sm: 0;
+  --radius-lg: 0;
+  --ease: steps(4, end);
+  --fast: 0.15s;
+  --accent-yellow: #ffff00;
+  --accent-red: #ff3333;
+  --accent-blue: #00d4ff;
+  --tile-bg: rgba(0,0,0,0.25);
+  --overlay-bg: rgba(0,0,0,0.6);
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  image-rendering: pixelated;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg); color: var(--text); height: 100vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  -webkit-app-region: drag; user-select: none;
+}
+body.pixel-theme::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    linear-gradient(rgba(0,0,0,0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.2) 1px, transparent 1px);
+  background-size: 8px 8px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.25;
+}
+body.pixel-theme::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0.1) 0px,
+    rgba(0,0,0,0.1) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+  animation: scanlineMove 8s linear infinite;
+}
+@keyframes scanlineMove {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+body.pixel-theme::before,
+body.pixel-theme::after {
+  animation: crtFlicker 0.15s steps(2, end) infinite;
+}
+@keyframes crtFlicker {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.3; }
+}
+
+/* ===== Tab Bar ===== */
+.tab-bar {
+  display: flex; align-items: center; background: var(--surface);
+  border-bottom: 1px solid var(--border); min-height: 36px;
+  padding: 0 6px 0 12px; gap: 2px; -webkit-app-region: drag;
+}
+.tab-bar .app-icon {
+  font-size: 14px; margin-right: 8px; flex-shrink: 0;
+  -webkit-app-region: no-drag; cursor: default;
+}
+.tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: var(--radius) var(--radius) 0 0; cursor: pointer;
+  font-size: 12px; color: var(--text2); max-width: 180px; min-width: 60px;
+  -webkit-app-region: no-drag;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: color var(--fast) var(--ease);
+}
+.tab:hover { color: var(--text); }
+.tab.active {
+  color: var(--text);
+  border-bottom-color: var(--primary);
+}
+.tab .favicon { font-size: 13px; flex-shrink: 0; }
+.tab .title { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.tab .close {
+  width: 18px; height: 18px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: transparent; cursor: pointer;
+  -webkit-app-region: no-drag; flex-shrink: 0;
+  transition: color var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+.tab:hover .close { color: var(--text3); }
+.tab .close:hover { background: rgba(255,77,79,0.15); color: var(--danger); }
+.tab-add {
+  width: 26px; height: 26px; border-radius: var(--radius-sm); display: flex;
+  align-items: center; justify-content: center; cursor: pointer;
+  color: var(--text2); font-size: 16px; -webkit-app-region: no-drag;
+  flex-shrink: 0; margin-left: 2px;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.tab-add:hover { background: var(--surface2); color: var(--text); }
+
+/* ===== Navigation Bar ===== */
+.nav-bar {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 8px; background: var(--surface);
+  border-bottom: 1px solid var(--border); -webkit-app-region: no-drag;
+}
+.nav-btn {
+  width: 32px; height: 32px; border-radius: 50%; border: none;
+  background: transparent; color: var(--text2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.nav-btn:hover { background: var(--surface2); color: var(--text); }
+.nav-btn:disabled { opacity: 0.3; cursor: default; }
+.nav-btn:disabled:hover { background: transparent; }
+
+.url-bar {
+  flex: 1; height: 32px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text); padding: 0 14px;
+  font-size: 13px; outline: none; -webkit-app-region: no-drag;
+  transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+}
+.url-bar:hover { background: var(--surface); border-color: var(--text3); }
+.url-bar:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 2px rgba(22,119,255,0.15); }
+.url-bar::placeholder { color: var(--text3); }
+
+.nav-icons { display: flex; gap: 2px; margin-left: 4px; }
+
+/* ===== Content ===== */
+.content { flex: 1; position: relative; background: var(--bg); overflow: hidden; }
+.iframe-wrap { width: 100%; height: 100%; border: none; }
+
+/* ===== New Tab Page - Dashboard ===== */
+.new-tab-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: var(--bg);
+}
+.particle-canvas {
+  position: absolute; inset: 0; z-index: 0;
+  pointer-events: none;
+  opacity: 0.25;
+}
+.webview-placeholder {
+  position: absolute; inset: 0; z-index: 1;
+  width: 100%; height: 100%;
+  padding: 24px 32px;
+  display: flex; flex-direction: column;
+  color: var(--text2);
+  overflow-y: auto;
+}
+.brand-area {
+  display: flex; flex-direction: column; align-items: center;
+  margin-top: 44px; margin-bottom: 4px;
+}
+.brand-area .logo {
+  font-size: 40px; margin-bottom: 8px;
+}
+.brand-area h2 {
+  font-size: 16px; color: var(--text); margin-bottom: 2px; font-weight: 600;
+}
+.brand-area p { font-size: 11px; color: var(--text3); margin-bottom: 0; }
+
+/* ===== Center Stage ===== */
+.center-stage {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; margin-top: 16px;
+}
+.center-search {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; max-width: 600px;
+  padding: 14px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transition: all var(--fast) var(--ease);
+}
+.center-search:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-bg), 0 4px 12px rgba(0,0,0,0.4);
+}
+.center-search-icon {
+  font-size: 20px; color: var(--text3); flex-shrink: 0;
+}
+.center-search input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text); font-size: 16px; padding: 4px 0;
+}
+.center-search input::placeholder { color: var(--text3); }
+
+.search-shortcuts-bar {
+  display: flex; gap: 8px;
+}
+.search-shortcuts-bar span {
+  padding: 6px 14px; border-radius: 999px;
+  font-size: 12px; color: var(--text2); background: var(--tile-bg);
+  border: 1px solid var(--border); cursor: pointer;
+  transition: all var(--fast) var(--ease);
+}
+.search-shortcuts-bar span:hover {
+  background: var(--primary-bg); color: var(--primary); border-color: var(--primary);
+}
+
+/* ===== Status Bar Container ===== */
+.status-bar-container {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+.status-bar-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 10px; cursor: pointer;
+  border-radius: 999px;
+  transition: background var(--fast) var(--ease);
+}
+.status-bar-item:hover { background: var(--surface2); }
+.status-bar-item .status-icon { font-size: 14px; }
+.status-bar-item .status-label { font-size: 12px; color: var(--text3); }
+.status-bar-item .status-value { font-size: 13px; color: var(--text); font-weight: 500; }
+.status-bar-item .status-detail { font-size: 11px; color: var(--text3); }
+.status-bar-divider {
+  width: 1px; height: 16px; background: var(--border);
+}
+
+/* ===== Dashboard Grid ===== */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 16px;
+  max-width: 860px; width: 100%;
+  margin: 20px auto 0;
+  align-items: start;
+}
+.dash-left {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.dash-right {
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+/* ===== Clock Card ===== */
+.clock-card {
+  padding: 16px;
+  text-align: left;
+}
+.clock-card .clock-time {
+  font-size: 38px; font-weight: 300; color: var(--text); line-height: 1; letter-spacing: -1px;
+  text-shadow: 0 2px 15px rgba(0,0,0,0.3);
+}
+.clock-card .clock-date {
+  font-size: 11px; color: var(--text2); margin-top: 6px;
+}
+
+/* ===== Proxy Breathe Card ===== */
+.proxy-card {
+  padding: 16px;
+  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.proxy-breathe {
+  position: relative; width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+}
+.breathe-core {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 12px var(--success);
+  z-index: 1;
+}
+.breathe-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid var(--success);
+  animation: breathePulse 2s ease-out infinite;
+}
+@keyframes breathePulse {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+.proxy-label {
+  font-size: 13px; color: var(--success); font-weight: 600;
+}
+.proxy-detail {
+  width: 100%; padding-top: 8px; margin-top: 4px;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text2); line-height: 1.8;
+  text-align: center;
+}
+
+/* ===== Quote Vertical ===== */
+.quote-vertical {
+  padding: 10px 14px;
+  font-size: 12px; color: var(--text3); letter-spacing: 1px;
+  cursor: pointer; border-radius: var(--radius-lg);
+  background: var(--tile-bg); border: 1px solid var(--border);
+  align-self: center;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--fast) var(--ease);
+}
+.quote-vertical:hover {
+  background: var(--hover-shade); color: var(--text2);
+}
+
+/* ===== Today Card ===== */
+.today-card { padding: 14px 16px; }
+.today-header {
+  font-size: 12px; color: var(--text2); font-weight: 600;
+  margin-bottom: 10px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.today-body {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.today-weather {
+  display: flex; align-items: center; gap: 12px;
+}
+.today-weather .weather-icon { font-size: 36px; }
+.today-weather .weather-temp { font-size: 24px; font-weight: 300; }
+.today-weather .weather-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.today-weather .weather-city { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.today-date {
+  font-size: 13px; color: var(--text); font-weight: 500;
+  text-align: right; white-space: nowrap;
+}
+
+/* ===== Merged Links ===== */
+.merged-links { padding: 12px 14px; }
+.merged-links .links-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.recent-section { margin-bottom: 8px; }
+.recent-divider {
+  height: 1px; background: var(--border); margin: 8px 0;
+}
+
+/* ===== Dashboard Cards ===== */
+.dash-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transition: all var(--fast) var(--ease);
+  position: relative;
+  overflow: visible;
+}
+.dash-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0;
+  transition: opacity var(--fast) var(--ease);
+}
+.dash-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  transform: translateY(-1px);
+}
+.dash-card:hover::before {
+  opacity: 0.6;
+}
+
+/* ===== Recent Visits ===== */
+.card-recent { padding: 12px 14px; }
+.recent-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.recent-title { font-size: 12px; color: var(--text2); font-weight: 600; }
+.recent-clear { font-size: 11px; color: var(--text3); cursor: pointer; }
+.recent-clear:hover { color: var(--danger); }
+.recent-list { display: flex; flex-direction: column; gap: 3px; }
+.recent-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 12px;
+  transition: background var(--fast) var(--ease);
+}
+.recent-item:hover { background: var(--surface2); }
+.recent-item .fav { width: 18px; text-align: center; font-size: 13px; }
+.recent-item .meta { flex: 1; min-width: 0; }
+.recent-item .title { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-item .url { color: var(--text3); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-item .close { color: transparent; font-size: 13px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+.recent-item:hover .close { color: var(--text3); }
+.recent-item .close:hover { background: rgba(255,77,79,0.15); color: var(--danger); }
+
+/* ===== Hidden Quote ===== */
+.hidden-quote {
+  position: absolute; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 16px; border-radius: 999px;
+  background: var(--tile-bg);
+  font-size: 11px; color: var(--text3);
+  cursor: pointer; opacity: 0;
+  transition: opacity var(--fast) var(--ease);
+}
+.hidden-quote:hover {
+  opacity: 1;
+  color: var(--text2);
+  background: var(--hover-tile);
+}
+.webview-placeholder:hover .hidden-quote { opacity: 0.6; }
+
+/* Weather Card */
+.card-weather {
+  display: flex; align-items: center; gap: 20px;
+  padding: 24px;
+}
+.card-weather .weather-icon { font-size: 42px; flex-shrink: 0; }
+.card-weather .weather-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.card-weather .weather-temp {
+  font-size: 32px; font-weight: 300; color: var(--text);
+  letter-spacing: -1px; line-height: 1;
+}
+.card-weather .weather-desc { font-size: 13px; color: var(--text2); }
+.card-weather .weather-city {
+  font-size: 12px; color: var(--text3);
+  display: flex; align-items: center; gap: 4px;
+  position: relative; cursor: pointer; user-select: none;
+  margin-top: 4px;
+}
+.card-weather .weather-city-name {
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 1px;
+}
+.card-weather .weather-city-name:hover {
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Quote Card */
+.card-quote {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--primary);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.card-quote .quote-icon {
+  font-size: 28px; flex-shrink: 0; opacity: 0.5;
+}
+.card-quote .quote-text {
+  font-size: 14px; color: var(--text2); line-height: 1.6;
+  font-style: italic;
+  transition: opacity 0.4s var(--ease);
+}
+.card-quote .quote-text.loading { opacity: 0.4; }
+.card-quote .quote-refresh {
+  font-size: 16px; color: var(--text3); cursor: pointer; flex-shrink: 0;
+  margin-left: auto; padding: 4px; border-radius: var(--radius-sm);
+  transition: color var(--fast) var(--ease), background var(--fast) var(--ease);
+  line-height: 1;
+}
+.card-quote .quote-refresh:hover { color: var(--primary); background: var(--primary-bg); }
+.card-quote .quote-refresh:active { transform: scale(0.9); }
+
+/* Weather Dropdown */
+.weather-city-dropdown {
+  display: none; position: absolute; bottom: 100%; left: 0; z-index: 999999;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 4px; min-width: 130px; margin-bottom: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+.weather-city-dropdown.open { display: block; }
+.weather-city-dropdown > div {
+  padding: 6px 10px; border-radius: var(--radius-sm); font-size: 12px;
+  color: var(--text2); cursor: pointer; white-space: nowrap;
+}
+.weather-city-dropdown > div:hover { background: var(--surface2); color: var(--text); }
+.weather-city-divider { height: 1px; background: var(--border); margin: 4px 6px; padding: 0 !important; cursor: default !important; }
+.weather-city-input {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 12px; padding: 2px 6px;
+  width: 120px; outline: none;
+}
+
+/* Quick Links */
+.card-links {
+  padding: 12px 14px;
+}
+.links-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.links-title { font-size: 12px; color: var(--text2); font-weight: 600; }
+.links-add {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--text3); cursor: pointer;
+  transition: all var(--fast) var(--ease);
+}
+.links-add:hover { background: var(--primary-bg); color: var(--primary); border-color: var(--primary); }
+.links-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.quick-link {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 10px 4px;
+  border-radius: var(--radius); border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2); cursor: pointer;
+  font-size: 11px; text-align: center;
+  transition: all var(--fast) var(--ease);
+}
+.quick-link:hover {
+  border-color: var(--primary); background: var(--primary-bg);
+  color: var(--text); transform: translateY(-2px);
+}
+.quick-link .icon { font-size: 24px; flex-shrink: 0; }
+.quick-link .label { font-size: 10px; line-height: 1.2; }
+
+/* ===== Status Bar ===== */
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 2px 12px; background: var(--surface); border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text2); min-height: 22px;
+  -webkit-app-region: drag;
+}
+.status-bar .left, .status-bar .right {
+  display: flex; align-items: center; gap: 12px;
+  -webkit-app-region: no-drag;
+}
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  display: inline-block; margin-right: 4px;
+}
+.status-dot.ok { background: var(--success); }
+.status-dot.err { background: var(--danger); }
+.status-dot.warn { background: var(--warning); }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ===== Loading Bar ===== */
+.loading-bar {
+  height: 3px; background: linear-gradient(90deg, var(--primary), #1677ff);
+  position: absolute; top: 0; left: 0; width: 0; z-index: 10;
+  transition: width 0.4s var(--ease), opacity 0.4s var(--ease);
+}
+.loading-bar.active { width: 100%; }
+.loading-bar.done { width: 100%; opacity: 0; transition: width 0.3s var(--ease), opacity 0.4s var(--ease); }
+
+/* ===== Context Menu ===== */
+.ctx-menu {
+  position: fixed; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 4px; min-width: 180px; z-index: 1000;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  display: none;
+}
+.ctx-menu.show { display: block; }
+.ctx-item {
+  padding: 8px 12px; border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 12px; color: var(--text); display: flex;
+  align-items: center; gap: 8px;
+  transition: background var(--fast) var(--ease);
+}
+.ctx-item:hover { background: var(--surface2); }
+.ctx-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* ===== Media Extraction ===== */
+.extract-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  display: none; align-items: center; justify-content: center;
+  background: var(--overlay-bg);
+}
+.extract-overlay.show { display: flex; animation: fadeIn 0.2s var(--ease); }
+.extract-panel {
+  background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  width: 92%; max-width: 640px; max-height: 80vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+.extract-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.extract-header h3 { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; color: var(--text); }
+.extract-tabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+.extract-tab {
+  padding: 8px 14px; border: none; background: transparent;
+  color: var(--text2); cursor: pointer; font-size: 12px; font-weight: 500;
+  display: flex; align-items: center; gap: 6px; border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
+}
+.extract-tab:hover { color: var(--text); }
+.extract-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.extract-tab .count {
+  background: var(--surface2); padding: 0 6px; border-radius: var(--radius);
+  font-size: 10px; color: var(--text2); min-width: 16px; text-align: center;
+}
+.extract-tab.active .count { background: var(--primary-bg); color: var(--primary); }
+.extract-close {
+  width: 28px; height: 28px; border-radius: var(--radius-sm); border: none;
+  background: transparent; color: var(--text2); cursor: pointer;
+  font-size: 16px; display: flex; align-items: center; justify-content: center;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.extract-close:hover { background: var(--surface2); color: var(--text); }
+.extract-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.extract-section { margin-bottom: 20px; }
+.extract-section h4 {
+  font-size: 13px; font-weight: 600; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px; color: var(--text);
+}
+.extract-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--radius-sm); margin-bottom: 4px;
+  font-size: 12px;
+  transition: background var(--fast) var(--ease);
+}
+.extract-item:hover { background: var(--surface2); }
+.extract-item .url { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--primary); }
+.extract-item .meta { color: var(--text2); font-size: 11px; white-space: nowrap; }
+.extract-item .action {
+  padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: transparent; color: var(--text2); cursor: pointer; font-size: 11px;
+  flex-shrink: 0;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease), border-color var(--fast) var(--ease);
+}
+.extract-item .action:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+.extract-empty {
+  text-align: center; padding: 32px 16px; color: var(--text2); font-size: 13px;
+}
+.extract-empty .icon { font-size: 36px; margin-bottom: 8px; opacity: 0.3; }
+.extract-loading {
+  text-align: center; padding: 32px; color: var(--text2); font-size: 13px;
+}
+.extract-loading .spinner {
+  display: inline-block; width: 24px; height: 24px;
+  border: 2px solid var(--border); border-top-color: var(--primary);
+  border-radius: 50%; animation: spin 0.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  margin-bottom: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Wallpaper ===== */
+.wallpaper-btn {
+  position: absolute; bottom: 16px; right: 16px; z-index: 5;
+  width: 34px; height: 34px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--tile-bg); color: var(--text2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease), border-color var(--fast) var(--ease);
+}
+.wallpaper-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--primary); }
+/* ===== Modal System (unified) ===== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  display: none; align-items: center; justify-content: center;
+  background: var(--overlay-bg);
+}
+.modal-overlay.open { display: flex; animation: fadeIn 0.2s var(--ease); }
+.modal-panel {
+  background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  width: 90%; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  display: flex; flex-direction: column; max-height: 85vh;
+}
+.modal-panel.wp { max-width: 500px; }
+.modal-panel.map { max-width: 640px; }
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.modal-header h3 { font-size: 15px; font-weight: 600; color: var(--text); }
+.modal-close {
+  width: 28px; height: 28px; border-radius: var(--radius-sm); border: none;
+  background: transparent; color: var(--text2); cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.modal-close:hover { background: var(--surface2); color: var(--text); }
+.modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+.modal-body.nopad { padding: 0; }
+.modal-footer {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.modal-footer .coords { flex: 1; font-size: 12px; color: var(--text2); }
+.modal-btn {
+  padding: 7px 16px; border-radius: var(--radius-sm); border: none; cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.modal-btn-primary { background: var(--primary); color: #fff; }
+.modal-btn-primary:hover { background: var(--primary-hover); }
+.modal-btn-outline { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+.modal-btn-outline:hover { background: var(--surface2); color: var(--text); }
+.modal-btn-danger {
+  background: transparent; color: #ff4d4f; border: 1px solid rgba(255,77,79,0.3);
+}
+.modal-btn-danger:hover { background: rgba(255,77,79,0.1); border-color: #ff4d4f; }
+
+.wallpaper-label { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+.wallpaper-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;
+}
+.wallpaper-item {
+  aspect-ratio: 16/10; border-radius: var(--radius); border: 2px solid var(--border);
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: border-color var(--fast) var(--ease);
+}
+.wallpaper-item:hover { border-color: var(--text2); }
+.wallpaper-item.active { border-color: var(--primary); }
+.wallpaper-item .check {
+  position: absolute; top: 4px; right: 4px; width: 18px; height: 18px;
+  background: var(--primary); border-radius: 50%; color: #fff; font-size: 11px;
+  display: none; align-items: center; justify-content: center;
+}
+.wallpaper-item.active .check { display: flex; }
+.wallpaper-divider { height: 1px; background: var(--border); margin: 16px 0; }
+.wp-upload-card {
+  position: relative;
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px; border: 1px dashed var(--border); border-radius: var(--radius-lg);
+  background: transparent; cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.wp-upload-card.dragover { border-color: var(--primary); background: var(--primary-bg); }
+.wp-upload-card::after {
+  content: ''; position: absolute; inset: 0; border-radius: var(--radius-lg);
+  border: 2px solid transparent; pointer-events: none;
+  transition: border-color 0.2s var(--ease);
+}
+.wp-upload-card:hover { border-color: var(--primary); }
+.wp-upload-card:hover::after { border-color: var(--primary); }
+.wp-upload-card:hover .wp-upload-icon,
+.wp-api-card:hover .wp-upload-icon { background: var(--primary); color: #fff; }
+.wp-file-overlay-wrap {
+  position: absolute; inset: 0; z-index: 5; overflow: hidden; border-radius: var(--radius-lg);
+}
+.wp-file-overlay-input {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; z-index: 5;
+}
+.wp-api-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  background: transparent; cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.wp-api-card:hover { border-color: var(--primary); background: var(--primary-bg); }
+.wp-upload-icon {
+  width: 42px; height: 42px; border-radius: var(--radius);
+  background: var(--primary-bg); color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.wp-upload-text { flex: 1; min-width: 0; }
+.wp-upload-title { font-size: 14px; color: var(--text); font-weight: 500; }
+.wp-upload-hint { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.wallpaper-custom { margin-top: 4px; }
+/* ===== Toast Notification ===== */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 10px 20px; font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 1000;
+  opacity: 0; transition: all 0.3s var(--ease); pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: #52c41a; }
+.toast.error { border-color: #ff4d4f; }
+/* ===== Error Overlay ===== */
+.error-overlay {
+  position: absolute; inset: 0; z-index: 20;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--bg); color: var(--text); padding: 24px;
+  animation: fadeIn 0.2s var(--ease);
+}
+.error-overlay .error-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+.error-overlay .error-url { font-size: 14px; color: var(--text2); margin-bottom: 6px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.error-overlay .error-msg { font-size: 16px; color: var(--danger); margin-bottom: 20px; text-align: center; }
+.error-overlay .error-actions { display: flex; gap: 10px; }
+.error-btn {
+  padding: 8px 20px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer;
+  font-size: 13px;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease), border-color var(--fast) var(--ease);
+}
+.error-btn:hover { background: var(--surface2); border-color: var(--primary); }
+.error-btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.error-btn.primary:hover { background: var(--primary-hover); }
+
+/* ===== Pixel Theme Overrides ===== */
+body.pixel-theme .tab-bar {
+  background: #061a14;
+  border-bottom: 3px solid #1a5c47;
+  min-height: 40px;
+  position: relative;
+}
+body.pixel-theme .tab-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-yellow) 50%, var(--accent-blue) 100%);
+}
+body.pixel-theme .tab-bar .app-icon {
+  font-size: 16px;
+  color: var(--accent-yellow);
+  text-shadow: 2px 2px 0 var(--accent-red);
+}
+body.pixel-theme .tab {
+  padding: 6px 14px;
+  border-radius: 0;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-bottom: none;
+  transition: none;
+  position: relative;
+  top: 2px;
+  font-weight: 700;
+}
+body.pixel-theme .tab:hover {
+  background: var(--surface2);
+}
+body.pixel-theme .tab.active {
+  border-color: var(--accent-yellow);
+  border-bottom-color: var(--bg);
+  color: var(--text);
+}
+body.pixel-theme .tab .close {
+  width: 20px; height: 20px;
+  border-radius: 0;
+  border: 1px solid transparent;
+  transition: none;
+}
+body.pixel-theme .tab:hover .close {
+  color: var(--accent-red);
+}
+body.pixel-theme .tab .close:hover {
+  background: var(--accent-red);
+  color: #fff;
+  border-color: var(--accent-red);
+}
+body.pixel-theme .tab-add {
+  width: 30px; height: 30px;
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--accent-yellow);
+  font-weight: 900;
+  transition: none;
+}
+body.pixel-theme .tab-add:hover {
+  background: var(--surface2);
+  color: var(--text);
+  border-color: var(--accent-blue);
+}
+
+body.pixel-theme .nav-bar {
+  padding: 6px 10px;
+  border-bottom: 2px solid var(--border);
+}
+body.pixel-theme .nav-btn {
+  width: 34px; height: 34px;
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  font-weight: 700;
+  transition: none;
+}
+body.pixel-theme .nav-btn:hover {
+  background: var(--bg);
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+}
+body.pixel-theme .nav-btn:disabled:hover {
+  background: var(--surface2);
+  color: var(--text2);
+  border-color: var(--border);
+}
+
+body.pixel-theme .url-bar {
+  height: 34px;
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: none;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+}
+body.pixel-theme .url-bar:hover {
+  background: var(--bg);
+  border-color: var(--text3);
+}
+body.pixel-theme .url-bar:focus {
+  border-color: var(--accent-yellow);
+  background: var(--bg);
+  box-shadow: 0 0 0 2px rgba(255,255,0,0.3);
+}
+
+body.pixel-theme .new-tab-bg {
+  background: radial-gradient(ellipse at center, #0f3d2f 0%, #0a2e22 50%, #061a14 100%);
+}
+body.pixel-theme .particle-canvas {
+  opacity: 0.15;
+}
+
+body.pixel-theme .brand-area {
+  position: relative;
+}
+body.pixel-theme .brand-area::before {
+  content: 'FREE PROXY';
+  position: absolute;
+  top: -20px;
+  font-size: 9px;
+  color: var(--accent-blue);
+  font-weight: 900;
+  letter-spacing: 4px;
+  padding: 2px 10px;
+  border: 2px solid var(--accent-blue);
+  background: rgba(77,208,255,0.1);
+}
+body.pixel-theme .brand-area .logo {
+  font-size: 48px;
+  color: var(--accent-yellow);
+  text-shadow: 3px 3px 0 var(--accent-red), 6px 6px 0 rgba(0,0,0,0.3);
+  animation: logoBounce 2s steps(4, end) infinite;
+}
+@keyframes logoBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+body.pixel-theme .brand-area h2 {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+}
+body.pixel-theme .brand-area p {
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+
+
+body.pixel-theme .center-search {
+  padding: 12px 18px;
+  border-radius: 0;
+  border: 3px solid var(--border);
+  background: var(--bg);
+  box-shadow: none;
+  position: relative;
+  transition: none;
+}
+body.pixel-theme .center-search::before {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px; right: -3px; bottom: -3px;
+  border: 3px solid var(--accent-red);
+  pointer-events: none;
+  z-index: -1;
+}
+body.pixel-theme .center-search::after {
+  content: '';
+  position: absolute;
+  top: 6px; left: 6px; right: -6px; bottom: -6px;
+  border: 3px solid var(--accent-blue);
+  pointer-events: none;
+  z-index: -2;
+  opacity: 0.5;
+}
+body.pixel-theme .center-search:focus-within {
+  border-color: var(--accent-yellow);
+  box-shadow: none;
+}
+body.pixel-theme .center-search:focus-within::before {
+  border-color: var(--accent-yellow);
+}
+body.pixel-theme .center-search-icon {
+  color: var(--accent-yellow);
+}
+body.pixel-theme .center-search input {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+body.pixel-theme .search-shortcuts-bar span {
+  padding: 6px 16px;
+  border-radius: 0;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  font-weight: 700;
+  letter-spacing: 1px;
+  transition: none;
+}
+body.pixel-theme .search-shortcuts-bar span:hover {
+  background: var(--surface2);
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+}
+
+body.pixel-theme .status-bar-container {
+  border-radius: 0;
+  border: 2px solid var(--border);
+  position: relative;
+}
+body.pixel-theme .status-bar-container::before {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px; right: -3px; bottom: -3px;
+  border: 2px solid var(--accent-red);
+  pointer-events: none;
+  opacity: 0.4;
+}
+body.pixel-theme .status-bar-item {
+  border-radius: 0;
+  transition: none;
+}
+body.pixel-theme .status-bar-item .status-icon {
+  color: var(--accent-yellow);
+}
+body.pixel-theme .status-bar-item .status-label {
+  letter-spacing: 0.5px;
+}
+body.pixel-theme .status-bar-item .status-value {
+  font-weight: 700;
+}
+body.pixel-theme .status-bar-divider {
+  width: 2px;
+}
+body.pixel-theme .status-dot {
+  width: 8px; height: 8px;
+  border-radius: 0;
+}
+body.pixel-theme .status-dot.ok {
+  box-shadow: 0 0 6px var(--accent-red);
+}
+
+body.pixel-theme .dashboard-grid {
+  gap: 14px;
+}
+
+body.pixel-theme .dash-card {
+  border-radius: 0;
+  border: 2px solid var(--border);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+  transition: none;
+  position: relative;
+}
+body.pixel-theme .dash-card::before {
+  display: none;
+}
+body.pixel-theme .dash-card::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px; right: -3px; bottom: -3px;
+  border: 3px solid var(--accent-red);
+  pointer-events: none;
+  opacity: 0.25;
+  z-index: -1;
+}
+body.pixel-theme .dash-card:hover {
+  transform: none;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+  border-color: var(--accent-yellow);
+}
+body.pixel-theme .dash-card:hover::after {
+  opacity: 0.5;
+}
+
+body.pixel-theme .clock-card {
+  position: relative;
+}
+body.pixel-theme .clock-card::before {
+  content: 'CLOCK';
+  position: absolute;
+  top: 8px; right: 12px;
+  font-size: 8px;
+  color: var(--accent-blue);
+  font-weight: 900;
+  letter-spacing: 2px;
+  opacity: 0.6;
+}
+body.pixel-theme .clock-card .clock-time {
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  font-family: 'Courier New', monospace;
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.4), 0 0 20px rgba(77,208,255,0.2);
+}
+body.pixel-theme .clock-card .clock-date {
+  letter-spacing: 1px;
+}
+
+body.pixel-theme .proxy-card {
+  position: relative;
+}
+body.pixel-theme .proxy-card::before {
+  content: 'PROXY';
+  position: absolute;
+  top: 8px; right: 12px;
+  font-size: 8px;
+  color: var(--accent-red);
+  font-weight: 900;
+  letter-spacing: 2px;
+  opacity: 0.7;
+}
+body.pixel-theme .breathe-core {
+  width: 16px; height: 16px;
+  border-radius: 0;
+  background: var(--accent-red);
+  box-shadow: 0 0 12px var(--accent-red);
+}
+body.pixel-theme .breathe-ring {
+  border-radius: 0;
+  border: 2px solid var(--accent-red);
+  animation: breathePulsePixel 2s steps(8, end) infinite;
+}
+@keyframes breathePulsePixel {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+body.pixel-theme .proxy-label {
+  font-size: 12px;
+  color: var(--accent-red);
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+body.pixel-theme .proxy-detail {
+  border-top: 2px solid var(--border);
+  letter-spacing: 0.5px;
+}
+
+body.pixel-theme .quote-vertical {
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: rgba(0,0,0,0.2);
+  font-style: italic;
+  transition: none;
+}
+body.pixel-theme .quote-vertical:hover {
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+  background: rgba(0,0,0,0.2);
+}
+
+body.pixel-theme .today-header {
+  font-size: 11px;
+  color: var(--accent-blue);
+  font-weight: 900;
+  border-bottom: 2px solid var(--border);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+body.pixel-theme .today-weather .weather-temp {
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+body.pixel-theme .today-date {
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+body.pixel-theme .merged-links .links-header {
+  border-bottom: 2px solid var(--border);
+}
+body.pixel-theme .recent-divider {
+  height: 2px;
+}
+
+body.pixel-theme .recent-title {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+body.pixel-theme .recent-clear {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+body.pixel-theme .recent-clear:hover {
+  color: var(--accent-red);
+}
+body.pixel-theme .recent-list {
+  gap: 2px;
+}
+body.pixel-theme .recent-item {
+  border-radius: 0;
+  transition: none;
+  border-left: 3px solid transparent;
+}
+body.pixel-theme .recent-item:hover {
+  border-left-color: var(--accent-yellow);
+}
+body.pixel-theme .recent-item .title {
+  font-weight: 700;
+}
+body.pixel-theme .recent-item .close {
+  border-radius: 0;
+}
+body.pixel-theme .recent-item .close:hover {
+  background: transparent;
+  color: var(--accent-red);
+}
+
+body.pixel-theme .hidden-quote {
+  border-radius: 0;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  letter-spacing: 1px;
+  transition: none;
+}
+body.pixel-theme .hidden-quote:hover {
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+  background: var(--surface);
+}
+
+body.pixel-theme .card-weather .weather-temp {
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+body.pixel-theme .card-weather .weather-city-name:hover {
+  border-bottom-color: var(--accent-yellow);
+  color: var(--accent-yellow);
+}
+
+body.pixel-theme .card-quote {
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 0;
+}
+body.pixel-theme .card-quote .quote-icon {
+  color: var(--accent-blue);
+}
+body.pixel-theme .card-quote .quote-text {
+  letter-spacing: 0.5px;
+  transition: none;
+}
+body.pixel-theme .card-quote .quote-refresh {
+  transition: none;
+}
+body.pixel-theme .card-quote .quote-refresh:hover {
+  color: var(--accent-yellow);
+}
+
+body.pixel-theme .weather-city-dropdown {
+  border-radius: 0;
+  border: 2px solid var(--border);
+  box-shadow: none;
+}
+body.pixel-theme .weather-city-dropdown > div {
+  border-radius: 0;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: none;
+}
+body.pixel-theme .weather-city-dropdown > div:hover {
+  color: var(--accent-yellow);
+}
+body.pixel-theme .weather-city-divider {
+  height: 2px;
+}
+body.pixel-theme .weather-city-input {
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+}
+body.pixel-theme .weather-city-input:focus {
+  border-color: var(--accent-yellow);
+}
+
+body.pixel-theme .links-header {
+  border-bottom: 2px solid var(--border);
+}
+body.pixel-theme .links-title {
+  font-size: 11px;
+  color: var(--accent-blue);
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+body.pixel-theme .links-add {
+  width: 24px; height: 24px;
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  font-weight: 900;
+  transition: none;
+}
+body.pixel-theme .links-add:hover {
+  background: var(--bg);
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+}
+
+body.pixel-theme .links-grid {
+  gap: 8px;
+}
+body.pixel-theme .quick-link {
+  border-radius: 0;
+  border: 2px solid var(--border);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: none;
+  position: relative;
+}
+body.pixel-theme .quick-link:hover {
+  border-color: var(--accent-yellow);
+  background: var(--surface2);
+  color: var(--text);
+  transform: none;
+}
+body.pixel-theme .quick-link:hover::before {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px; right: -2px; bottom: -2px;
+  border: 2px solid var(--accent-red);
+  pointer-events: none;
+  opacity: 0.5;
+}
+body.pixel-theme .quick-link .icon {
+  font-size: 22px;
+}
+
+body.pixel-theme .status-bar {
+  background: #061a14;
+  border-top: 3px solid var(--border);
+  font-size: 10px;
+  min-height: 24px;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  position: relative;
+}
+body.pixel-theme .status-bar::before {
+  content: '';
+  position: absolute;
+  top: -3px; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-yellow) 50%, var(--accent-blue) 100%);
+}
+
+body.pixel-theme .loading-bar {
+  background: linear-gradient(90deg, var(--accent-red), var(--accent-yellow), var(--accent-blue));
+  transition: none;
+}
+
+body.pixel-theme .ctx-menu {
+  border-radius: 0;
+  border: 2px solid var(--border);
+  box-shadow: none;
+}
+body.pixel-theme .ctx-item {
+  padding: 8px 12px;
+  border-radius: 0;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: none;
+}
+body.pixel-theme .ctx-item:hover {
+  color: var(--accent-yellow);
+}
+body.pixel-theme .ctx-sep {
+  height: 2px;
+}
+
+body.pixel-theme .extract-overlay {
+  background: rgba(0,0,0,0.6);
+}
+body.pixel-theme .extract-panel {
+  border-radius: 0;
+  border: 3px solid var(--border);
+  box-shadow: none;
+  position: relative;
+}
+body.pixel-theme .extract-panel::before {
+  content: '';
+  position: absolute;
+  top: 4px; left: 4px; right: -4px; bottom: -4px;
+  border: 3px solid var(--accent-red);
+  pointer-events: none;
+  opacity: 0.4;
+  z-index: -1;
+}
+body.pixel-theme .extract-header {
+  border-bottom: 2px solid var(--border);
+}
+body.pixel-theme .extract-header h3 {
+  letter-spacing: 1px;
+}
+body.pixel-theme .extract-tabs {
+  border-bottom: 2px solid var(--border);
+}
+body.pixel-theme .extract-tab {
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: none;
+  border-bottom: 2px solid transparent;
+}
+body.pixel-theme .extract-tab.active {
+  color: var(--accent-yellow);
+  border-bottom-color: var(--accent-yellow);
+}
+body.pixel-theme .extract-tab .count {
+  border-radius: 0;
+  background: var(--surface2);
+}
+body.pixel-theme .extract-tab.active .count {
+  background: var(--bg);
+  color: var(--accent-yellow);
+  border: 1px solid var(--accent-yellow);
+}
+body.pixel-theme .extract-close {
+  width: 28px; height: 28px;
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  font-weight: 900;
+  transition: none;
+}
+body.pixel-theme .extract-close:hover {
+  background: var(--bg);
+  color: var(--accent-red);
+  border-color: var(--accent-red);
+}
+
+body.pixel-theme .extract-item {
+  border-radius: 0;
+  transition: none;
+  border-left: 3px solid transparent;
+}
+body.pixel-theme .extract-item:hover {
+  border-left-color: var(--accent-yellow);
+}
+body.pixel-theme .extract-item .url {
+  font-weight: 700;
+}
+body.pixel-theme .extract-item .meta {
+  letter-spacing: 0.5px;
+}
+body.pixel-theme .extract-item .action {
+  padding: 4px 10px;
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: none;
+}
+body.pixel-theme .extract-item .action:hover {
+  background: var(--accent-yellow);
+  color: #000;
+  border-color: var(--accent-yellow);
+}
+
+body.pixel-theme .extract-loading .spinner {
+  border: 3px solid var(--border);
+  border-top-color: var(--accent-yellow);
+  border-radius: 0;
+  animation: spinPixel 0.8s steps(8, end) infinite;
+}
+@keyframes spinPixel {
+  to { transform: rotate(360deg); }
+}
+
+body.pixel-theme .wallpaper-btn {
+  width: 36px; height: 36px;
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  font-weight: 900;
+  transition: none;
+}
+body.pixel-theme .wallpaper-btn:hover {
+  background: var(--surface2);
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+}
+
+body.pixel-theme .modal-panel {
+  border-radius: 0;
+  border: 3px solid var(--border);
+  box-shadow: none;
+  position: relative;
+}
+body.pixel-theme .modal-panel::before {
+  content: '';
+  position: absolute;
+  top: 4px; left: 4px; right: -4px; bottom: -4px;
+  border: 3px solid var(--accent-red);
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: -1;
+}
+body.pixel-theme .modal-header {
+  border-bottom: 2px solid var(--border);
+}
+body.pixel-theme .modal-header h3 {
+  letter-spacing: 1px;
+}
+body.pixel-theme .modal-close {
+  width: 28px; height: 28px;
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  font-weight: 900;
+  transition: none;
+}
+body.pixel-theme .modal-close:hover {
+  background: var(--bg);
+  color: var(--accent-red);
+  border-color: var(--accent-red);
+}
+body.pixel-theme .modal-footer {
+  border-top: 2px solid var(--border);
+}
+body.pixel-theme .modal-footer .coords {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+body.pixel-theme .modal-btn {
+  padding: 8px 18px;
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: none;
+}
+body.pixel-theme .modal-btn:hover {
+  background: var(--bg);
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+}
+body.pixel-theme .modal-btn-primary {
+  background: var(--accent-yellow);
+  color: #000;
+  border-color: var(--accent-yellow);
+}
+body.pixel-theme .modal-btn-primary:hover {
+  background: #ffdb4d;
+  color: #000;
+  border-color: #ffdb4d;
+}
+body.pixel-theme .modal-btn-outline {
+  background: transparent;
+  border: 2px solid var(--border);
+}
+body.pixel-theme .modal-btn-outline:hover {
+  background: var(--surface2);
+  color: var(--text);
+  border-color: var(--text);
+}
+body.pixel-theme .modal-btn-danger {
+  background: transparent;
+  color: var(--accent-red);
+  border: 2px solid var(--accent-red);
+}
+body.pixel-theme .modal-btn-danger:hover {
+  background: var(--accent-red);
+  color: #fff;
+}
+
+body.pixel-theme .wallpaper-item {
+  border-radius: 0;
+  border: 2px solid var(--border);
+  transition: none;
+}
+body.pixel-theme .wallpaper-item:hover {
+  border-color: var(--text2);
+}
+body.pixel-theme .wallpaper-item.active {
+  border-color: var(--accent-yellow);
+}
+body.pixel-theme .wallpaper-item .check {
+  width: 20px; height: 20px;
+  border-radius: 0;
+  background: var(--accent-yellow);
+  color: #000;
+  font-weight: 900;
+}
+body.pixel-theme .wallpaper-divider {
+  height: 2px;
+}
+body.pixel-theme .wp-upload-card {
+  border-radius: 0;
+  border: 2px dashed var(--border);
+  transition: none;
+}
+body.pixel-theme .wp-upload-card.dragover {
+  border-color: var(--accent-yellow);
+  background: rgba(255,204,51,0.1);
+}
+body.pixel-theme .wp-upload-card:hover {
+  border-color: var(--accent-yellow);
+}
+body.pixel-theme .wp-upload-card:hover::after {
+  display: none;
+}
+body.pixel-theme .wp-file-overlay-wrap {
+  border-radius: 0;
+}
+body.pixel-theme .wp-api-card {
+  border-radius: 0;
+  border: 2px solid var(--border);
+  transition: none;
+}
+body.pixel-theme .wp-api-card:hover {
+  border-color: var(--accent-yellow);
+  background: rgba(255,204,51,0.1);
+}
+body.pixel-theme .wp-upload-icon {
+  width: 42px; height: 42px;
+  border-radius: 0;
+  background: var(--surface2);
+  color: var(--text2);
+  border: 2px solid var(--border);
+  transition: none;
+}
+body.pixel-theme .wp-upload-card:hover .wp-upload-icon,
+body.pixel-theme .wp-api-card:hover .wp-upload-icon {
+  background: var(--accent-yellow);
+  color: #000;
+  border-color: var(--accent-yellow);
+}
+body.pixel-theme .wp-upload-title {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+body.pixel-theme .toast {
+  border-radius: 0;
+  border: 2px solid var(--border);
+  box-shadow: none;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: none;
+}
+body.pixel-theme .toast.show {
+  transition: none;
+}
+body.pixel-theme .toast.success {
+  border-color: var(--success);
+}
+body.pixel-theme .toast.error {
+  border-color: var(--danger);
+}
+
+body.pixel-theme .error-overlay {
+  animation: none;
+}
+body.pixel-theme .error-overlay .error-icon {
+  color: var(--accent-red);
+  opacity: 1;
+}
+body.pixel-theme .error-overlay .error-msg {
+  color: var(--accent-red);
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+body.pixel-theme .error-btn {
+  padding: 8px 18px;
+  border-radius: 0;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: none;
+}
+body.pixel-theme .error-btn:hover {
+  background: var(--bg);
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+}
+body.pixel-theme .error-btn.primary {
+  background: var(--accent-yellow);
+  color: #000;
+  border-color: var(--accent-yellow);
+}
+body.pixel-theme .error-btn.primary:hover {
+  background: #ffdb4d;
+  color: #000;
+  border-color: #ffdb4d;
+}
+
+/* ===== Pixel Decorations (hidden by default, show in pixel theme) ===== */
+.pixel-diamond,
+.pixel-badge {
+  display: none;
+}
+body.pixel-theme .pixel-diamond {
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: var(--accent-red);
+  transform: rotate(45deg);
+  margin-right: 8px;
+  vertical-align: middle;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+}
+body.pixel-theme .pixel-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--accent-blue);
+  color: #001a2e;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border: 2px solid #80e0ff;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+}
+
+body.pixel-theme ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+body.pixel-theme ::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-left: 2px solid var(--border);
+}
+body.pixel-theme ::-webkit-scrollbar-thumb {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+}
+body.pixel-theme ::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+}
+
+body.pixel-theme ::selection {
+  background: var(--accent-red);
+  color: #fff;
+}
+
+body.pixel-theme input,
+body.pixel-theme textarea {
+  caret-color: var(--accent-yellow);
+}
+
+body.pixel-theme .nav-btn:active,
+body.pixel-theme .links-add:active,
+body.pixel-theme .modal-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+}
+
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<!-- Tab Bar -->
+<div class="tab-bar" id="tabBar">
+  <span class="app-icon">&#9889;</span>
+  <div class="tab active" data-id="1" onclick="selectTab(1)">
+    <span class="favicon">&#9889;</span>
+    <span class="title">New Tab</span>
+    <span class="close" onclick="event.stopPropagation();closeTab(1)">&#215;</span>
+  </div>
+  <div class="tab-add" onclick="newTab()" title="New Tab">+</div>
+</div>
+
+<!-- Navigation Bar -->
+<div class="nav-bar">
+  <button class="nav-btn" onclick="goBack()" title="Back" id="btnBack">&#9664;</button>
+  <button class="nav-btn" onclick="goForward()" title="Forward" id="btnForward">&#9654;</button>
+  <button class="nav-btn" onclick="reloadPage()" title="Refresh">&#8635;</button>
+  <button class="nav-btn" onclick="goHome()" title="Home">&#8962;</button>
+  <input class="url-bar" id="urlBar" placeholder="Enter address or search..." spellcheck="false"
+         onkeydown="if(event.key==='Enter')navigateTo(this.value)">
+  <div class="nav-icons">
+    <button class="nav-btn" onclick="toggleTheme()" title="Toggle Theme" id="btnTheme">&#127912;</button>
+    <button class="nav-btn" onclick="toggleExtractPanel()" title="Extract Media" id="btnExtract">&#128279;</button>
+    <button class="nav-btn" onclick="showDiagnostics()" title="Diagnostics" id="btnProxy">&#128295;</button>
+    <button class="nav-btn" onclick="openControlPanel()" title="Control Panel" id="btnPanel">&#9881;</button>
+  </div>
+</div>
+
+<!-- Content Area -->
+<div class="content" id="contentArea">
+  <div class="loading-bar" id="loadingBar"></div>
+  <div class="new-tab-bg" id="newTabBg"></div>
+  <canvas id="particleCanvas" class="particle-canvas"></canvas>
+  <div class="webview-placeholder" id="placeholder">
+    <div class="brand-area">
+      <div class="logo">&#9889;</div>
+      <h2>Free Proxy Browser</h2>
+      <p>Lightweight dedicated browser with built-in proxy management</p>
+    </div>
+
+    <div class="center-stage">
+      <div class="center-search">
+        <div class="center-search-icon">&#128269;</div>
+        <input type="text" id="centerSearch" placeholder="Search the web or enter address..." autocomplete="off"
+               onkeydown="if(event.key==='Enter'){navigateTo('https://www.google.com/search?q='+encodeURIComponent(this.value));this.value='';}">
+      </div>
+      <div class="search-shortcuts-bar">
+        <span onclick="document.getElementById('centerSearch').focus();navigateTo('https://www.google.com')">Google</span>
+        <span onclick="document.getElementById('centerSearch').focus();navigateTo('https://www.bing.com')">Bing</span>
+        <span onclick="document.getElementById('centerSearch').focus();navigateTo('https://www.baidu.com')">Baidu</span>
+      </div>
+    </div>
+
+    <div class="status-bar-container">
+      <div class="status-bar-item" onclick="toggleProxyDetail()">
+        <span class="status-icon status-dot ok" id="sbProxyDot"></span>
+        <span class="status-label">Proxy:</span>
+        <span class="status-value" id="sbProxyStatus">Running</span>
+      </div>
+      <div class="status-bar-divider"></div>
+      <div class="status-bar-item">
+        <span class="status-icon">&#128337;</span>
+        <span class="status-label">Uptime:</span>
+        <span class="status-value" id="sbUptime">00:09</span>
+      </div>
+      <div class="status-bar-divider"></div>
+      <div class="status-bar-item">
+        <span class="status-icon">&#128225;</span>
+        <span class="status-label">Tabs:</span>
+        <span class="status-value" id="sbTabs">1</span>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <!-- Left Column -->
+      <div class="dash-left">
+        <div class="dash-card clock-card">
+          <div class="clock-time" id="clockTime">13:30</div>
+          <div class="clock-date" id="clockDate">Mon · Jul 13</div>
+        </div>
+
+        <div class="dash-card proxy-card" onclick="toggleProxyDetail()">
+          <div class="proxy-breathe">
+            <div class="breathe-ring"></div>
+            <div class="breathe-core"></div>
+          </div>
+          <div class="proxy-label">Proxy Connected</div>
+          <div class="proxy-detail" id="proxyDetail" style="display:none;">
+            <div>Address: 127.0.0.1:1080</div>
+            <div>Type: SOCKS5</div>
+            <div>Latency: 12ms</div>
+          </div>
+        </div>
+
+        <div class="quote-vertical" id="quoteVertical" onclick="fetchQuote()">
+          <span class="quote-v-text" id="quoteVText">Life is like a box of chocolates</span>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="dash-right">
+        <div class="dash-card today-card">
+          <div class="today-header"><span class="pixel-diamond"></span>Today's Overview</div>
+          <div class="today-body">
+            <div class="today-weather">
+              <div class="weather-icon" id="weatherIcon">&#9925;</div>
+              <div class="weather-info">
+                <div class="weather-temp" id="weatherTemp">--°</div>
+                <div class="weather-desc" id="weatherDesc">Fetching weather...</div>
+                <div class="weather-city" id="weatherCity">
+                  <span class="weather-city-name" id="weatherCityName">--</span>
+                  <span class="weather-city-arrow">&#9660;</span>
+                  <div class="weather-city-dropdown" id="weatherCityDropdown">
+                    <div data-city="">Auto Detect</div>
+                    <div data-city="Beijing">Beijing</div>
+                    <div data-city="Shanghai">Shanghai</div>
+                    <div data-city="Guangzhou">Guangzhou</div>
+                    <div data-city="Shenzhen">Shenzhen</div>
+                    <div data-city="Kunming">Kunming</div>
+                    <div data-city="Chengdu">Chengdu</div>
+                    <div data-city="Hangzhou">Hangzhou</div>
+                    <div data-city="Nanjing">Nanjing</div>
+                    <div data-city="Wuhan">Wuhan</div>
+                    <div class="weather-city-divider"></div>
+                    <div data-city="__map__">🗺️ Select City on Map</div>
+                    <div data-city="__custom__">Custom city...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="today-date" id="todayDate">Jul 13, Monday</div>
+          </div>
+        </div>
+
+        <div class="dash-card merged-links">
+          <div class="links-header">
+            <span class="links-title"><span class="pixel-diamond"></span>Quick Access</span>
+            <span class="links-add" onclick="showAddLinkModal()" title="Add Quick Link">&#43;</span>
+          </div>
+          <div class="recent-section" id="recentSection" style="display:none;">
+            <div class="recent-header">
+              <span class="recent-title"><span class="pixel-diamond"></span>Recent Visits</span>
+              <span class="recent-clear" onclick="clearRecent()">Clear</span>
+            </div>
+            <div class="recent-list" id="recentList"></div>
+            <div class="recent-divider"></div>
+          </div>
+          <div class="links-grid">
+            <div class="quick-link" onclick="navigateTo('http://127.0.0.1:3000')">
+              <span class="icon">&#9881;</span>
+              <span class="label">Control Panel</span>
+            </div>
+            <div class="quick-link" onclick="navigateTo('https://www.google.com')">
+              <span class="icon">&#128269;</span>
+              <span class="label">Google</span>
+            </div>
+            <div class="quick-link" onclick="navigateTo('https://github.com')">
+              <span class="icon">&#128187;</span>
+              <span class="label">GitHub</span>
+            </div>
+            <div class="quick-link" onclick="navigateTo('https://www.youtube.com')">
+              <span class="icon">&#128250;</span>
+              <span class="label">YouTube</span>
+            </div>
+            <div class="quick-link" onclick="navigateTo('https://twitter.com')">
+              <span class="icon">&#128038;</span>
+              <span class="label">Twitter/X</span>
+            </div>
+            <div class="quick-link" onclick="navigateTo('https://www.wikipedia.org')">
+              <span class="icon">&#128214;</span>
+              <span class="label">Wikipedia</span>
+            </div>
+            <div class="quick-link" onclick="navigateTo('https://www.bilibili.com')">
+              <span class="icon">&#127916;</span>
+              <span class="label">Bilibili</span>
+            </div>
+            <div class="quick-link" onclick="navigateTo('https://www.baidu.com')">
+              <span class="icon">&#28201;</span>
+              <span class="label">Baidu</span>
+            </div>
+            <div class="quick-link" onclick="navigateTo('https://www.microsoft.com')">
+              <span class="icon">&#128188;</span>
+              <span class="label">Microsoft</span>
+            </div>
+            <div class="quick-link" onclick="navigateTo('https://www.spotify.com')">
+              <span class="icon">&#127925;</span>
+              <span class="label">Spotify</span>
+            </div>
+            <div class="quick-link" onclick="navigateTo('https://www.reddit.com')">
+              <span class="icon">&#127758;</span>
+              <span class="label">Reddit</span>
+            </div>
+            <div class="quick-link" onclick="navigateTo('https://www.stackoverflow.com')">
+              <span class="icon">&#128270;</span>
+              <span class="label">Stack Overflow</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="wallpaper-btn" onclick="toggleWallpaper()" title="Wallpaper">&#128248;</button>
+  </div>
+</div>
+
+<!-- Wallpaper Picker -->
+<div class="modal-overlay" id="wallpaperModal">
+  <div class="modal-panel wp">
+    <div class="modal-header">
+      <h3>Wallpaper</h3>
+      <button class="modal-close" onclick="closeModal('wallpaperModal')">&#215;</button>
+    </div>
+    <div class="modal-body">
+      <div class="wallpaper-label">Preset Wallpapers</div>
+      <div class="wallpaper-grid" id="wpGrid"></div>
+      <div class="wallpaper-divider"></div>
+      <div class="wallpaper-custom">
+        <div class="wallpaper-label">Local Upload</div>
+        <div class="wp-upload-card" id="uploadCard">
+          <div class="wp-file-overlay-wrap">
+            <input type="file" id="wpFileOverlay" accept="image/*" class="wp-file-overlay-input">
+          </div>
+          <div class="wp-upload-icon">&#128247;</div>
+          <div class="wp-upload-text">
+            <div class="wp-upload-title">Upload Image</div>
+            <div class="wp-upload-hint">Click to select or drag image here</div>
+          </div>
+        </div>
+      </div>
+      <div class="wallpaper-divider"></div>
+      <div class="wallpaper-custom">
+        <div class="wallpaper-label">Online Wallpaper</div>
+        <div class="wp-api-card" onclick="fetchApiWallpaper()">
+          <div class="wp-upload-icon">&#127760;</div>
+          <div class="wp-upload-text">
+            <div class="wp-upload-title">Random Wallpaper</div>
+            <div class="wp-upload-hint">From wp.upx8.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-outline" onclick="closeModal('wallpaperModal')">Done</button>
+      <button class="modal-btn modal-btn-danger" onclick="resetWallpaper()">Restore Default</button>
+    </div>
+  </div>
+</div>
+
+<!-- Map Overlay -->
+<div class="modal-overlay" id="mapModal">
+  <div class="modal-panel map">
+    <div class="modal-header">
+      <h3>&#128506; Select City Location on Map</h3>
+      <button class="modal-close" onclick="closeModal('mapModal')">&#215;</button>
+    </div>
+    <div class="modal-body nopad">
+      <div id="leafletMap" style="height:400px"></div>
+    </div>
+    <div class="modal-footer">
+      <span class="coords" id="mapCoords">Click on the map to select a location</span>
+      <button class="modal-btn modal-btn-primary" onclick="confirmMapLocation()">Confirm</button>
+      <button class="modal-btn modal-btn-outline" onclick="closeModal('mapModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Media Extraction Panel -->
+<div class="extract-overlay" id="extractOverlay" onclick="if(event.target===this)closeExtractPanel()">
+  <div class="extract-panel">
+    <div class="extract-header">
+      <h3>&#128279; Media Extraction</h3>
+      <button class="extract-close" onclick="closeExtractPanel()">&#215;</button>
+    </div>
+    <div class="extract-tabs" id="extractTabs">
+      <button class="extract-tab active" data-tab="videos" onclick="switchExtractTab('videos')">&#127916; Videos <span class="count" id="ec-videos">0</span></button>
+      <button class="extract-tab" data-tab="audios" onclick="switchExtractTab('audios')">&#127925; Audios <span class="count" id="ec-audios">0</span></button>
+      <button class="extract-tab" data-tab="images" onclick="switchExtractTab('images')">&#128247; Images <span class="count" id="ec-images">0</span></button>
+    </div>
+    <div class="extract-body" id="extractBody">
+      <div class="extract-loading" id="extractLoading">
+        <div class="spinner"></div>
+        <div>Analyzing page...</div>
+      </div>
+      <div id="extractContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Bar -->
+<div class="status-bar">
+  <div class="left">
+    <span class="pixel-badge" style="font-size:9px;padding:2px 8px;letter-spacing:1px">READY</span>
+    <span><span class="status-dot" id="proxyDot"></span><span id="proxyStatusText">Checking...</span></span>
+  </div>
+  <div class="right">
+    <span id="statusClock"></span>
+  </div>
+</div>
+
+<!-- Context Menu -->
+<div class="ctx-menu" id="ctxMenu">
+  <div class="ctx-item" onclick="reloadPage()">&#8635; Refresh Page</div>
+  <div class="ctx-item" onclick="openInNewTab()">&#10133; Open in New Tab</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="copyUrl()">&#128203; Copy URL</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="showDiagnostics()">&#9889; Proxy Settings</div>
+  <div class="ctx-item" onclick="showDiagnostics()">&#128295; Connection Diagnostics</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="toggleExtractPanel()">&#128279; Extract Media</div>
+</div>
+
+<script>
+// ========== Tab Management ==========
+let tabs = [{ id: 1, title: 'New Tab', url: '', favicon: '\u26A1' }];
+let activeTab = 1;
+let nextTabId = 2;
+
+function newTab(url) {
+  const id = nextTabId++;
+  tabs.push({ id, title: 'New Tab', url: url || '', favicon: '\u26A1' });
+  renderTabs();
+  selectTab(id);
+  if (url) navigateTo(url);
+}
+
+function closeTab(id) {
+  if (tabs.length <= 1) return;
+  const idx = tabs.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  tabs.splice(idx, 1);
+  if (activeTab === id) {
+    const newIdx = Math.min(idx, tabs.length - 1);
+    selectTab(tabs[newIdx].id);
+  }
+  renderTabs();
+}
+
+function selectTab(id) {
+  activeTab = id;
+  const tab = tabs.find(t => t.id === id);
+  if (!tab) return;
+  renderTabs();
+  document.getElementById('urlBar').value = tab.url;
+  const content = document.getElementById('contentArea');
+  const placeholder = document.getElementById('placeholder');
+  const bg = document.getElementById('newTabBg');
+  const iframe = content.querySelector('iframe');
+  if (tab.url) {
+    placeholder.style.display = 'none';
+    bg.style.display = 'none';
+    if (iframe && iframe.src &&
+        iframe.src.replace(/\/$/, '') === tab.url.replace(/\/$/, '')) {
+      iframe.style.display = 'block';
+    } else {
+      loadUrl(tab.url);
+    }
+  } else {
+    placeholder.style.display = 'flex';
+    bg.style.display = 'block';
+    if (iframe) iframe.style.display = 'none';
+  }
+}
+
+function renderTabs() {
+  const bar = document.getElementById('tabBar');
+  const addBtn = bar.querySelector('.tab-add');
+  bar.querySelectorAll('.tab').forEach(el => el.remove());
+  tabs.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'tab' + (t.id === activeTab ? ' active' : '');
+    div.dataset.id = t.id;
+    div.onclick = () => selectTab(t.id);
+    div.innerHTML = '<span class="favicon">' + escapeHtml(t.favicon) + '</span><span class="title">' + escapeHtml(t.title) + '</span><span class="close" onclick="event.stopPropagation();closeTab(' + t.id + ')">\u00d7</span>';
+    bar.insertBefore(div, addBtn);
+  });
+  updateTabCount();
+}
+
+// ========== Navigation ==========
+let navHistory = {};
+let loadTimeout = null;
+
+function pushHistory(id, url) {
+  if (!navHistory[id]) navHistory[id] = { stack: [], index: -1 };
+  const h = navHistory[id];
+  if (h.index < h.stack.length - 1) h.stack = h.stack.slice(0, h.index + 1);
+  h.stack.push(url);
+  h.index = h.stack.length - 1;
+}
+
+function navigateTo(url) {
+  if (!url) return;
+  if (!url.startsWith('http')) url = 'https://' + url;
+  const tab = tabs.find(t => t.id === activeTab);
+  if (!tab) return;
+  try { tab.title = new URL(url).hostname; } catch { tab.title = url; }
+  tab.url = url;
+  document.getElementById('urlBar').value = url;
+  renderTabs();
+  pushHistory(activeTab, url);
+  updateNavButtons();
+  addRecentVisit(url, tab.title);
+  loadUrl(url);
+}
+
+function loadUrl(url) {
+  const content = document.getElementById('contentArea');
+  const placeholder = document.getElementById('placeholder');
+  const bg = document.getElementById('newTabBg');
+  const existingError = content.querySelector('.error-overlay');
+  if (existingError) existingError.remove();
+  let iframe = content.querySelector('iframe');
+
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.className = 'iframe-wrap';
+    iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
+    content.appendChild(iframe);
+  }
+
+  placeholder.style.display = 'none';
+  bg.style.display = 'none';
+  iframe.style.display = 'block';
+  iframe.src = url;
+  showLoading(true);
+  if (loadTimeout) clearTimeout(loadTimeout);
+  let iframeLoaded = false;
+  iframe.onload = () => {
+    iframeLoaded = true;
+    showLoading(false);
+    if (loadTimeout) { clearTimeout(loadTimeout); loadTimeout = null; }
+    try {
+      const title = iframe.contentDocument && iframe.contentDocument.title;
+      if (title) {
+        const tab = tabs.find(t => t.id === activeTab);
+        tab.title = title;
+        renderTabs();
+      }
+    } catch (e) {}
+  };
+  loadTimeout = setTimeout(() => {
+    if (!iframeLoaded) {
+      showLoading(false);
+      showErrorMessage(url);
+    }
+  }, 10000);
+}
+
+function goBack() {
+  const tab = tabs.find(t => t.id === activeTab);
+  if (!tab) return;
+  const h = navHistory[activeTab];
+  if (!h || h.index <= 0) return;
+  h.index--;
+  tab.url = h.stack[h.index];
+  document.getElementById('urlBar').value = tab.url;
+  try { tab.title = new URL(tab.url).hostname; } catch { tab.title = tab.url; }
+  renderTabs();
+  updateNavButtons();
+  loadUrl(tab.url);
+}
+
+function goForward() {
+  const tab = tabs.find(t => t.id === activeTab);
+  if (!tab) return;
+  const h = navHistory[activeTab];
+  if (!h || h.index >= h.stack.length - 1) return;
+  h.index++;
+  tab.url = h.stack[h.index];
+  document.getElementById('urlBar').value = tab.url;
+  try { tab.title = new URL(tab.url).hostname; } catch { tab.title = tab.url; }
+  renderTabs();
+  updateNavButtons();
+  loadUrl(tab.url);
+}
+
+function reloadPage() {
+  const tab = tabs.find(t => t.id === activeTab);
+  if (tab.url) loadUrl(tab.url);
+}
+
+function goHome() { navigateTo(''); }
+
+function updateNavButtons() {
+  const h = navHistory[activeTab];
+  const btnBack = document.getElementById('btnBack');
+  const btnFwd = document.getElementById('btnForward');
+  if (btnBack) btnBack.disabled = !h || h.index <= 0;
+  if (btnFwd) btnFwd.disabled = !h || h.index >= h.stack.length - 1;
+}
+
+function showLoading(active) {
+  const bar = document.getElementById('loadingBar');
+  if (active) {
+    bar.className = 'loading-bar active';
+  } else {
+    bar.className = 'loading-bar done';
+    setTimeout(() => bar.className = 'loading-bar', 300);
+  }
+}
+
+function showErrorMessage(url) {
+  const content = document.getElementById('contentArea');
+  const existing = content.querySelector('.error-overlay');
+  if (existing) existing.remove();
+  const safeUrl = url.replace(/'/g, "\\'");
+  const safeUrlDisplay = escapeHtml(url);
+  const overlay = document.createElement('div');
+  overlay.className = 'error-overlay';
+  overlay.innerHTML = `
+    <div class="error-icon">&#9888;</div>
+    <div class="error-url">${safeUrlDisplay}</div>
+    <div class="error-msg">Connection refused - please check your network connection</div>
+    <div class="error-msg" style="font-size:12px;color:var(--text2);margin-top:-12px">Click "Diagnostics" for details</div>
+    <div class="error-actions">
+      <button class="error-btn" onclick="reloadPage()">Retry</button>
+      <button class="error-btn" onclick="loadUrl('${safeUrl}')">Proxy Mode</button>
+      <button class="error-btn primary" onclick="showDiagnostics()">Diagnostics</button>
+    </div>
+  `;
+  content.appendChild(overlay);
+}
+
+// ========== Diagnostics ==========
+function showDiagnostics() {
+  const existing = document.getElementById('diagPanel');
+  if (existing) { existing.remove(); return; }
+  const panel = document.createElement('div');
+  panel.id = 'diagPanel';
+  panel.className = 'error-overlay';
+  panel.style.zIndex = '30';
+  const tab = tabs.find(t => t.id === activeTab);
+  const currentUrl = escapeHtml(tab ? tab.url : '(none)');
+  panel.innerHTML = `
+    <div style="font-size:16px;font-weight:600;margin-bottom:12px">&#128295; Connection Diagnostics</div>
+    <div style="text-align:left;font-size:13px;line-height:2;min-width:320px">
+      <div>Engine: <span style="color:var(--success)">Blink (Electron)</span></div>
+      <div>Forward Proxy: <span style="color:var(--success)">Built-in 127.0.0.1:1080</span></div>
+      <div>Current Page: <span style="word-break:break-all">${currentUrl}</span></div>
+    </div>
+    <div class="error-actions" style="margin-top:16px">
+      <button class="error-btn primary" onclick="reloadPage()">Retry Current Page</button>
+      <button class="error-btn" onclick="document.getElementById('diagPanel').remove()">Close</button>
+    </div>
+  `;
+  document.getElementById('contentArea').appendChild(panel);
+}
+
+// ========== Proxy Status ==========
+async function checkProxyStatus() {
+  const dot = document.getElementById('proxyDot');
+  const sbDot = document.getElementById('sbProxyDot');
+  const text = document.getElementById('proxyStatusText');
+  const sbProxyStatus = document.getElementById('sbProxyStatus');
+  const proxyLabel = document.querySelector('.proxy-card .proxy-label');
+  const proxyCore = document.querySelector('.proxy-card .breathe-core');
+  const proxyRing = document.querySelector('.proxy-card .breathe-ring');
+
+  // Probe :1080 port to avoid false reports
+  let running = false;
+  try {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 2000);
+    // Detect through backend API, more reliable (does not depend on network reachability)
+    const res = await fetch('http://127.0.0.1:3000/api/proxy/status', { signal: ac.signal });
+    clearTimeout(t);
+    if (res.ok) {
+      const data = await res.json();
+      running = !!(data && (data.running || data.active || data.enabled));
+      if (data && data.host) {
+        const detail = document.querySelector('.proxy-card .proxy-detail');
+        if (detail) {
+          detail.innerHTML = '<div>Address: ' + escapeHtml(data.host) + (data.port ? ':' + data.port : '') + '</div>' +
+            '<div>Type: ' + escapeHtml(data.type || 'SOCKS5') + '</div>' +
+            (data.latency ? '<div>Latency: ' + data.latency + 'ms</div>' : '');
+        }
+      }
+    }
+  } catch (e) {
+    running = false;
+  }
+
+  if (running) {
+    if (dot) dot.className = 'status-dot ok';
+    if (sbDot) sbDot.className = 'status-dot ok';
+    if (text) text.textContent = 'Built-in Proxy: Running';
+    if (sbProxyStatus) sbProxyStatus.textContent = 'Running';
+    if (proxyLabel) { proxyLabel.textContent = 'Proxy Connected'; proxyLabel.style.color = 'var(--success)'; }
+    if (proxyCore) { proxyCore.style.background = 'var(--success)'; proxyCore.style.boxShadow = '0 0 12px var(--success)'; }
+    if (proxyRing) proxyRing.style.borderColor = 'var(--success)';
+  } else {
+    if (dot) dot.className = 'status-dot err';
+    if (sbDot) sbDot.className = 'status-dot err';
+    if (text) text.textContent = 'Built-in Proxy: Stopped';
+    if (sbProxyStatus) sbProxyStatus.textContent = 'Stopped';
+    if (proxyLabel) { proxyLabel.textContent = 'Proxy Not Started'; proxyLabel.style.color = 'var(--text3)'; }
+    if (proxyCore) { proxyCore.style.background = 'var(--text3)'; proxyCore.style.boxShadow = 'none'; }
+    if (proxyRing) proxyRing.style.borderColor = 'var(--text3)';
+  }
+}
+
+function toggleProxyDetail() {
+  const detail = document.getElementById('proxyDetail');
+  if (detail) {
+    detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+// ========== Context Menu ==========
+document.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  const menu = document.getElementById('ctxMenu');
+  menu.style.visibility = 'hidden';
+  menu.classList.add('show');
+  let x = e.clientX;
+  let y = e.clientY;
+  if (x + menu.offsetWidth > window.innerWidth) x = window.innerWidth - menu.offsetWidth - 10;
+  if (y + menu.offsetHeight > window.innerHeight) y = window.innerHeight - menu.offsetHeight - 10;
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  menu.style.visibility = '';
+});
+document.addEventListener('click', () => document.getElementById('ctxMenu').classList.remove('show'));
+
+function copyUrl() {
+  const tab = tabs.find(t => t.id === activeTab);
+  if (tab.url) navigator.clipboard && navigator.clipboard.writeText(tab.url);
+}
+
+function openInNewTab() {
+  const tab = tabs.find(t => t.id === activeTab);
+  newTab(tab ? tab.url : '');
+}
+
+// ========== Wallpaper ==========
+const WP_PRESETS = [
+  { name: 'Starry Sky', bg: 'linear-gradient(135deg, #1a1b1e 0%, #1e293b 40%, #0f172a 100%)' },
+  { name: 'Deep Sea', bg: 'linear-gradient(135deg, #0c1445 0%, #1a3a6b 40%, #0d2137 100%)' },
+  { name: 'Aurora', bg: 'linear-gradient(135deg, #0a1628 0%, #1a3a2a 40%, #0f1b2e 100%)' },
+  { name: 'Twilight', bg: 'linear-gradient(135deg, #1a0a2e 0%, #3a1a5e 40%, #1a0a2e 100%)' },
+  { name: 'Crimson', bg: 'linear-gradient(135deg, #2d0a0a 0%, #4a1525 40%, #1a0a0f 100%)' },
+  { name: 'Forest', bg: 'linear-gradient(135deg, #0a1a0a 0%, #1a3a1a 40%, #0a1f0a 100%)' },
+  { name: 'Galaxy', bg: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 40%, #0a0a2e 100%)' },
+  { name: 'Sunset', bg: 'linear-gradient(135deg, #2a1a0a 0%, #5a2a15 40%, #1a0a0a 100%)' },
+  { name: 'Ocean', bg: 'linear-gradient(135deg, #0a1a2e 0%, #0a2a4a 40%, #061a2e 100%)' },
+  { name: 'Dawn', bg: 'linear-gradient(135deg, #1a1a0a 0%, #3a3a15 40%, #2a1a0a 100%)' },
+  { name: 'Amber', bg: 'linear-gradient(135deg, #2a1a05 0%, #5a3010 40%, #2a1a05 100%)' },
+  { name: 'Glacier', bg: 'linear-gradient(135deg, #0a1a2a 0%, #1a2a4a 40%, #0a1a3a 100%)' },
+  { name: 'Purple Night', bg: 'linear-gradient(135deg, #1a0a2e 0%, #2a154a 40%, #0f0a1a 100%)' },
+  { name: 'Warm Sun', bg: 'linear-gradient(135deg, #2a1a0a 0%, #4a3a15 40%, #1a150a 100%)' },
+  { name: 'Pure Black', bg: '#0a0a0a' },
+  { name: 'Charcoal', bg: '#141414' },
+];
+
+// ========== Wallpaper Upload — File Input Overlay ==========
+function applyImageFile(file) {
+  if (!file) return;
+  // Check if it's an image
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select an image file', 'error');
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    applyWallpaper({ type: 'image', value: ev.target.result });
+    showToast('Wallpaper applied', 'success');
+  };
+  reader.onerror = function() { showToast('Failed to read image', 'error'); };
+  reader.readAsDataURL(file);
+}
+
+// Method A: File input overlay (highest priority — user directly clicks physical input[type=file])
+document.addEventListener('DOMContentLoaded', function() {
+  var overlayInput = document.getElementById('wpFileOverlay');
+  if (overlayInput) {
+    overlayInput.addEventListener('change', function(ev) {
+      applyImageFile(ev.target.files && ev.target.files[0]);
+      ev.target.value = '';
+    });
+  }
+
+  // Method B: Static hidden file input (fallback)
+  var hiddenInput = document.getElementById('wpFileHidden');
+  if (hiddenInput) {
+    hiddenInput.addEventListener('change', function(ev) {
+      applyImageFile(ev.target.files && ev.target.files[0]);
+    });
+  }
+
+  // Method C: Drag and drop upload
+  var card = document.getElementById('uploadCard');
+  if (card) {
+    card.addEventListener('dragover', function(ev) {
+      ev.preventDefault();
+      card.classList.add('dragover');
+    });
+    card.addEventListener('dragleave', function() {
+      card.classList.remove('dragover');
+    });
+    card.addEventListener('drop', function(ev) {
+      ev.preventDefault();
+      card.classList.remove('dragover');
+      var files = ev.dataTransfer && ev.dataTransfer.files;
+      if (files && files.length > 0) {
+        applyImageFile(files[0]);
+      }
+    });
+  }
+});
+
+// ========== Online Wallpaper API ==========
+function fetchApiWallpaper() {
+  showToast('Fetching wallpaper...');
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://wp.upx8.com/api.php', true);
+  xhr.responseType = 'blob';
+  xhr.onload = function() {
+    if (xhr.status === 200 && xhr.response) {
+      var blob = xhr.response;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        applyWallpaper({ type: 'image', value: ev.target.result });
+        showToast('Online wallpaper applied', 'success');
+      };
+      reader.onerror = function() { showToast('Failed to read wallpaper', 'error'); };
+      reader.readAsDataURL(blob);
+    } else {
+      showToast('Failed to fetch wallpaper: ' + xhr.status, 'error');
+    }
+  };
+  xhr.onerror = function() { showToast('Network error, failed to fetch wallpaper', 'error'); };
+  xhr.ontimeout = function() { showToast('Timeout fetching wallpaper', 'error'); };
+  xhr.send();
+}
+
+function toggleWallpaper() {
+  document.getElementById('wallpaperModal').classList.toggle('open');
+}
+
+function applyWallpaper(wp) {
+  // Method 1: Dynamic <style> tag + !important (most reliable, bypasses all CSS priority and file:// issues)
+  var styleId = 'wp-dynamic-style';
+  var styleEl = document.getElementById(styleId);
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = styleId;
+    document.head.appendChild(styleEl);
+  }
+  if (wp.type === 'image') {
+    styleEl.textContent = '#newTabBg { background: url("' + wp.value + '") no-repeat center / cover !important; }';
+  } else {
+    styleEl.textContent = '#newTabBg { background: ' + wp.value + ' !important; }';
+  }
+  // Method 2: Direct element style (fallback)
+  var bg = document.getElementById('newTabBg');
+  if (bg) {
+    bg.style.background = wp.type === 'image' ? ('url(' + wp.value + ') no-repeat center/cover') : wp.value;
+  }
+  localStorage.setItem('free-proxy-wallpaper', JSON.stringify(wp));
+  renderWallpaperGrid();
+}
+
+function loadWallpaper() {
+  try {
+    const saved = localStorage.getItem('free-proxy-wallpaper');
+    if (saved) {
+      const wp = JSON.parse(saved);
+      applyWallpaper(wp);
+      return;
+    }
+  } catch (e) {}
+  applyWallpaper({ type: 'preset', value: WP_PRESETS[0].bg, index: 0 });
+}
+
+function selectPreset(index) {
+  applyWallpaper({ type: 'preset', value: WP_PRESETS[index].bg, index: index });
+  showToast('Wallpaper: ' + WP_PRESETS[index].name, 'success');
+}
+
+function resetWallpaper() {
+  localStorage.removeItem('free-proxy-wallpaper');
+  applyWallpaper({ type: 'preset', value: WP_PRESETS[0].bg, index: 0 });
+  closeModal('wallpaperModal');
+}
+
+function renderWallpaperGrid() {
+  const grid = document.getElementById('wpGrid');
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem('free-proxy-wallpaper')); } catch {}
+  grid.innerHTML = '';
+  WP_PRESETS.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'wallpaper-item' + (saved && saved.type === 'preset' && saved.index === i ? ' active' : '');
+    div.style.background = p.bg;
+    div.innerHTML = '<div class="check">&#10003;</div>';
+    div.title = p.name;
+    div.onclick = () => selectPreset(i);
+    grid.appendChild(div);
+  });
+}
+
+// ========== Media Extraction ==========
+let extractData = null;
+
+function toggleExtractPanel() {
+  const overlay = document.getElementById('extractOverlay');
+  if (overlay.classList.contains('show')) {
+    closeExtractPanel();
+    return;
+  }
+  overlay.classList.add('show');
+  const tab = tabs.find(t => t.id === activeTab);
+  if (tab && tab.url) {
+    startExtraction(tab.url);
+  } else {
+    document.getElementById('extractLoading').style.display = 'none';
+    document.getElementById('extractContent').innerHTML = '<div class="extract-empty"><div class="icon">&#128279;</div>Current page has no URL, please navigate to a webpage first</div>';
+  }
+}
+
+function closeExtractPanel() {
+  document.getElementById('extractOverlay').classList.remove('show');
+}
+
+async function startExtraction(url) {
+  const loading = document.getElementById('extractLoading');
+  const content = document.getElementById('extractContent');
+  loading.style.display = 'block';
+  content.innerHTML = '';
+  document.getElementById('ec-videos').textContent = '0';
+  document.getElementById('ec-audios').textContent = '0';
+  document.getElementById('ec-images').textContent = '0';
+  try {
+    const iframe = document.querySelector('#contentArea iframe');
+    let results = null;
+    if (iframe && iframe.contentDocument) {
+      try {
+        results = extractFromDocument(iframe.contentDocument, url);
+      } catch {}
+    }
+    if (!results || (results.videos.length === 0 && results.audios.length === 0 && results.images.length === 0)) {
+      const res = await fetch('http://127.0.0.1:3000/api/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      results = await res.json();
+    }
+    loading.style.display = 'none';
+    if (results && results.error) {
+      content.innerHTML = '<div class="extract-empty"><div class="icon">&#9888;</div>' + results.error + '</div>';
+      return;
+    }
+    if (results) {
+      extractData = results;
+      document.getElementById('ec-videos').textContent = (results.videos || []).length;
+      document.getElementById('ec-audios').textContent = (results.audios || []).length;
+      document.getElementById('ec-images').textContent = (results.images || []).length;
+      renderExtractTab('videos');
+    }
+  } catch (e) {
+    loading.style.display = 'none';
+    content.innerHTML = '<div class="extract-empty"><div class="icon">&#9888;</div>Extraction failed: ' + e.message + '</div>';
+  }
+}
+
+function extractFromDocument(doc, baseUrl) {
+  const videos = [], audios = [], images = [];
+  function resolve(s) {
+    try { return new URL(s, baseUrl).href; } catch { return s; }
+  }
+  doc.querySelectorAll('video').forEach(v => {
+    if (v.src) videos.push({ type: 'video', src: resolve(v.src) });
+    if (v.poster) images.push({ src: resolve(v.poster), width: 0, height: 0, alt: '' });
+    v.querySelectorAll('source').forEach(s => {
+      if (s.src) videos.push({ type: 'video', src: resolve(s.src) });
+    });
+  });
+  doc.querySelectorAll('audio').forEach(a => {
+    if (a.src) audios.push({ src: resolve(a.src) });
+    a.querySelectorAll('source').forEach(s => {
+      if (s.src) audios.push({ src: resolve(s.src) });
+    });
+  });
+  doc.querySelectorAll('img').forEach(img => {
+    const src = img.src;
+    if (!src || src.startsWith('data:')) return;
+    const w = img.naturalWidth || img.width || 0;
+    const h = img.naturalHeight || img.height || 0;
+    if (w >= 80 || h >= 80) {
+      images.push({ src: resolve(src), width: w, height: h, alt: (img.alt || '').slice(0, 60) });
+    }
+  });
+  return { videos, audios, images: images.slice(0, 50) };
+}
+
+function switchExtractTab(tab) {
+  document.querySelectorAll('.extract-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.extract-tab[data-tab="' + tab + '"]').classList.add('active');
+  renderExtractTab(tab);
+}
+
+function renderExtractTab(tab) {
+  const content = document.getElementById('extractContent');
+  if (!extractData) { content.innerHTML = ''; return; }
+  const items = extractData[tab] || [];
+  if (items.length === 0) {
+    content.innerHTML = '<div class="extract-empty"><div class="icon">&#128270;</div>No ' + (tab === 'videos' ? 'videos' : tab === 'audios' ? 'audio' : 'images') + ' found</div>';
+    return;
+  }
+  content.innerHTML = '<div class="extract-section">' + items.map((item, i) => {
+    const url = item.src || item.url;
+    if (!url) return '';
+    const meta = item.type === 'embed' ? item.platform : (item.width ? item.width + 'x' + item.height : (item.type || ''));
+    const safeUrl = escapeHtml(url);
+    const jsUrl = url.replace(/'/g, "\\'");
+    const bgUrl = escapeHtml(url);
+    const thumb = tab === 'images' ? '<span style="width:32px;height:32px;border-radius:6px;background:var(--surface2);flex-shrink:0;display:inline-block;vertical-align:middle;margin-right:4px;background-image:url(' + bgUrl + ');background-size:cover;background-position:center"></span>' : '';
+    return '<div class="extract-item">' + thumb +
+      '<span class="url" title="' + safeUrl + '">' + safeUrl + '</span>' +
+      (meta ? '<span class="meta">' + escapeHtml(meta) + '</span>' : '') +
+      '<button class="action" onclick="copyToClipboard(\'' + jsUrl + '\')">Copy</button>' +
+      '<button class="action" onclick="window.open(\'' + jsUrl + '\',\'_blank\',\'noopener\')">Open</button>' +
+      '</div>';
+  }).join('') + '</div>';
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Copied to clipboard', 'success');
+    }).catch(() => {});
+  }
+}
+
+// ========== Clock ==========
+function updateClock() {
+  const now = new Date();
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  const date = now.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' });
+  const el = document.getElementById('statusClock');
+  if (el) el.textContent = time + ' · ' + date + ' ' + days[now.getDay()];
+
+  const clockTime = document.getElementById('clockTime');
+  if (clockTime) clockTime.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const clockDate = document.getElementById('clockDate');
+  if (clockDate) clockDate.textContent = days[now.getDay()] + ' · ' + months[now.getMonth()] + ' ' + now.getDate();
+
+  const todayDate = document.getElementById('todayDate');
+  if (todayDate) todayDate.textContent = months[now.getMonth()] + ' ' + now.getDate() + ', ' + days[now.getDay()];
+
+}
+
+// ========== Weather ==========
+const WMO_EMOJI = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',56:'🌧️',57:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',66:'🌧️',67:'🌧️',71:'❄️',73:'❄️',75:'❄️',77:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',85:'🌨️',86:'🌨️',95:'⛈️',96:'⛈️',99:'⛈️'};
+const WMO_TEXT = {0:'Clear',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',45:'Fog',48:'Freezing Fog',51:'Light Drizzle',53:'Drizzle',55:'Heavy Drizzle',56:'Freezing Drizzle',57:'Freezing Drizzle',61:'Light Rain',63:'Moderate Rain',65:'Heavy Rain',66:'Freezing Rain',67:'Freezing Rain',71:'Light Snow',73:'Moderate Snow',75:'Heavy Snow',77:'Snow Grains',80:'Rain Showers',81:'Moderate Rain Showers',82:'Heavy Rain Showers',85:'Snow Showers',86:'Heavy Snow Showers',95:'Thunderstorm',96:'Thunderstorm Hail',99:'Severe Thunderstorm Hail'};
+
+function wmoEmoji(code) { return WMO_EMOJI[code] || '☁️'; }
+function wmoText(code) { return WMO_TEXT[code] || 'Unknown'; }
+
+async function fetchJSON(url, timeout) {
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), timeout || 10000);
+  try {
+    const r = await fetch(url, { signal: ac.signal });
+    clearTimeout(t);
+    return await r.json();
+  } catch(e) { clearTimeout(t); throw e; }
+}
+
+async function geocodeCity(name) {
+  const d = await fetchJSON('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(name) + '&count=1&language=en');
+  if (!d.results || !d.results.length) return null;
+  const r = d.results[0];
+  return { lat: r.latitude, lon: r.longitude, name: r.name, country: r.country };
+}
+
+async function fetchWeatherByCoords(lat, lon) {
+  const d = await fetchJSON('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1');
+  if (!d || !d.current) throw Error('no data');
+  return {
+    temp: d.current.temperature_2m,
+    code: d.current.weather_code,
+    hi: d.daily ? d.daily.temperature_2m_max[0] : null,
+    lo: d.daily ? d.daily.temperature_2m_min[0] : null,
+    humidity: d.current.relative_humidity_2m,
+    wind: d.current.wind_speed_10m
+  };
+}
+
+async function getIPLocation() {
+  try {
+    const d = await fetchJSON('https://ipapi.co/json/', 8000);
+    if (d && d.latitude) return { lat: d.latitude, lon: d.longitude, name: d.city };
+  } catch(e) {}
+  try {
+    const d = await fetchJSON('https://ipwho.is/', 8000);
+    if (d && d.success !== false && d.latitude) return { lat: d.latitude, lon: d.longitude, name: d.city };
+  } catch(e) {}
+  try {
+    const d = await fetchJSON('https://ip.useragentinfo.com/json', 8000);
+    if (d && d.latitude) return { lat: d.latitude, lon: d.longitude, name: d.city || d.province };
+  } catch(e) {}
+  return null;
+}
+
+let weatherFailed = false;
+const weatherCityKey = 'weather_city';
+const CITIES = [
+  { value: '', label: 'Auto Detect' },
+  { value: 'Beijing', label: 'Beijing' },
+  { value: 'Shanghai', label: 'Shanghai' },
+  { value: 'Guangzhou', label: 'Guangzhou' },
+  { value: 'Shenzhen', label: 'Shenzhen' },
+  { value: 'Kunming', label: 'Kunming' },
+  { value: 'Chengdu', label: 'Chengdu' },
+  { value: 'Hangzhou', label: 'Hangzhou' },
+  { value: 'Nanjing', label: 'Nanjing' },
+  { value: 'Wuhan', label: 'Wuhan' },
+];
+
+function setWeatherCity(value) {
+  if (value) localStorage.setItem(weatherCityKey, value); else localStorage.removeItem(weatherCityKey);
+}
+
+function getWeatherCity() { return localStorage.getItem(weatherCityKey) || ''; }
+
+function getCityLabel(value) {
+  if (!value) return 'Auto Detect';
+  if (value.startsWith('__latlon__')) return value.replace('__latlon__', '').replace(',', ', ');
+  const found = CITIES.find(c => c.value === value);
+  return found ? found.label : value;
+}
+
+function closeDropdown() {
+  const dd = document.getElementById('weatherCityDropdown');
+  if (dd) dd.classList.remove('open');
+}
+
+async function fetchWeather() {
+  const iconEl = document.getElementById('weatherIcon');
+  const tempEl = document.getElementById('weatherTemp');
+  const descEl = document.getElementById('weatherDesc');
+  const nameEl = document.getElementById('weatherCityName');
+  try {
+    const city = getWeatherCity();
+    let lat, lon, displayName;
+
+    if (city && city.startsWith('__latlon__')) {
+      const parts = city.replace('__latlon__', '').split(',');
+      lat = parseFloat(parts[0]); lon = parseFloat(parts[1]);
+      displayName = lat.toFixed(2) + ', ' + lon.toFixed(2);
+    } else if (city) {
+      const geo = await geocodeCity(city);
+      if (!geo) throw Error('City not found');
+      lat = geo.lat; lon = geo.lon;
+      displayName = geo.name + (geo.country ? ', ' + geo.country : '');
+    } else {
+      let loc = null;
+      try {
+        loc = await new Promise((resolve, reject) => {
+          if (!navigator.geolocation) { reject(new Error('no geo')); return; }
+          navigator.geolocation.getCurrentPosition(
+            p => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
+            e => reject(e),
+            { timeout: 6000, maximumAge: 300000 }
+          );
+        });
+      } catch(e) { loc = null; }
+      if (!loc) loc = await getIPLocation();
+      if (!loc) loc = { lat: 39.9042, lon: 116.4074, name: 'Beijing (default)' };
+      lat = loc.lat; lon = loc.lon;
+      displayName = loc.name || (lat.toFixed(2) + ', ' + lon.toFixed(2));
+    }
+
+    const w = await fetchWeatherByCoords(lat, lon);
+    iconEl.textContent = wmoEmoji(w.code);
+    tempEl.textContent = Math.round(w.temp) + '°';
+    descEl.textContent = wmoText(w.code) + (w.hi != null ? '  H:' + Math.round(w.hi) + '° L:' + Math.round(w.lo) + '°' : '');
+    nameEl.textContent = displayName;
+    weatherFailed = false;
+  } catch (e) {
+    iconEl.textContent = '☁️';
+    tempEl.textContent = '--°';
+    nameEl.textContent = '--';
+    if (!weatherFailed) {
+      weatherFailed = true;
+      descEl.textContent = 'Weather unavailable';
+      setTimeout(fetchWeather, 300000);
+    } else {
+      descEl.textContent = 'Weather unavailable';
+    }
+  }
+}
+
+fetchWeather();
+
+// ========== Event Listeners ==========
+document.addEventListener('click', e => {
+  const cityEl = document.getElementById('weatherCity');
+  const dd = document.getElementById('weatherCityDropdown');
+  if (!cityEl || !dd) return;
+  const isToggle = e.target.closest('#weatherCity') && !e.target.closest('.weather-city-dropdown');
+  if (isToggle) { e.stopPropagation(); dd.classList.toggle('open'); return; }
+  const item = e.target.closest('.weather-city-dropdown > div');
+  if (item && item.hasAttribute('data-city')) {
+    e.stopPropagation();
+    closeDropdown();
+    const value = item.dataset.city;
+    if (value === '__custom__') {
+      const nameEl = document.getElementById('weatherCityName');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'weather-city-input';
+      input.placeholder = 'Enter city name';
+      input.value = getWeatherCity();
+      nameEl.replaceWith(input);
+      input.focus(); input.select();
+      const done = () => {
+        const v = input.value.trim();
+        setWeatherCity(v);
+        const span = document.createElement('span');
+        span.className = 'weather-city-name';
+        span.id = 'weatherCityName';
+        span.textContent = v || 'Auto Detect';
+        if (input.parentNode) input.replaceWith(span);
+        fetchWeather();
+      };
+      input.addEventListener('blur', done);
+      input.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+        if (ev.key === 'Escape') { ev.preventDefault(); done(); }
+      });
+      return;
+    }
+    if (value === '__map__') {
+      closeDropdown();
+      openMap();
+      return;
+    }
+    setWeatherCity(value);
+    document.getElementById('weatherCityName').textContent = getCityLabel(value);
+    fetchWeather();
+  } else if (!e.target.closest('#weatherCity')) {
+    closeDropdown();
+  }
+});
+
+// ========== Keyboard Shortcuts ==========
+document.addEventListener('keydown', e => {
+  const ctrl = e.ctrlKey || e.metaKey;
+  if (ctrl && e.key === 't') { e.preventDefault(); newTab(); }
+  else if (ctrl && e.key === 'w') { e.preventDefault();
+    const active = tabs.find(t => t.id === activeTab);
+    if (active) closeTab(active.id);
+  }
+  else if (ctrl && e.key === 'l') { e.preventDefault(); document.getElementById('urlBar').focus(); document.getElementById('urlBar').select(); }
+  else if (ctrl && e.key === 'r') { e.preventDefault(); reloadPage(); }
+  else if (e.key === 'F5') { e.preventDefault(); reloadPage(); }
+  else if (ctrl && e.key === 'Tab') { e.preventDefault();
+    if (tabs.length <= 1) return;
+    const idx = tabs.findIndex(t => t.id === activeTab);
+    const next = (idx + 1) % tabs.length;
+    selectTab(tabs[next].id);
+  }
+  else if (e.key === 'Escape') { closeExtractPanel(); }
+});
+
+// ========== Recent Visits ==========
+const RECENT_KEY = 'free_proxy_recent';
+const MAX_RECENT = 5;
+
+function getRecentVisits() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch { return []; }
+}
+
+function setRecentVisits(list) {
+  localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, MAX_RECENT)));
+}
+
+function addRecentVisit(url, title) {
+  if (!url || url.startsWith('http://127.0.0.1:3000')) return;
+  let list = getRecentVisits();
+  list = list.filter(r => r.url !== url);
+  list.unshift({ url, title: title || url, time: Date.now() });
+  setRecentVisits(list);
+  renderRecentVisits();
+}
+
+function removeRecentVisit(url) {
+  let list = getRecentVisits().filter(r => r.url !== url);
+  setRecentVisits(list);
+  renderRecentVisits();
+}
+
+function clearRecent() {
+  localStorage.removeItem(RECENT_KEY);
+  renderRecentVisits();
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, function(m) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+  });
+}
+
+function renderRecentVisits() {
+  const section = document.getElementById('recentSection');
+  const container = document.getElementById('recentList');
+  if (!container || !section) return;
+  const list = getRecentVisits();
+  if (list.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  container.innerHTML = list.map(r => {
+    let fav = '&#127760;';
+    if (r.url.includes('google')) fav = '&#128269;';
+    else if (r.url.includes('github')) fav = '&#128187;';
+    else if (r.url.includes('youtube')) fav = '&#128250;';
+    else if (r.url.includes('twitter') || r.url.includes('x.com')) fav = '&#128038;';
+    else if (r.url.includes('wikipedia')) fav = '&#128214;';
+    else if (r.url.includes('bilibili')) fav = '&#127916;';
+    const safeUrl = escapeHtml(r.url);
+    const safeTitle = escapeHtml(r.title || 'Unknown page');
+    const jsUrl = r.url.replace(/'/g, "\\'");
+    return '<div class="recent-item" onclick="navigateTo(\'' + jsUrl + '\')">' +
+      '<span class="fav">' + fav + '</span>' +
+      '<div class="meta"><div class="title" title="' + safeTitle + '">' + safeTitle + '</div>' +
+      '<div class="url">' + safeUrl + '</div></div>' +
+      '<span class="close" onclick="event.stopPropagation();removeRecentVisit(\'' + jsUrl + '\')">&#215;</span></div>';
+  }).join('');
+}
+
+// ========== Uptime ==========
+const appStartTime = Date.now();
+function updateUptime() {
+  const sbEl = document.getElementById('sbUptime');
+  if (sbEl) {
+    const diff = Math.floor((Date.now() - appStartTime) / 1000);
+    const m = Math.floor(diff / 60);
+    const s = diff % 60;
+    sbEl.textContent = (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+  }
+}
+
+function updateTabCount() {
+  const sbEl = document.getElementById('sbTabs');
+  if (sbEl) sbEl.textContent = tabs.length;
+}
+
+function openControlPanel() {
+  window.open('http://127.0.0.1:3000', '_blank', 'noopener');
+}
+
+function showAddLinkModal() {
+  const url = prompt('Please enter URL:', 'https://');
+  if (!url || !url.startsWith('http')) {
+    if (url) alert('Please enter a valid URL starting with http:// or https://');
+    return;
+  }
+  const name = prompt('Please enter a quick link name:', new URL(url).hostname.replace('www.', ''));
+  if (!name) return;
+  alert('Quick link added, will take effect after page refresh');
+}
+
+// ========== Daily Quote ==========
+async function fetchQuote() {
+  const el = document.getElementById('quoteText');
+  const vEl = document.getElementById('quoteVText');
+  let content = '';
+  try {
+    // Try proxy endpoint first (runs if control panel :3000 is up)
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 3000);
+    const r = await fetch('http://127.0.0.1:3000/api/quote', { signal: ac.signal });
+    clearTimeout(t);
+    const d = await r.json();
+    if (d && d.data && d.data.content) {
+      content = d.data.content;
+    }
+  } catch(e) {
+    // fallback: direct call
+    try {
+      const r2 = await fetch('https://uapis.cn/api/v1/saying/random');
+      const d2 = await r2.json();
+      if (d2 && d2.content) {
+        content = d2.content;
+      }
+    } catch(e2) {}
+  }
+  if (!content) {
+    content = 'Life was like a box of chocolates, you never know what you\'re gonna get.';
+  }
+  if (el) { el.textContent = content; el.classList.remove('loading'); }
+  if (vEl) vEl.textContent = content;
+}
+
+// ========== Modal System ==========
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) closeModal(e.target.id);
+});
+
+// ========== Particle Animation ==========
+class ParticleSystem {
+  constructor() {
+    this.canvas = document.getElementById('particleCanvas');
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.particles = [];
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+    this.initParticles();
+    this.animate();
+  }
+  resize() {
+    if (!this.canvas) return;
+    this.canvas.width = this.canvas.offsetWidth;
+    this.canvas.height = this.canvas.offsetHeight;
+  }
+  initParticles() {
+    const count = Math.floor((this.canvas.width * this.canvas.height) / 8000);
+    for (let i = 0; i < count; i++) {
+      this.particles.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: Math.random() * 2 + 0.5,
+        alpha: Math.random() * 0.5 + 0.1
+      });
+    }
+  }
+  animate() {
+    if (!this.canvas) return;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    this.particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      
+      if (p.x < 0) p.x = this.canvas.width;
+      if (p.x > this.canvas.width) p.x = 0;
+      if (p.y < 0) p.y = this.canvas.height;
+      if (p.y > this.canvas.height) p.y = 0;
+      
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      this.ctx.fillStyle = 'rgba(255, 255, 255, ' + p.alpha + ')';
+      this.ctx.fill();
+    });
+    
+    this.ctx.beginPath();
+    this.particles.forEach((p1, i) => {
+      this.particles.slice(i + 1).forEach(p2 => {
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          this.ctx.moveTo(p1.x, p1.y);
+          this.ctx.lineTo(p2.x, p2.y);
+          this.ctx.strokeStyle = 'rgba(255, 255, 255, ' + (0.1 * (1 - dist / 120)) + ')';
+          this.ctx.lineWidth = 0.5;
+          this.ctx.stroke();
+        }
+      });
+    });
+    
+    requestAnimationFrame(() => this.animate());
+  }
+}
+
+// ========== Init ==========
+renderWallpaperGrid();
+loadWallpaper();
+checkProxyStatus();
+updateNavButtons();
+updateClock();
+fetchQuote();
+renderRecentVisits();
+updateUptime();
+updateTabCount();
+new ParticleSystem();
+setInterval(checkProxyStatus, 10000);
+setInterval(updateClock, 1000);
+setInterval(updateUptime, 1000);
+
+// ========== Map City Picker (Leaflet + OpenStreetMap) ==========
+let mapInstance = null;
+let mapMarker = null;
+let selectedLatLon = null;
+
+function openMap() {
+  openModal('mapModal');
+  document.getElementById('mapCoords').textContent = 'Loading map...';
+  if (typeof L === 'undefined') {
+    document.getElementById('mapCoords').textContent = '⚠️ Leaflet map library failed to load, please check your network';
+    return;
+  }
+  setTimeout(() => {
+      if (!mapInstance) {
+      mapInstance = L.map('leafletMap').setView([35, 105], 4);
+      // Use Esri World Street Map (completely free, no API key needed, stable and reliable)
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: '&copy; Esri, HERE, Garmin, FAO, NOAA, EPA'
+      }).addTo(mapInstance);
+      mapInstance.on('click', function(e) {
+        if (mapMarker) mapMarker.setLatLng(e.latlng);
+        else mapMarker = L.marker(e.latlng).addTo(mapInstance);
+        selectedLatLon = e.latlng;
+        document.getElementById('mapCoords').textContent =
+          'Lat: ' + e.latlng.lat.toFixed(4) + ', Lng: ' + e.latlng.lng.toFixed(4);
+      });
+      mapInstance.whenReady(function() {
+        document.getElementById('mapCoords').textContent = 'Click on the map to select a location';
+      });
+    }
+    mapInstance.invalidateSize();
+  }, 100);
+}
+
+function confirmMapLocation() {
+  if (!selectedLatLon) return;
+  const value = '__latlon__' + selectedLatLon.lat.toFixed(4) + ',' + selectedLatLon.lng.toFixed(4);
+  setWeatherCity(value);
+  document.getElementById('weatherCityName').textContent =
+    selectedLatLon.lat.toFixed(2) + ', ' + selectedLatLon.lng.toFixed(2);
+  closeModal('mapModal');
+  fetchWeather();
+  closeDropdown();
+}
+
+// ========== Toast Notification ==========
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '');
+  // trigger reflow for animation restart
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(t._hide);
+  t._hide = setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+// ========== Theme Toggle ==========
+// Cycle: modern (default dark) -> pixel -> light -> modern
+function setTheme(theme) {
+  var body = document.body;
+  var btn = document.getElementById('btnTheme');
+  body.classList.remove('pixel-theme', 'light-theme');
+  if (theme === 'pixel') {
+    body.classList.add('pixel-theme');
+    if (btn) btn.innerHTML = '&#127918;';
+  } else if (theme === 'light') {
+    body.classList.add('light-theme');
+    if (btn) btn.innerHTML = '&#9728;&#65039;';
+  } else {
+    if (btn) btn.innerHTML = '&#127912;';
+  }
+  localStorage.setItem('fpb-theme', theme);
+}
+
+function toggleTheme() {
+  var body = document.body;
+  if (body.classList.contains('pixel-theme')) {
+    setTheme('light');
+  } else if (body.classList.contains('light-theme')) {
+    setTheme('modern');
+  } else {
+    setTheme('pixel');
+  }
+}
+
+// Apply saved theme on page load
+(function() {
+  var savedTheme = localStorage.getItem('fpb-theme');
+  if (savedTheme === 'pixel' || savedTheme === 'light') {
+    setTheme(savedTheme);
+  }
+})();
+
+</script>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+<!-- Hidden file input for wallpaper fallback -->
+<input type="file" id="wpFileHidden" accept="image/*" style="display:none">
+</body>
+</html>
