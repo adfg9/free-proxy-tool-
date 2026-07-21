@@ -1393,7 +1393,7 @@ input:checked + .toggle-slider:before {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 1000;
+  z-index: 99999;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1686,15 +1686,15 @@ input:checked + .toggle-slider:before {
 <body>
 
 <div class="header">
-  <h1 class="logo">⚡ <span>Free Proxy Tool</span> Management Interface</h1>
+  <h1 class="logo">⚡ <span data-i18n="appName">Free Proxy Tool</span> <span data-i18n="managementInterface">Management Interface</span></h1>
   <div class="header-right">
-    <span id="serverBadge" class="badge badge-err">Server OFF</span>
-    <span id="warpBadge" class="badge badge-err">WARP OFF</span>
+    <span id="serverBadge" class="badge badge-err" data-i18n="serverOff">Server OFF</span>
+    <span id="warpBadge" class="badge badge-err" data-i18n="warpOff">WARP OFF</span>
     <span id="diagBadge" class="badge badge-warn">Loading...</span>
 
     <button id="langToggle" class="btn btn-outline btn-sm" title="" data-i18n-title="languageTooltip" onclick="toggleLanguage()">EN/中</button>
     <button id="themeToggle" class="btn btn-outline btn-sm" title="" data-i18n-title="themeTooltip">🌙</button>
-    <button id="disconnectAllBtn" class="btn btn-danger btn-sm" title="" data-i18n-title="disconnectAllTooltip">✕ Disconnect All</button>
+    <button id="disconnectAllBtn" class="btn btn-danger btn-sm" title="" data-i18n-title="disconnectAllTooltip">✕ <span data-i18n="disconnectAllBtn">Disconnect All</span></button>
   </div>
 </div>
 
@@ -1703,9 +1703,9 @@ input:checked + .toggle-slider:before {
     <button class="tab active" data-tab="dashboard"><span class="tab-idx">01</span> <span data-i18n="tabDashboard">Dashboard</span></button>
     <button class="tab" data-tab="proxies"><span class="tab-idx">02</span> <span data-i18n="tabProxy">Proxy</span> Management</button>
     <button class="tab" data-tab="warp"><span class="tab-idx">03</span> <span data-i18n="tabWarp">WARP</span></button>
-    <button class="tab" data-tab="stats"><span class="tab-idx">04</span> Statistics</button>
-    <button class="tab" data-tab="server"><span class="tab-idx">05</span> Local Server</button>
-    <button class="tab" data-tab="apps"><span class="tab-idx">06</span> App Proxy</button>
+    <button class="tab" data-tab="stats"><span class="tab-idx">04</span> <span data-i18n="statistics">Statistics</span></button>
+    <button class="tab" data-tab="server"><span class="tab-idx">05</span> <span data-i18n="localServer">Local Server</span></button>
+    <button class="tab" data-tab="apps"><span class="tab-idx">06</span> <span data-i18n="appProxy">App Proxy</span></button>
     <button class="tab" data-tab="logs"><span class="tab-idx">07</span> <span data-i18n="tabLogs">Logs</span></button>
     <button class="tab" data-tab="settings"><span class="tab-idx">08</span> <span data-i18n="tabSettings">Settings</span></button>
   </div>
@@ -1734,7 +1734,7 @@ input:checked + .toggle-slider:before {
     <div class="grid">
       <div class="card">
         <div class="card-header">
-          <h2>Connection Status</h2>
+          <h2 data-i18n="connectionStatus">Connection Status</h2>
         </div>
         <div class="card-body">
           <div class="flex items-center justify-between">
@@ -1748,22 +1748,22 @@ input:checked + .toggle-slider:before {
             <div style="flex:1; margin-left: 20px;">
               <div class="status-indicator online" id="dashStatus" style="margin-bottom: 12px;">
                 <span class="status-dot"></span>
-                <span id="dashStatusText">Checking...</span>
+                <span id="dashStatusText" data-i18n="checking">Checking...</span>
               </div>
               <div class="text-muted text-sm" id="dashStatusDetail" style="margin-bottom: 12px;">
-                Initializing connection status...
+                <span data-i18n="initializingStatus">Initializing connection status...</span>
               </div>
               <div class="realtime-stats" style="margin-top: 12px;">
                 <div class="realtime-item">
-                  <div class="value" id="dashServerStatus">OFF</div>
+                  <div class="value" id="dashServerStatus" data-i18n="off">OFF</div>
                   <div class="label" data-i18n="dashServerStatus">Proxy Server</div>
                 </div>
                 <div class="realtime-item">
-                  <div class="value" id="dashWarpStatus">OFF</div>
+                  <div class="value" id="dashWarpStatus" data-i18n="off">OFF</div>
                   <div class="label" data-i18n="dashWarpStatus">WARP</div>
                 </div>
                 <div class="realtime-item">
-                  <div class="value" id="dashSysProxy">OFF</div>
+                  <div class="value" id="dashSysProxy" data-i18n="off">OFF</div>
                   <div class="label" data-i18n="dashSysProxy">System Proxy</div>
                 </div>
                 <div class="realtime-item">
@@ -1782,12 +1782,12 @@ input:checked + .toggle-slider:before {
         </div>
         <div class="card-body">
           <div class="grid" style="grid-template-columns: 1fr 1fr;">
-            <button class="btn btn-primary" onclick="startServer()">▶ Start Proxy Server</button>
-            <button class="btn btn-outline" onclick="stopServer()">⏹ Stop Server</button>
-            <button class="btn btn-success" onclick="connectWarp()">🔗 Connect WARP</button>
-            <button class="btn btn-outline" onclick="disconnectWarp()">⏏ Disconnect WARP</button>
-            <button class="btn btn-outline" onclick="switchTab('proxies')">🔍 Test Proxies</button>
-            <button class="btn btn-outline" onclick="startAutoFind()">⚡ Auto-Find</button>
+            <button class="btn btn-primary" onclick="startServer()">▶ <span data-i18n="startProxyServer">Start Proxy Server</span></button>
+            <button class="btn btn-outline" onclick="stopServer()">⏹ <span data-i18n="stopServerBtn">Stop Server</span></button>
+            <button class="btn btn-success" onclick="connectWarp()">🔗 <span data-i18n="connectWarpBtn">Connect WARP</span></button>
+            <button class="btn btn-outline" onclick="disconnectWarp()">⏏ <span data-i18n="disconnectWarpBtn">Disconnect WARP</span></button>
+            <button class="btn btn-outline" onclick="switchTab('proxies')">🔍 <span data-i18n="testProxiesBtn">Test Proxies</span></button>
+            <button class="btn btn-outline" onclick="startAutoFind()">⚡ <span data-i18n="autoFindBtn">Auto-Find</span></button>
           </div>
         </div>
       </div>
@@ -1795,7 +1795,7 @@ input:checked + .toggle-slider:before {
       <div class="card full">
         <div class="card-header">
           <h2><span data-i18n="topProxies">Top Proxies</span></h2>
-          <button class="btn btn-outline btn-sm" onclick="loadStableProxies()">↻ Refresh</button>
+          <button class="btn btn-outline btn-sm" onclick="loadStableProxies()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
         </div>
         <div class="card-body">
           <div class="ranking-list" id="topProxiesList">
@@ -1844,7 +1844,7 @@ input:checked + .toggle-slider:before {
       <div class="card-header">
         <h2>Proxy Management</h2>
         <div class="flex gap-8">
-          <button class="btn btn-primary btn-sm" onclick="startAutoFind()">⚡ Auto-Find Stable</button>
+          <button class="btn btn-primary btn-sm" onclick="startAutoFind()">⚡ <span data-i18n="findStableProxies">Find Stable Proxies</span></button>
           <button class="btn btn-outline btn-sm" onclick="testAllProxies()">🧪 Test All</button>
           <button class="btn btn-outline btn-sm" onclick="fetchFreeProxies()">📥 Fetch List</button>
         </div>
@@ -2025,7 +2025,7 @@ input:checked + .toggle-slider:before {
             <p class="text-muted text-sm" style="margin-bottom: 12px;">
               Cloudflare WARP provides a fast, secure VPN connection.
             </p>
-            <div id="warpInstalled" class="badge badge-warn">Checking installation status...</div>
+            <div id="warpInstalled" class="badge badge-warn" data-i18n="checkingInstallation">Checking installation status...</div>
           </div>
         </div>
         <div class="flex gap-8">
@@ -2043,7 +2043,7 @@ input:checked + .toggle-slider:before {
         <div class="card-body">
           <div class="code-block" id="warpRawStatus">Loading...</div>
           <div class="mt-12">
-            <button class="btn btn-outline btn-sm" onclick="refreshWarpStatus()">↻ Refresh Status</button>
+            <button class="btn btn-outline btn-sm" onclick="refreshWarpStatus()">↻ <span data-i18n="refreshStatus">Refresh Status</span></button>
           </div>
         </div>
       </div>
@@ -2098,7 +2098,7 @@ input:checked + .toggle-slider:before {
         <div class="card-header">
           <h2>Test History</h2>
           <div class="flex gap-8">
-            <button class="btn btn-outline btn-sm" onclick="loadHistory()">↻ Refresh</button>
+            <button class="btn btn-outline btn-sm" onclick="loadHistory()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
             <button class="btn btn-danger btn-sm" onclick="clearStats()">🗑 Clear</button>
           </div>
         </div>
@@ -2131,7 +2131,7 @@ input:checked + .toggle-slider:before {
       <div class="card">
         <div class="card-header">
           <h2>Proxy Server Control</h2>
-          <span id="serverStatusBadge" class="badge badge-err">Stopped</span>
+          <span id="serverStatusBadge" class="badge badge-err" data-i18n="stopped">Stopped</span>
         </div>
         <div class="card-body">
           <div class="orbit-container mx-auto mb-16" style="margin: 0 auto 16px;">
@@ -2147,7 +2147,7 @@ input:checked + .toggle-slider:before {
         </div>
         <div class="flex gap-8 justify-center">
           <button class="btn btn-primary" id="startServerBtn" onclick="startServer()">▶ Start Server</button>
-          <button class="btn btn-danger" id="stopServerBtn" onclick="stopServer()" style="display:none;">⏹ Stop Server</button>
+          <button class="btn btn-danger" id="stopServerBtn" onclick="stopServer()" style="display:none;">⏹ <span data-i18n="stopServerBtn">Stop Server</span></button>
         </div>
         </div>
       </div>
@@ -2239,7 +2239,7 @@ input:checked + .toggle-slider:before {
             <option value="error">Error</option>
             <option value="success" data-i18n="logLevelSuccess">Success</option>
           </select>
-          <button class="btn btn-outline btn-sm" onclick="loadLogs()">↻ Refresh</button>
+          <button class="btn btn-outline btn-sm" onclick="loadLogs()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
           <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑 Clear</button>
         </div>
       </div>
@@ -2360,7 +2360,7 @@ input:checked + .toggle-slider:before {
             </div>
           </div>
           <div class="mt-16 flex gap-8">
-            <button class="btn btn-outline btn-sm" onclick="loadDiagnostics()">↻ Refresh Info</button>
+            <button class="btn btn-outline btn-sm" onclick="loadDiagnostics()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
             <button class="btn btn-outline btn-sm" onclick="resetConfig()">🔄 Reset to Defaults</button>
           </div>
         </div>
@@ -2369,7 +2369,7 @@ input:checked + .toggle-slider:before {
   </div>
 
   <div class="footer">
-    Free Proxy Tool · Management Interface · <span id="footerTime"></span>
+    <span data-i18n="appName">Free Proxy Tool</span> · <span data-i18n="managementInterface">Management Interface</span> · <span id="footerTime"></span>
   </div>
 </div>
 
@@ -2438,7 +2438,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadLogs();
   updateFooterTime();
   setInterval(updateFooterTime, 1000);
-  setInterval(loadStatus, 5000);
+  setInterval(loadStatus, 10000);
 });
 
 function initTheme() {
@@ -2511,6 +2511,8 @@ function initWebSocket() {
   }
 }
 
+let _wsThrottleTimer = null;
+let _wsPendingData = null;
 function handleWebSocketMessage(event) {
   try {
     const data = JSON.parse(event.data);
@@ -2599,14 +2601,14 @@ function updateServerStatus(running, port) {
     ball.className = 'orbit-ball success';
   } else {
     badge.className = 'badge badge-err';
-    badge.textContent = 'Server OFF';
+    badge.textContent = _t('serverOff');
     statusBadge.className = 'badge badge-err';
-    statusBadge.textContent = 'Stopped';
+    statusBadge.textContent = _t('stopped');
     text.textContent = _t('statusStopped');
     portText.textContent = 'Port: -';
     startBtn.style.display = 'inline-flex';
     stopBtn.style.display = 'none';
-    dashStatus.textContent = 'OFF';
+    dashStatus.textContent = _t('off');
     dashPort.textContent = '-';
     ring.className = 'orbit-ring error';
     center.className = 'orbit-center error';
@@ -2647,12 +2649,12 @@ function updateWarpStatusUI(installed, connected) {
     ball.className = 'orbit-ball success';
   } else {
     badge.className = 'badge badge-err';
-    badge.textContent = 'WARP OFF';
+    badge.textContent = _t('warpOff');
     statusBadge.className = 'badge badge-err';
     statusBadge.textContent = _t('warpDisconnected');
     connectBtn.style.display = 'inline-flex';
     disconnectBtn.style.display = 'none';
-    dashStatus.textContent = 'OFF';
+    dashStatus.textContent = _t('off');
     ring.className = 'orbit-ring error';
     center.className = 'orbit-center error';
     ball.className = 'orbit-ball';
@@ -2672,7 +2674,7 @@ function updateSystemProxyUI(info) {
     badge.className = 'badge badge-err';
     badge.textContent = 'Disabled';
     toggle.checked = false;
-    dash.textContent = 'OFF';
+    dash.textContent = _t('off');
   }
 }
 
@@ -2716,7 +2718,7 @@ async function stopServer() {
     toast('info', _t('serverStopped'));
     const data = await apiCall('/api/server/stop', 'POST');
     toast('ok', _t('serverStopped'));
-    addActivity('info', 'Proxy Server Stopped', 'Server stopped');
+    addActivity('info', _t('proxyServerStoppedActivity'), _t('serverStoppedActivity'));
     updateServerStatus(false, 0);
   } catch (e) {}
 }
@@ -2824,7 +2826,7 @@ async function disconnectAll() {
     toast('info', _t('allDisconnected'));
     await apiCall('/api/proxy/disconnect-all', 'POST');
     toast('ok', _t('allDisconnected'));
-    addActivity('warn', 'Disconnect All', 'All connections terminated');
+    addActivity('warn', _t('disconnectAllActivity'), _t('allConnectionsTerminated'));
     loadStatus();
   } catch (e) {}
 }
@@ -2861,7 +2863,12 @@ function getGrade(latency) {
   return 'D';
 }
 
+let _proxyTableTimer = null;
 function renderProxyTable() {
+  if (_proxyTableTimer) clearTimeout(_proxyTableTimer);
+  _proxyTableTimer = setTimeout(() => _doRenderProxyTable(), 50);
+}
+function _doRenderProxyTable() {
   const tbody = document.getElementById('proxyTableBody');
   const filter = document.getElementById('proxyFilter').value.toLowerCase();
   let filtered = allProxies.filter(p => {
@@ -2929,14 +2936,19 @@ function sortProxies() {
   renderProxyTable();
 }
 
+let _topProxyTimer = null;
 function renderTopProxies() {
+  if (_topProxyTimer) clearTimeout(_topProxyTimer);
+  _topProxyTimer = setTimeout(() => _doRenderTopProxies(), 50);
+}
+function _doRenderTopProxies() {
   const list = document.getElementById('topProxiesList');
   const top = stableProxies.filter(p => p.latency > 0).sort((a, b) => a.latency - b.latency).slice(0, 5);
   if (top.length === 0) {
     list.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">📊</div>
-        <div class="empty-state-text">No stable proxies yet. Run Auto-Find to discover proxies.</div>
+        <div class="empty-state-text" data-i18n="noStableProxiesYet">No stable proxies yet. Run Auto-Find to discover proxies.</div>
       </div>
     `;
     return;
@@ -2990,7 +3002,7 @@ async function testSingleProxy() {
 
 async function testOneProxy(host, port, type) {
   try {
-    toast('info', `Testing ${host}:${port}...`);
+    toast('info', _t('testingHostPort', host, port));
     const result = await apiCall('/api/proxy/test', 'POST', { host, port, type });
     const resultEl = document.getElementById('testResult');
     resultEl.style.display = 'block';
@@ -3003,14 +3015,14 @@ async function testOneProxy(host, port, type) {
           </div>
         </div>
       `;
-      toast('ok', `Proxy is alive! ${result.latency}ms`);
+      toast('ok', _t('proxyAliveToast', result.latency));
     } else {
       resultEl.innerHTML = `
         <div class="card" style="padding: 12px; border-color: var(--danger);">
           <span class="speed-score slow">❌ FAILED - No response</span>
         </div>
       `;
-      toast('err', 'Proxy test failed');
+      toast('err', _t('proxyTestFailed'));
     }
     addActivity(result.alive ? 'success' : 'error', 'Proxy Test', `${host}:${port} - ${result.alive ? result.latency + 'ms' : 'Failed'}`);
     loadStableProxies();
@@ -3019,7 +3031,7 @@ async function testOneProxy(host, port, type) {
 
 async function testAllProxies() {
   try {
-    toast('info', 'Starting proxy test batch...');
+    toast('info', _t('startingBatchTest'));
     const max = parseInt(document.getElementById('proxyTestCount').value) || 30;
     await apiCall('/api/proxy/test-all-free', 'POST', { max });
     addActivity('info', 'Batch Test', `Testing up to ${max} proxies`);
@@ -3036,7 +3048,7 @@ function handleTestProgress(data) {
 }
 
 function handleTestComplete(data) {
-  toast('ok', `Test complete: ${data.alive.length} alive proxies`);
+  toast('ok', _t('testCompleteAlive', data.alive.length));
   addActivity('success', 'Test Complete', `${data.alive.length} alive proxies found`);
   setTimeout(() => {
     document.getElementById('autoFindProgress').style.display = 'none';
@@ -3047,14 +3059,14 @@ function handleTestComplete(data) {
 
 async function startAutoFind() {
   try {
-    toast('info', 'Starting auto-find...');
+    toast('info', _t('startingAutoFind'));
     document.getElementById('autoFindProgress').style.display = 'flex';
     const max = parseInt(document.getElementById('proxyTestCount').value) || 80;
     await apiCall('/api/proxy/auto-find', 'POST', { max, maxLatency: 800, rounds: 1 });
-    addActivity('info', 'Auto-Find', `Started with ${max} proxies`);
+    addActivity('info', _t('autoFindActivity'), _t('startedWithProxies', max));
   } catch (e) {
     if (e.message && e.message.includes('409')) {
-      toast('warn', 'Auto-find is already in progress');
+      toast('warn', _t('autoFindInProgress'));
     }
   }
 }
@@ -3074,10 +3086,10 @@ function handleAutoFindProgress(data) {
 
 function handleAutoFindComplete(data) {
   if (data.error) {
-    toast('err', 'Auto-find failed: ' + data.error);
+    toast('err', _t('autoFindFailed', data.error));
   } else {
-    toast('ok', `Auto-find complete! ${data.found} new, ${data.total} total stable proxies`);
-    addActivity('success', 'Auto-Find Complete', `${data.found} new proxies found, ${data.total} total`);
+    toast('ok', _t('autoFindCompleteToast', data.found, data.total));
+    addActivity('success', _t('autoFindCompleteActivity'), _t('newProxiesFound', data.found, data.total));
   }
   setTimeout(() => {
     document.getElementById('autoFindProgress').style.display = 'none';
@@ -3088,11 +3100,11 @@ function handleAutoFindComplete(data) {
 
 async function fetchFreeProxies() {
   try {
-    toast('info', 'Fetching proxy list...');
+    toast('info', _t('fetchingProxyList'));
     const data = await apiCall('/api/proxy/fetch-free');
     allProxies = data.proxies || [];
     renderProxyTable();
-    toast('ok', `Fetched ${data.count} proxies`);
+    toast('ok', _t('fetchedProxies', data.count));
     addActivity('info', 'Fetch Proxies', `${data.count} proxies fetched`);
   } catch (e) {}
 }
@@ -3108,13 +3120,13 @@ async function addManualProxy() {
   try {
     const data = await apiCall('/api/proxy/stable/add', 'POST', { host, port, type });
     if (data.success) {
-      toast('ok', 'Proxy added to stable pool');
+      toast('ok', _t('proxyAddedPool'));
       addActivity('success', 'Add Proxy', `${host}:${port}`);
       document.getElementById('addHost').value = '';
       document.getElementById('addPort').value = '';
       loadStableProxies();
     } else {
-      toast('err', data.error || 'Failed to add proxy');
+      toast('err', data.error || _t('failedAddProxy'));
     }
   } catch (e) {}
 }
@@ -3128,13 +3140,13 @@ async function removeProxy(host, port) {
       addActivity('info', 'Remove Proxy', `${host}:${port}`);
       loadStableProxies();
     } else {
-      toast('err', data.error || 'Failed to remove');
+      toast('err', data.error || _t('failedRemoveProxy'));
     }
   } catch (e) {}
 }
 
 function launchAppWithProxy(host, port, type) {
-  toast('info', 'Use App Proxy tab to launch apps with specific proxies');
+  toast('info', _t('useAppProxyTab'));
   switchTab('apps');
 }
 
@@ -3156,7 +3168,7 @@ async function loadHistory() {
     const tbody = document.getElementById('historyTableBody');
     const tests = data.tests || [];
     if (tests.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No test history yet</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted" data-i18n="noTestHistory">No test history yet</td></tr>';
       return;
     }
     tbody.innerHTML = tests.slice(0, 50).map(t => {
@@ -3375,7 +3387,7 @@ async function saveApp() {
   const mode = document.getElementById('appModeSelect').value;
   const process = document.getElementById('appProcessInput').value.trim();
   if (!name || !path) {
-    toast('warn', 'Please enter app name and path');
+    toast('warn', _t('enterAppNamePath'));
     return;
   }
   try {
@@ -3386,12 +3398,12 @@ async function saveApp() {
       data = await apiCall('/api/proxy/apps', 'POST', { name, path, mode, process });
     }
     if (data.success) {
-      toast('ok', `App ${editingApp ? 'updated' : 'added'}: ${name}`);
+      toast('ok', _t('appUpdatedAdded', editingApp ? _t('edit') : _t('add'), name));
       addActivity('success', editingApp ? 'Edit App' : 'Add App', name);
       closeAppModal();
       loadApps();
     } else {
-      toast('err', data.error || 'Failed to save app');
+      toast('err', data.error || _t('failedSaveApp'));
     }
   } catch (e) {}
 }
@@ -3405,20 +3417,20 @@ async function removeApp(name) {
       addActivity('info', 'Remove App', name);
       loadApps();
     } else {
-      toast('err', data.error || 'Failed to remove');
+      toast('err', data.error || _t('failedRemoveProxy'));
     }
   } catch (e) {}
 }
 
 async function launchApp(name) {
   try {
-    toast('info', `Launching ${name}...`);
+    toast('info', _t('launchingApp', name));
     const data = await apiCall('/api/proxy/apps/launch', 'POST', { name });
     if (data.success) {
-      toast('ok', data.message || 'App launched');
+      toast('ok', data.message || _t('appLaunchedMsg'));
       addActivity('success', 'Launch App', name);
     } else {
-      toast('err', data.error || 'Failed to launch');
+      toast('err', data.error || _t('failedLaunchApp'));
     }
   } catch (e) {}
 }
@@ -3440,7 +3452,7 @@ async function loadApp<span data-i18n="presets">Presets</span>() {
     const presetsDiv = document.getElementById('app<span data-i18n="presets">Presets</span>');
     presetsDiv.style.display = 'block';
     if (presets.length === 0) {
-      container.innerHTML = '<span class="text-muted text-sm">No presets detected</span>';
+      container.innerHTML = '<span class="text-muted text-sm" data-i18n="noPresetsDetected">No presets detected</span>';
       return;
     }
     container.innerHTML = presets.map(p => `
@@ -3455,12 +3467,12 @@ async function addPresetApp(name, path) {
   try {
     const data = await apiCall('/api/proxy/apps', 'POST', { name, path, mode: 'http' });
     if (data.success) {
-      toast('ok', `Added ${name}`);
+      toast('ok', _t('addedPreset', name));
       loadApps();
     } else if (data.error && data.error.includes('already exists')) {
-      toast('warn', `${name} already exists`);
+      toast('warn', _t('alreadyExists', name));
     } else {
-      toast('err', data.error || 'Failed to add');
+      toast('err', data.error || _t('failedAddPreset'));
     }
   } catch (e) {}
 }
@@ -3471,7 +3483,7 @@ async function loadLogs() {
     const logs = data.logs || [];
     const box = document.getElementById('logBox');
     if (logs.length === 0) {
-      box.innerHTML = '<div class="text-muted">No logs available</div>';
+      box.innerHTML = '<div class="text-muted" data-i18n="noLogsAvailable">No logs available</div>';
       return;
     }
     box.innerHTML = logs.map(l => {
@@ -3518,7 +3530,7 @@ async function loadConfig() {
 async function saveConfig(key, value) {
   try {
     await apiCall('/api/config', 'POST', { key, value });
-    toast('ok', 'Setting saved');
+    toast('ok', _t('settingSaved'));
   } catch (e) {}
 }
 
@@ -3526,7 +3538,7 @@ async function resetConfig() {
   if (!confirm('Reset all settings to defaults?')) return;
   try {
     await apiCall('/api/config/reset', 'POST');
-    toast('ok', 'Settings reset');
+    toast('ok', _t('settingsReset'));
     loadConfig();
   } catch (e) {}
 }
@@ -3586,15 +3598,18 @@ function renderActivity() {
 
 function toast(type, message) {
   const container = document.getElementById('toastContainer');
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type} show`;
-  toast.textContent = message;
-  container.appendChild(toast);
+  if (!container) return;
+  const el = document.createElement('div');
+  el.className = 'toast toast-' + type + ' show';
+  el.textContent = message;
+  el.style.opacity = '1';
+  el.style.transform = 'translateY(0)';
+  container.appendChild(el);
   setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(20px)';
-    setTimeout(() => toast.remove(), 400);
-  }, 3000);
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    setTimeout(() => { if (el.parentNode) el.remove(); }, 400);
+  }, 4000);
 }
 
 function updateFooterTime() {
