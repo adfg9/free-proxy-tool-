@@ -531,6 +531,19 @@ body::after {
 }
 .header h1 span { color: var(--primary); }
 .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lang-toggle-btn {
+  font-weight: 700;
+  border-color: var(--primary);
+  color: var(--primary);
+  min-width: 64px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.lang-toggle-btn:hover {
+  background: var(--primary);
+  color: #fff;
+}
 .badge {
   padding: 4px 12px; font-size: 11px; font-weight: 600;
   border-radius: 0;
@@ -1173,14 +1186,20 @@ tr:hover td { background: var(--hover-bg); transition: none; }
   margin-bottom: 20px;
   border-bottom: 2px solid var(--border);
   background: transparent;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
 }
 .tab {
-  padding: 10px 20px; cursor: pointer; font-size: 12px;
+  padding: 10px 16px; cursor: pointer; font-size: 12px;
   font-weight: 500; color: var(--text2);
   border: none; border-bottom: 2px solid transparent;
   background: transparent;
   border-radius: 0;
   margin-bottom: -2px;
+  flex-shrink: 0;
+  white-space: nowrap;
   transition: color var(--dur-fast) linear,
               border-color var(--dur-fast) linear;
 }
@@ -1692,7 +1711,7 @@ input:checked + .toggle-slider:before {
     <span id="warpBadge" class="badge badge-err" data-i18n="warpOff">WARP OFF</span>
     <span id="diagBadge" class="badge badge-warn">Loading...</span>
 
-    <button id="langToggle" class="btn btn-outline btn-sm" title="" data-i18n-title="languageTooltip" onclick="toggleLanguage()">EN/中</button>
+    <button id="langToggle" class="btn btn-outline btn-sm lang-toggle-btn" title="" data-i18n-title="languageTooltip" onclick="toggleLanguage()">🌐 <span id="langLabel">EN</span></button>
     <button id="themeToggle" class="btn btn-outline btn-sm" title="" data-i18n-title="themeTooltip">🌙</button>
     <button id="disconnectAllBtn" class="btn btn-danger btn-sm" title="" data-i18n-title="disconnectAllTooltip">✕ <span data-i18n="disconnectAllBtn">Disconnect All</span></button>
   </div>
@@ -1701,7 +1720,7 @@ input:checked + .toggle-slider:before {
 <div class="container">
   <div class="tabs" id="mainTabs">
     <button class="tab active" data-tab="dashboard"><span class="tab-idx">01</span> <span data-i18n="tabDashboard">Dashboard</span></button>
-    <button class="tab" data-tab="proxies"><span class="tab-idx">02</span> <span data-i18n="tabProxy">Proxy</span> Management</button>
+    <button class="tab" data-tab="proxies"><span class="tab-idx">02</span> <span data-i18n="tabProxy">Proxy Management</span></button>
     <button class="tab" data-tab="warp"><span class="tab-idx">03</span> <span data-i18n="tabWarp">WARP</span></button>
     <button class="tab" data-tab="stats"><span class="tab-idx">04</span> <span data-i18n="statistics">Statistics</span></button>
     <button class="tab" data-tab="server"><span class="tab-idx">05</span> <span data-i18n="localServer">Local Server</span></button>
@@ -2205,21 +2224,21 @@ input:checked + .toggle-slider:before {
   <div class="tab-content" id="tab-apps" style="display:none;">
     <div class="card">
       <div class="card-header">
-        <h2>Proxy Apps</h2>
+        <h2 data-i18n="proxyApps">Proxy Apps</h2>
         <div class="flex gap-8">
-          <button class="btn btn-primary btn-sm" onclick="showAddAppModal()">➕ Add App</button>
-          <button class="btn btn-outline btn-sm" onclick="loadApp<span data-i18n="presets">Presets</span>()">📋 <span data-i18n="presets">Presets</span></button>
+          <button class="btn btn-primary btn-sm" onclick="showAddAppModal()">➕ <span data-i18n="addApp">Add App</span></button>
+          <button class="btn btn-outline btn-sm" onclick="loadAppPresets()">📋 <span data-i18n="presets">Presets</span></button>
         </div>
       </div>
       <div class="card-body">
-        <div id="app<span data-i18n="presets">Presets</span>" style="display:none; margin-bottom: 16px;">
-          <div class="text-sm text-muted mb-8">Quick add detected applications:</div>
+        <div id="appPresets" style="display:none; margin-bottom: 16px;">
+          <div class="text-sm text-muted mb-8" data-i18n="quickAddDetected">Quick add detected applications:</div>
           <div id="presetList" class="flex gap-8" style="flex-wrap: wrap;"></div>
         </div>
         <div class="app-grid" id="appGrid">
           <div class="empty-state" style="grid-column: 1 / -1;">
             <div class="empty-state-icon">📱</div>
-            <div class="empty-state-text">No apps configured. Click "Add App" to get started.</div>
+            <div class="empty-state-text" data-i18n="noAppsConfigured">No apps configured. Click "Add App" to get started.</div>
           </div>
         </div>
       </div>
@@ -2230,7 +2249,7 @@ input:checked + .toggle-slider:before {
   <div class="tab-content" id="tab-logs" style="display:none;">
     <div class="card">
       <div class="card-header">
-        <h2>System Logs</h2>
+        <h2 data-i18n="systemLogs">System Logs</h2>
         <div class="flex gap-8">
           <select id="logLevelFilter" class="sp-sort-select" onchange="filterLogs()">
             <option value="all" data-i18n="logLevelAll">All Levels</option>
@@ -2522,7 +2541,7 @@ function handleWebSocketMessage(event) {
         updateWarpStatusUI(data.warp.installed, data.warp.connected);
         break;
       case 'free-proxy-update':
-        toast('info', `Proxy cache updated: ' + data.count + ' proxies');
+        toast('info', _t('proxyCacheUpdated', data.count));
         break;
       case 'test-progress':
         handleTestProgress(data);
@@ -2587,14 +2606,14 @@ function updateServerStatus(running, port) {
 
   if (running) {
     badge.className = 'badge badge-ok';
-    badge.textContent = 'Server ON';
+    badge.textContent = _t('serverOn');
     statusBadge.className = 'badge badge-ok';
-    statusBadge.textContent = 'Running';
+    statusBadge.textContent = _t('serverRunning');
     text.textContent = _t('statusRunning');
-    portText.textContent = 'Port: ' + port;
+    portText.textContent = _t('portLabel') + ': ' + port;
     startBtn.style.display = 'none';
     stopBtn.style.display = 'inline-flex';
-    dashStatus.textContent = 'ON';
+    dashStatus.textContent = _t('on');
     dashPort.textContent = port;
     ring.className = 'orbit-ring active';
     center.className = 'orbit-center success';
@@ -2605,7 +2624,7 @@ function updateServerStatus(running, port) {
     statusBadge.className = 'badge badge-err';
     statusBadge.textContent = _t('stopped');
     text.textContent = _t('statusStopped');
-    portText.textContent = 'Port: -';
+    portText.textContent = _t('portLabel') + ': -';
     startBtn.style.display = 'inline-flex';
     stopBtn.style.display = 'none';
     dashStatus.textContent = _t('off');
@@ -2638,12 +2657,12 @@ function updateWarpStatusUI(installed, connected) {
 
   if (connected) {
     badge.className = 'badge badge-ok';
-    badge.textContent = 'WARP ON';
+    badge.textContent = _t('warpOn');
     statusBadge.className = 'badge badge-ok';
     statusBadge.textContent = _t('warpConnected');
     connectBtn.style.display = 'none';
     disconnectBtn.style.display = 'inline-flex';
-    dashStatus.textContent = 'ON';
+    dashStatus.textContent = _t('on');
     ring.className = 'orbit-ring active';
     center.className = 'orbit-center success';
     ball.className = 'orbit-ball success';
@@ -2667,12 +2686,12 @@ function updateSystemProxyUI(info) {
   const dash = document.getElementById('dashSysProxy');
   if (info.enabled) {
     badge.className = 'badge badge-ok';
-    badge.textContent = 'Enabled';
+    badge.textContent = _t('sysProxyEnabled');
     toggle.checked = true;
-    dash.textContent = 'ON';
+    dash.textContent = _t('on');
   } else {
     badge.className = 'badge badge-err';
-    badge.textContent = 'Disabled';
+    badge.textContent = _t('sysProxyDisabled');
     toggle.checked = false;
     dash.textContent = _t('off');
   }
@@ -2686,7 +2705,7 @@ function updateDashboardStats(stats) {
 
   const diagBadge = document.getElementById('diagBadge');
   diagBadge.className = 'badge badge-ok';
-  diagBadge.textContent = '<span data-i18n="systemOk">System OK</span>';
+  diagBadge.textContent = _t('systemOk');
 }
 
 function updateOrbitAnimation() {
@@ -2705,7 +2724,7 @@ async function startServer() {
     const data = await apiCall('/api/server/start', 'POST', { port });
     if (data.running) {
       toast('ok', _t('serverStarted', data.port));
-      addActivity('success', 'Proxy Server Started', 'Started on port ' + data.port);
+      addActivity('success', _t('proxyServerStartedActivity'), _t('startedOnPortActivity', data.port));
       updateServerStatus(true, data.port);
     } else {
       toast('err', _t('serverStartFailed', data.error || 'Unknown error'));
@@ -2734,7 +2753,7 @@ async function setUpstreamProxy() {
     const data = await apiCall('/api/server/set-upstream', 'POST', { proxy });
     if (data.running) {
       toast('ok', _t('upstreamSet', data.upstream.host, data.upstream.port));
-      addActivity('info', 'Upstream Proxy Set', proxy);
+      addActivity('info', _t('upstreamProxySetActivity'), proxy);
     } else {
       toast('err', data.error || _t('upstreamSet'));
     }
@@ -2747,7 +2766,7 @@ async function connectWarp() {
     const data = await apiCall('/api/warp/connect', 'POST');
     if (data.connected) {
       toast('ok', _t('warpConnected'));
-      addActivity('success', 'WARP Connected', 'VPN connection established');
+      addActivity('success', _t('warpConnectedActivity'), _t('warpConnectionEstablished'));
     } else {
       toast('err', _t('warpConnectFailed'));
     }
@@ -2761,7 +2780,7 @@ async function disconnectWarp() {
     toast('info', _t('warpDisconnected'));
     await apiCall('/api/warp/disconnect', 'POST');
     toast('ok', _t('warpDisconnected'));
-    addActivity('info', 'WARP Disconnected', 'VPN disconnected');
+    addActivity('info', _t('warpDisconnectedActivity'), _t('vpnDisconnected'));
     loadStatus();
     refreshWarpStatus();
   } catch (e) {}
@@ -2783,7 +2802,7 @@ async function registerWarp() {
 async function refreshWarpStatus() {
   try {
     const data = await apiCall('/api/status');
-    document.getElementById('warpRawStatus').textContent = data.warp.raw || 'No status data';
+    document.getElementById('warpRawStatus').textContent = data.warp.raw || _t('noStatusData');
     updateWarpStatusUI(data.warp.installed, data.warp.connected);
   } catch (e) {}
 }
@@ -2794,7 +2813,7 @@ async function toggleSystemProxy() {
     const data = await apiCall('/api/proxy/system', 'POST', { enable });
     if (data.success) {
       toast('ok', enable ? _t('sysProxyEnabledMsg') : _t('sysProxyDisabledMsg'));
-      addActivity(enable ? 'success' : 'info', 'System Proxy', enable ? 'Enabled' : 'Disabled');
+      addActivity(enable ? 'success' : 'info', _t('systemProxyActivity'), enable ? _t('sysProxyEnabled') : _t('sysProxyDisabled'));
     } else {
       toast('err', _t('sysProxyFailed'));
       document.getElementById('sysProxyToggle').checked = !enable;
@@ -2821,7 +2840,7 @@ async function loadPacUrl() {
 }
 
 async function disconnectAll() {
-  if (!confirm('Disconnect all connections (server, WARP, system proxy)?')) return;
+  if (!confirm(_t('disconnectAllConfirm'))) return;
   try {
     toast('info', _t('allDisconnected'));
     await apiCall('/api/proxy/disconnect-all', 'POST');
@@ -2899,19 +2918,19 @@ function _doRenderProxyTable() {
     return `
       <tr>
         <td><span class="sp-grade sp-grade-${grade}">${grade}</span></td>
-        <td class="mono">${p.host}${p.builtin ? '<span class="sp-builtin-tag">BUILT-IN</span>' : ''}</td>
+        <td class="mono">${p.host}${p.builtin ? '<span class="sp-builtin-tag">' + _t('builtInTag') + '</span>' : ''}</td>
         <td>${p.port}</td>
         <td><span class="badge badge-ok" style="font-size:10px;">${(p.type || 'socks5').toUpperCase()}</span></td>
         <td>
-          <span style="color:${latencyColor};font-weight:600;">${p.latency > 0 ? p.latency + 'ms' : 'N/A'}</span>
+          <span style="color:${latencyColor};font-weight:600;">${p.latency > 0 ? p.latency + 'ms' : _t('noData')}</span>
           <span class="sp-latency-bar"><span class="sp-latency-bar-fill" style="width:${latencyPct}%;background:${latencyColor};"></span></span>
         </td>
         <td>${p.tests || 0}</td>
-        <td class="text-muted text-sm">${p.source || 'Unknown'}</td>
+        <td class="text-muted text-sm">${p.source || _t('unknown')}</td>
         <td>
           <div class="flex gap-8">
-            <button class="btn btn-outline btn-sm" onclick="testOneProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">🧪 Test</button>
-            <button class="btn btn-outline btn-sm" onclick="launchAppWithProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">🚀 Launch</button>
+            <button class="btn btn-outline btn-sm" onclick="testOneProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">🧪 ${_t('testBtn')}</button>
+            <button class="btn btn-outline btn-sm" onclick="launchAppWithProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">🚀 ${_t('launchBtn')}</button>
             ${!p.builtin ? `<button class="btn btn-danger btn-sm" onclick="removeProxy('${p.host}', ${p.port})">🗑</button>` : ''}
           </div>
         </td>
@@ -3010,8 +3029,8 @@ async function testOneProxy(host, port, type) {
       resultEl.innerHTML = `
         <div class="card" style="padding: 12px; border-color: var(--success);">
           <div class="flex items-center justify-between">
-            <span class="speed-score fast">✅ ALIVE - ${result.latency}ms</span>
-            <span class="text-muted mono text-sm">IP: ${result.ip || 'N/A'}</span>
+            <span class="speed-score fast">✅ ${_t('aliveLabel')} - ${result.latency}ms</span>
+            <span class="text-muted mono text-sm">IP: ${result.ip || _t('noData')}</span>
           </div>
         </div>
       `;
@@ -3019,12 +3038,12 @@ async function testOneProxy(host, port, type) {
     } else {
       resultEl.innerHTML = `
         <div class="card" style="padding: 12px; border-color: var(--danger);">
-          <span class="speed-score slow">❌ FAILED - No response</span>
+          <span class="speed-score slow">❌ ${_t('failedText')} - ${_t('noResponse')}</span>
         </div>
       `;
       toast('err', _t('proxyTestFailed'));
     }
-    addActivity(result.alive ? 'success' : 'error', 'Proxy Test', `${host}:${port} - ${result.alive ? result.latency + 'ms' : 'Failed'}`);
+    addActivity(result.alive ? 'success' : 'error', _t('proxyTestActivity'), `${host}:${port} - ${result.alive ? result.latency + 'ms' : _t('failedText')}`);
     loadStableProxies();
   } catch (e) {}
 }
@@ -3034,22 +3053,22 @@ async function testAllProxies() {
     toast('info', _t('startingBatchTest'));
     const max = parseInt(document.getElementById('proxyTestCount').value) || 30;
     await apiCall('/api/proxy/test-all-free', 'POST', { max });
-    addActivity('info', 'Batch Test', `Testing up to ${max} proxies`);
+    addActivity('info', _t('batchTestActivity'), _t('testingUpToActivity', max));
   } catch (e) {}
 }
 
 function handleTestProgress(data) {
   const progress = document.getElementById('autoFindProgress');
   progress.style.display = 'flex';
-  document.getElementById('autoFindStage').textContent = 'Testing proxies...';
+  document.getElementById('autoFindStage').textContent = _t('testingProxiesStage');
   document.getElementById('autoFindCount').textContent = `${data.tested} / ${data.total}`;
   document.getElementById('autoFindBar').style.width = `${(data.tested / data.total) * 100}%`;
-  document.getElementById('autoFindDetail').textContent = `Testing batch ${data.tested} of ${data.total}`;
+  document.getElementById('autoFindDetail').textContent = _t('testingBatchDetail', data.tested, data.total);
 }
 
 function handleTestComplete(data) {
   toast('ok', _t('testCompleteAlive', data.alive.length));
-  addActivity('success', 'Test Complete', `${data.alive.length} alive proxies found`);
+  addActivity('success', _t('testCompleteActivity'), _t('aliveProxiesFound', data.alive.length));
   setTimeout(() => {
     document.getElementById('autoFindProgress').style.display = 'none';
   }, 2000);
@@ -3105,7 +3124,7 @@ async function fetchFreeProxies() {
     allProxies = data.proxies || [];
     renderProxyTable();
     toast('ok', _t('fetchedProxies', data.count));
-    addActivity('info', 'Fetch Proxies', `${data.count} proxies fetched`);
+    addActivity('info', _t('fetchProxiesActivity'), _t('proxiesFetchedActivity', data.count));
   } catch (e) {}
 }
 
@@ -3121,7 +3140,7 @@ async function addManualProxy() {
     const data = await apiCall('/api/proxy/stable/add', 'POST', { host, port, type });
     if (data.success) {
       toast('ok', _t('proxyAddedPool'));
-      addActivity('success', 'Add Proxy', `${host}:${port}`);
+      addActivity('success', _t('addProxyActivity'), `${host}:${port}`);
       document.getElementById('addHost').value = '';
       document.getElementById('addPort').value = '';
       loadStableProxies();
@@ -3132,12 +3151,12 @@ async function addManualProxy() {
 }
 
 async function removeProxy(host, port) {
-  if (!confirm(`Remove proxy ${host}:${port}?`)) return;
+  if (!confirm(_t('removeProxyConfirm', host, port))) return;
   try {
     const data = await apiCall('/api/proxy/stable/remove', 'POST', { host, port });
     if (data.success) {
       toast('ok', _t('proxyRemoved'));
-      addActivity('info', 'Remove Proxy', `${host}:${port}`);
+      addActivity('info', _t('removeProxyActivity'), `${host}:${port}`);
       loadStableProxies();
     } else {
       toast('err', data.error || _t('failedRemoveProxy'));
@@ -3174,8 +3193,8 @@ async function loadHistory() {
     tbody.innerHTML = tests.slice(0, 50).map(t => {
       const time = t.time ? new Date(t.time).toLocaleString() : '-';
       const status = t.alive
-        ? '<span class="badge badge-ok" style="font-size:10px;">ALIVE</span>'
-        : '<span class="badge badge-err" style="font-size:10px;">FAILED</span>';
+        ? '<span class="badge badge-ok" style="font-size:10px;">' + _t('aliveLabel') + '</span>'
+        : '<span class="badge badge-err" style="font-size:10px;">' + _t('failedText') + '</span>';
       return `
         <tr>
           <td class="text-sm mono">${time}</td>
@@ -3191,7 +3210,7 @@ async function loadHistory() {
 }
 
 async function clearStats() {
-  if (!confirm('Clear all test history and statistics?')) return;
+  if (!confirm(_t('clearStatsConfirm'))) return;
   try {
     await apiCall('/api/stats/clear', 'POST');
     toast('ok', _t('statsCleared'));
@@ -3409,12 +3428,12 @@ async function saveApp() {
 }
 
 async function removeApp(name) {
-  if (!confirm(`Remove app "${name}"?`)) return;
+  if (!confirm(_t('removeAppConfirm', name))) return;
   try {
     const data = await apiCall('/api/proxy/apps/remove', 'POST', { name });
     if (data.success) {
       toast('ok', _t('appRemoved'));
-      addActivity('info', 'Remove App', name);
+      addActivity('info', _t('removeAppActivity'), name);
       loadApps();
     } else {
       toast('err', data.error || _t('failedRemoveProxy'));
@@ -3428,7 +3447,7 @@ async function launchApp(name) {
     const data = await apiCall('/api/proxy/apps/launch', 'POST', { name });
     if (data.success) {
       toast('ok', data.message || _t('appLaunchedMsg'));
-      addActivity('success', 'Launch App', name);
+      addActivity('success', _t('launchAppActivity'), name);
     } else {
       toast('err', data.error || _t('failedLaunchApp'));
     }
@@ -3444,12 +3463,12 @@ async function browseApp() {
   } catch (e) {}
 }
 
-async function loadApp<span data-i18n="presets">Presets</span>() {
+async function loadAppPresets() {
   try {
     const data = await apiCall('/api/proxy/apps/presets');
     const presets = data.presets || [];
     const container = document.getElementById('presetList');
-    const presetsDiv = document.getElementById('app<span data-i18n="presets">Presets</span>');
+    const presetsDiv = document.getElementById('appPresets');
     presetsDiv.style.display = 'block';
     if (presets.length === 0) {
       container.innerHTML = '<span class="text-muted text-sm" data-i18n="noPresetsDetected">No presets detected</span>';
@@ -3504,7 +3523,7 @@ function filterLogs() {
 }
 
 async function clearLogs() {
-  if (!confirm('Clear all logs?')) return;
+  if (!confirm(_t('clearLogsConfirm'))) return;
   try {
     await apiCall('/api/logs/clear', 'POST');
     toast('ok', _t('logsCleared'));
@@ -3535,7 +3554,7 @@ async function saveConfig(key, value) {
 }
 
 async function resetConfig() {
-  if (!confirm('Reset all settings to defaults?')) return;
+  if (!confirm(_t('resetSettingsConfirm'))) return;
   try {
     await apiCall('/api/config/reset', 'POST');
     toast('ok', _t('settingsReset'));
@@ -3567,7 +3586,7 @@ async function loadQuote() {
       document.getElementById('quoteContainer').innerHTML = `
         "${data.data.content}"
         <br><br>
-        <span style="font-size: 11px; color: var(--text2);">— ${data.data.author || 'Unknown'}</span>
+        <span style="font-size: 11px; color: var(--text2);">— ${data.data.author || _t('unknown')}</span>
       `;
     }
   } catch (e) {}
@@ -3637,6 +3656,7 @@ window.addEventListener('load', () => {
         if (data.lang) currentLang = data.lang;
         localStorage.setItem('fpt-lang', currentLang);
         document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+        updateLangLabel();
       })
       .catch(() => { translations = {}; });
   }
@@ -3666,12 +3686,32 @@ window.addEventListener('load', () => {
     });
   }
 
+  function updateLangLabel() {
+    var label = document.getElementById('langLabel');
+    if (label) label.textContent = currentLang === 'zh' ? '中' : 'EN';
+  }
+
   window.toggleLanguage = function() {
     currentLang = currentLang === 'zh' ? 'en' : 'zh';
-    fetchTranslations().then(function() {
-      applyI18n();
-      if (window.toast) window.toast('info', currentLang === 'zh' ? '已切换为中文' : 'Switched to English');
-    });
+    localStorage.setItem('fpt-lang', currentLang);
+    document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+    updateLangLabel();
+    fetch('/api/lang', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lang: currentLang })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.translations) translations = data.translations;
+        if (data.lang) { currentLang = data.lang; localStorage.setItem('fpt-lang', currentLang); }
+        applyI18n();
+        updateLangLabel();
+        if (window.toast) window.toast('info', currentLang === 'zh' ? '已切换为中文' : 'Switched to English');
+      })
+      .catch(function() {
+        if (window.toast) window.toast('err', 'Language switch failed');
+      });
   };
 
   window.refreshI18n = function() {
