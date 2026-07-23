@@ -1844,25 +1844,26 @@ body.pixel-theme .modal-btn:active {
   <span class="app-icon">&#9889;</span>
   <div class="tab active" data-id="1" onclick="selectTab(1)">
     <span class="favicon">&#9889;</span>
-    <span class="title">New Tab</span>
+    <span class="title" data-i18n="newTab">New Tab</span>
     <span class="close" onclick="event.stopPropagation();closeTab(1)">&#215;</span>
   </div>
-  <div class="tab-add" onclick="newTab()" title="New Tab">+</div>
+  <div class="tab-add" onclick="newTab()" title="" data-i18n-title="newTab">+</div>
 </div>
 
 <!-- Navigation Bar -->
 <div class="nav-bar">
-  <button class="nav-btn" onclick="goBack()" title="Back" id="btnBack">&#9664;</button>
-  <button class="nav-btn" onclick="goForward()" title="Forward" id="btnForward">&#9654;</button>
-  <button class="nav-btn" onclick="reloadPage()" title="Refresh">&#8635;</button>
-  <button class="nav-btn" onclick="goHome()" title="Home">&#8962;</button>
-  <input class="url-bar" id="urlBar" placeholder="Enter address or search..." spellcheck="false"
+  <button class="nav-btn" onclick="goBack()" title="" data-i18n-title="back" id="btnBack">&#9664;</button>
+  <button class="nav-btn" onclick="goForward()" title="" data-i18n-title="forward" id="btnForward">&#9654;</button>
+  <button class="nav-btn" onclick="reloadPage()" title="" data-i18n-title="refresh">&#8635;</button>
+  <button class="nav-btn" onclick="goHome()" title="" data-i18n-title="home">&#8962;</button>
+  <input class="url-bar" id="urlBar" placeholder="" data-i18n-placeholder="enterAddress" spellcheck="false"
          onkeydown="if(event.key==='Enter')navigateTo(this.value)">
   <div class="nav-icons">
-    <button class="nav-btn" onclick="toggleTheme()" title="Toggle Theme" id="btnTheme">&#127912;</button>
-    <button class="nav-btn" onclick="toggleExtractPanel()" title="Extract Media" id="btnExtract">&#128279;</button>
-    <button class="nav-btn" onclick="showDiagnostics()" title="Diagnostics" id="btnProxy">&#128295;</button>
-    <button class="nav-btn" onclick="openControlPanel()" title="Control Panel" id="btnPanel">&#9881;</button>
+    <button class="nav-btn" onclick="toggleTheme()" title="" data-i18n-title="toggleTheme" id="btnTheme">&#127912;</button>
+    <button class="nav-btn" onclick="toggleExtractPanel()" title="" data-i18n-title="extractMedia" id="btnExtract">&#128279;</button>
+    <button class="nav-btn" onclick="showDiagnostics()" title="" data-i18n-title="diagnostics" id="btnProxy">&#128295;</button>
+    <button class="nav-btn" onclick="openControlPanel()" title="" data-i18n-title="controlPanel" id="btnPanel">&#9881;</button>
+    <button class="nav-btn" onclick="toggleLanguage()" title="" data-i18n-title="switchLanguage" id="btnLang" data-lang="en">🌐</button>
   </div>
 </div>
 
@@ -1874,39 +1875,39 @@ body.pixel-theme .modal-btn:active {
   <div class="webview-placeholder" id="placeholder">
     <div class="brand-area">
       <div class="logo">&#9889;</div>
-      <h2>Free Proxy Browser</h2>
-      <p>Lightweight dedicated browser with built-in proxy management</p>
+      <h2 data-i18n="freeProxyBrowser">Free Proxy Browser</h2>
+      <p data-i18n="lightweightBrowser">Lightweight dedicated browser with built-in proxy management</p>
     </div>
 
     <div class="center-stage">
       <div class="center-search">
         <div class="center-search-icon">&#128269;</div>
-        <input type="text" id="centerSearch" placeholder="Search the web or enter address..." autocomplete="off"
+        <input type="text" id="centerSearch" placeholder="" data-i18n-placeholder="searchWeb" autocomplete="off"
                onkeydown="if(event.key==='Enter'){navigateTo('https://www.google.com/search?q='+encodeURIComponent(this.value));this.value='';}">
       </div>
       <div class="search-shortcuts-bar">
-        <span onclick="document.getElementById('centerSearch').focus();navigateTo('https://www.google.com')">Google</span>
-        <span onclick="document.getElementById('centerSearch').focus();navigateTo('https://www.bing.com')">Bing</span>
-        <span onclick="document.getElementById('centerSearch').focus();navigateTo('https://www.baidu.com')">Baidu</span>
+        <span onclick="document.getElementById('centerSearch').focus();navigateTo('https://www.google.com')" data-i18n="google">Google</span>
+        <span onclick="document.getElementById('centerSearch').focus();navigateTo('https://www.bing.com')" data-i18n="bing">Bing</span>
+        <span onclick="document.getElementById('centerSearch').focus();navigateTo('https://www.baidu.com')" data-i18n="baidu">Baidu</span>
       </div>
     </div>
 
     <div class="status-bar-container">
       <div class="status-bar-item" onclick="toggleProxyDetail()">
         <span class="status-icon status-dot ok" id="sbProxyDot"></span>
-        <span class="status-label">Proxy:</span>
+        <span class="status-label" data-i18n="proxy">Proxy:</span>
         <span class="status-value" id="sbProxyStatus">Running</span>
       </div>
       <div class="status-bar-divider"></div>
       <div class="status-bar-item">
         <span class="status-icon">&#128337;</span>
-        <span class="status-label">Uptime:</span>
+        <span class="status-label" data-i18n="uptime">Uptime:</span>
         <span class="status-value" id="sbUptime">00:09</span>
       </div>
       <div class="status-bar-divider"></div>
       <div class="status-bar-item">
         <span class="status-icon">&#128225;</span>
-        <span class="status-label">Tabs:</span>
+        <span class="status-label" data-i18n="tabs">Tabs:</span>
         <span class="status-value" id="sbTabs">1</span>
       </div>
     </div>
@@ -1924,11 +1925,11 @@ body.pixel-theme .modal-btn:active {
             <div class="breathe-ring"></div>
             <div class="breathe-core"></div>
           </div>
-          <div class="proxy-label">Proxy Connected</div>
+          <div class="proxy-label" data-i18n="proxyConnected">Proxy Connected</div>
           <div class="proxy-detail" id="proxyDetail" style="display:none;">
-            <div>Address: 127.0.0.1:1080</div>
-            <div>Type: SOCKS5</div>
-            <div>Latency: 12ms</div>
+            <div data-i18n="address">Address:</div>
+            <div data-i18n="type">Type:</div>
+            <div data-i18n="latency">Latency:</div>
           </div>
         </div>
 
@@ -1940,18 +1941,18 @@ body.pixel-theme .modal-btn:active {
       <!-- Right Column -->
       <div class="dash-right">
         <div class="dash-card today-card">
-          <div class="today-header"><span class="pixel-diamond"></span>Today's Overview</div>
+          <div class="today-header"><span class="pixel-diamond"></span><span data-i18n="todayOverview">Today's Overview</span></div>
           <div class="today-body">
             <div class="today-weather">
               <div class="weather-icon" id="weatherIcon">&#9925;</div>
               <div class="weather-info">
                 <div class="weather-temp" id="weatherTemp">--°</div>
-                <div class="weather-desc" id="weatherDesc">Fetching weather...</div>
+                <div class="weather-desc" id="weatherDesc" data-i18n="fetchingWeather">Fetching weather...</div>
                 <div class="weather-city" id="weatherCity">
                   <span class="weather-city-name" id="weatherCityName">--</span>
                   <span class="weather-city-arrow">&#9660;</span>
                   <div class="weather-city-dropdown" id="weatherCityDropdown">
-                    <div data-city="">Auto Detect</div>
+                    <div data-city="" data-i18n="autoDetect">Auto Detect</div>
                     <div data-city="Beijing">Beijing</div>
                     <div data-city="Shanghai">Shanghai</div>
                     <div data-city="Guangzhou">Guangzhou</div>
@@ -1962,8 +1963,8 @@ body.pixel-theme .modal-btn:active {
                     <div data-city="Nanjing">Nanjing</div>
                     <div data-city="Wuhan">Wuhan</div>
                     <div class="weather-city-divider"></div>
-                    <div data-city="__map__">🗺️ Select City on Map</div>
-                    <div data-city="__custom__">Custom city...</div>
+                    <div data-city="__map__" data-i18n="selectCityMap">🗺️ Select City on Map</div>
+                    <div data-city="__custom__" data-i18n="customCity">Custom city...</div>
                   </div>
                 </div>
               </div>
@@ -1974,13 +1975,13 @@ body.pixel-theme .modal-btn:active {
 
         <div class="dash-card merged-links">
           <div class="links-header">
-            <span class="links-title"><span class="pixel-diamond"></span>Quick Access</span>
-            <span class="links-add" onclick="showAddLinkModal()" title="Add Quick Link">&#43;</span>
+            <span class="links-title"><span class="pixel-diamond"></span><span data-i18n="quickAccess">Quick Access</span></span>
+            <span class="links-add" onclick="showAddLinkModal()" title="" data-i18n-title="addQuickLink">&#43;</span>
           </div>
           <div class="recent-section" id="recentSection" style="display:none;">
             <div class="recent-header">
-              <span class="recent-title"><span class="pixel-diamond"></span>Recent Visits</span>
-              <span class="recent-clear" onclick="clearRecent()">Clear</span>
+              <span class="recent-title"><span class="pixel-diamond"></span><span data-i18n="recentVisits">Recent Visits</span></span>
+              <span class="recent-clear" onclick="clearRecent()" data-i18n="clear">Clear</span>
             </div>
             <div class="recent-list" id="recentList"></div>
             <div class="recent-divider"></div>
@@ -1988,58 +1989,58 @@ body.pixel-theme .modal-btn:active {
           <div class="links-grid">
             <div class="quick-link" onclick="navigateTo('http://127.0.0.1:3000')">
               <span class="icon">&#9881;</span>
-              <span class="label">Control Panel</span>
+              <span class="label" data-i18n="controlPanelLabel">Control Panel</span>
             </div>
             <div class="quick-link" onclick="navigateTo('https://www.google.com')">
               <span class="icon">&#128269;</span>
-              <span class="label">Google</span>
+              <span class="label" data-i18n="google">Google</span>
             </div>
             <div class="quick-link" onclick="navigateTo('https://github.com')">
               <span class="icon">&#128187;</span>
-              <span class="label">GitHub</span>
+              <span class="label" data-i18n="github">GitHub</span>
             </div>
             <div class="quick-link" onclick="navigateTo('https://www.youtube.com')">
               <span class="icon">&#128250;</span>
-              <span class="label">YouTube</span>
+              <span class="label" data-i18n="youtube">YouTube</span>
             </div>
             <div class="quick-link" onclick="navigateTo('https://twitter.com')">
               <span class="icon">&#128038;</span>
-              <span class="label">Twitter/X</span>
+              <span class="label" data-i18n="twitter">Twitter/X</span>
             </div>
             <div class="quick-link" onclick="navigateTo('https://www.wikipedia.org')">
               <span class="icon">&#128214;</span>
-              <span class="label">Wikipedia</span>
+              <span class="label" data-i18n="wikipedia">Wikipedia</span>
             </div>
             <div class="quick-link" onclick="navigateTo('https://www.bilibili.com')">
               <span class="icon">&#127916;</span>
-              <span class="label">Bilibili</span>
+              <span class="label" data-i18n="bilibili">Bilibili</span>
             </div>
             <div class="quick-link" onclick="navigateTo('https://www.baidu.com')">
               <span class="icon">&#28201;</span>
-              <span class="label">Baidu</span>
+              <span class="label" data-i18n="baidu">Baidu</span>
             </div>
             <div class="quick-link" onclick="navigateTo('https://www.microsoft.com')">
               <span class="icon">&#128188;</span>
-              <span class="label">Microsoft</span>
+              <span class="label" data-i18n="microsoft">Microsoft</span>
             </div>
             <div class="quick-link" onclick="navigateTo('https://www.spotify.com')">
               <span class="icon">&#127925;</span>
-              <span class="label">Spotify</span>
+              <span class="label" data-i18n="spotify">Spotify</span>
             </div>
             <div class="quick-link" onclick="navigateTo('https://www.reddit.com')">
               <span class="icon">&#127758;</span>
-              <span class="label">Reddit</span>
+              <span class="label" data-i18n="reddit">Reddit</span>
             </div>
             <div class="quick-link" onclick="navigateTo('https://www.stackoverflow.com')">
               <span class="icon">&#128270;</span>
-              <span class="label">Stack Overflow</span>
+              <span class="label" data-i18n="stackOverflow">Stack Overflow</span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <button class="wallpaper-btn" onclick="toggleWallpaper()" title="Wallpaper">&#128248;</button>
+    <button class="wallpaper-btn" onclick="toggleWallpaper()" title="" data-i18n-title="wallpaper">&#128248;</button>
   </div>
 </div>
 
@@ -2047,41 +2048,41 @@ body.pixel-theme .modal-btn:active {
 <div class="modal-overlay" id="wallpaperModal">
   <div class="modal-panel wp">
     <div class="modal-header">
-      <h3>Wallpaper</h3>
+      <h3 data-i18n="wallpaper">Wallpaper</h3>
       <button class="modal-close" onclick="closeModal('wallpaperModal')">&#215;</button>
     </div>
     <div class="modal-body">
-      <div class="wallpaper-label">Preset Wallpapers</div>
+      <div class="wallpaper-label" data-i18n="presetWallpapers">Preset Wallpapers</div>
       <div class="wallpaper-grid" id="wpGrid"></div>
       <div class="wallpaper-divider"></div>
       <div class="wallpaper-custom">
-        <div class="wallpaper-label">Local Upload</div>
+        <div class="wallpaper-label" data-i18n="localUpload">Local Upload</div>
         <div class="wp-upload-card" id="uploadCard">
           <div class="wp-file-overlay-wrap">
             <input type="file" id="wpFileOverlay" accept="image/*" class="wp-file-overlay-input">
           </div>
           <div class="wp-upload-icon">&#128247;</div>
           <div class="wp-upload-text">
-            <div class="wp-upload-title">Upload Image</div>
-            <div class="wp-upload-hint">Click to select or drag image here</div>
+            <div class="wp-upload-title" data-i18n="uploadImage">Upload Image</div>
+            <div class="wp-upload-hint" data-i18n="clickSelectOrDrag">Click to select or drag image here</div>
           </div>
         </div>
       </div>
       <div class="wallpaper-divider"></div>
       <div class="wallpaper-custom">
-        <div class="wallpaper-label">Online Wallpaper</div>
+        <div class="wallpaper-label" data-i18n="onlineWallpaper">Online Wallpaper</div>
         <div class="wp-api-card" onclick="fetchApiWallpaper()">
           <div class="wp-upload-icon">&#127760;</div>
           <div class="wp-upload-text">
-            <div class="wp-upload-title">Random Wallpaper</div>
-            <div class="wp-upload-hint">From wp.upx8.com</div>
+            <div class="wp-upload-title" data-i18n="randomWallpaper">Random Wallpaper</div>
+            <div class="wp-upload-hint" data-i18n="fromWpApi">From wp.upx8.com</div>
           </div>
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="modal-btn modal-btn-outline" onclick="closeModal('wallpaperModal')">Done</button>
-      <button class="modal-btn modal-btn-danger" onclick="resetWallpaper()">Restore Default</button>
+      <button class="modal-btn modal-btn-outline" onclick="closeModal('wallpaperModal')" data-i18n="done">Done</button>
+      <button class="modal-btn modal-btn-danger" onclick="resetWallpaper()" data-i18n="restoreDefault">Restore Default</button>
     </div>
   </div>
 </div>
@@ -2090,16 +2091,16 @@ body.pixel-theme .modal-btn:active {
 <div class="modal-overlay" id="mapModal">
   <div class="modal-panel map">
     <div class="modal-header">
-      <h3>&#128506; Select City Location on Map</h3>
+      <h3 data-i18n="selectCityLocation">🗺️ Select City Location on Map</h3>
       <button class="modal-close" onclick="closeModal('mapModal')">&#215;</button>
     </div>
     <div class="modal-body nopad">
       <div id="leafletMap" style="height:400px"></div>
     </div>
     <div class="modal-footer">
-      <span class="coords" id="mapCoords">Click on the map to select a location</span>
-      <button class="modal-btn modal-btn-primary" onclick="confirmMapLocation()">Confirm</button>
-      <button class="modal-btn modal-btn-outline" onclick="closeModal('mapModal')">Cancel</button>
+      <span class="coords" id="mapCoords" data-i18n="clickMapSelect">Click on the map to select a location</span>
+      <button class="modal-btn modal-btn-primary" onclick="confirmMapLocation()" data-i18n="confirm">Confirm</button>
+      <button class="modal-btn modal-btn-outline" onclick="closeModal('mapModal')" data-i18n="cancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -2108,18 +2109,18 @@ body.pixel-theme .modal-btn:active {
 <div class="extract-overlay" id="extractOverlay" onclick="if(event.target===this)closeExtractPanel()">
   <div class="extract-panel">
     <div class="extract-header">
-      <h3>&#128279; Media Extraction</h3>
+      <h3 data-i18n="mediaExtraction">📷 Media Extraction</h3>
       <button class="extract-close" onclick="closeExtractPanel()">&#215;</button>
     </div>
     <div class="extract-tabs" id="extractTabs">
-      <button class="extract-tab active" data-tab="videos" onclick="switchExtractTab('videos')">&#127916; Videos <span class="count" id="ec-videos">0</span></button>
-      <button class="extract-tab" data-tab="audios" onclick="switchExtractTab('audios')">&#127925; Audios <span class="count" id="ec-audios">0</span></button>
-      <button class="extract-tab" data-tab="images" onclick="switchExtractTab('images')">&#128247; Images <span class="count" id="ec-images">0</span></button>
+      <button class="extract-tab active" data-tab="videos" onclick="switchExtractTab('videos')">&#127916; <span data-i18n="videos">Videos</span> <span class="count" id="ec-videos">0</span></button>
+      <button class="extract-tab" data-tab="audios" onclick="switchExtractTab('audios')">&#127925; <span data-i18n="audios">Audios</span> <span class="count" id="ec-audios">0</span></button>
+      <button class="extract-tab" data-tab="images" onclick="switchExtractTab('images')">&#128247; <span data-i18n="images">Images</span> <span class="count" id="ec-images">0</span></button>
     </div>
     <div class="extract-body" id="extractBody">
       <div class="extract-loading" id="extractLoading">
         <div class="spinner"></div>
-        <div>Analyzing page...</div>
+        <div data-i18n="analyzingPage">Analyzing page...</div>
       </div>
       <div id="extractContent"></div>
     </div>
@@ -2139,26 +2140,283 @@ body.pixel-theme .modal-btn:active {
 
 <!-- Context Menu -->
 <div class="ctx-menu" id="ctxMenu">
-  <div class="ctx-item" onclick="reloadPage()">&#8635; Refresh Page</div>
-  <div class="ctx-item" onclick="openInNewTab()">&#10133; Open in New Tab</div>
+  <div class="ctx-item" onclick="reloadPage()">&#8635; <span data-i18n="refreshPage">Refresh Page</span></div>
+  <div class="ctx-item" onclick="openInNewTab()">&#10133; <span data-i18n="openInNewTab">Open in New Tab</span></div>
   <div class="ctx-sep"></div>
-  <div class="ctx-item" onclick="copyUrl()">&#128203; Copy URL</div>
+  <div class="ctx-item" onclick="copyUrl()">&#128203; <span data-i18n="copyUrl">Copy URL</span></div>
   <div class="ctx-sep"></div>
-  <div class="ctx-item" onclick="showDiagnostics()">&#9889; Proxy Settings</div>
-  <div class="ctx-item" onclick="showDiagnostics()">&#128295; Connection Diagnostics</div>
+  <div class="ctx-item" onclick="showDiagnostics()">&#9889; <span data-i18n="proxySettings">Proxy Settings</span></div>
+  <div class="ctx-item" onclick="showDiagnostics()">&#128295; <span data-i18n="connectionDiagnostics">Connection Diagnostics</span></div>
   <div class="ctx-sep"></div>
-  <div class="ctx-item" onclick="toggleExtractPanel()">&#128279; Extract Media</div>
+  <div class="ctx-item" onclick="toggleExtractPanel()">&#128279; <span data-i18n="extractMedia">Extract Media</span></div>
 </div>
 
 <script>
+const browserTranslations = {
+  en: {
+    newTab: 'New Tab',
+    enterAddress: 'Enter address or search...',
+    searchWeb: 'Search the web or enter address...',
+    back: 'Back',
+    forward: 'Forward',
+    refresh: 'Refresh',
+    home: 'Home',
+    toggleTheme: 'Toggle Theme',
+    extractMedia: 'Extract Media',
+    diagnostics: 'Diagnostics',
+    controlPanel: 'Control Panel',
+    switchLanguage: 'Switch Language',
+    freeProxyBrowser: 'Free Proxy Browser',
+    lightweightBrowser: 'Lightweight dedicated browser with built-in proxy management',
+    google: 'Google',
+    bing: 'Bing',
+    baidu: 'Baidu',
+    proxy: 'Proxy:',
+    uptime: 'Uptime:',
+    tabs: 'Tabs:',
+    todayOverview: "Today's Overview",
+    fetchingWeather: 'Fetching weather...',
+    autoDetect: 'Auto Detect',
+    selectCityMap: '🗺️ Select City on Map',
+    customCity: 'Custom city...',
+    quickAccess: 'Quick Access',
+    addQuickLink: 'Add Quick Link',
+    recentVisits: 'Recent Visits',
+    clear: 'Clear',
+    controlPanelLabel: 'Control Panel',
+    github: 'GitHub',
+    youtube: 'YouTube',
+    twitter: 'Twitter/X',
+    wikipedia: 'Wikipedia',
+    bilibili: 'Bilibili',
+    microsoft: 'Microsoft',
+    spotify: 'Spotify',
+    reddit: 'Reddit',
+    stackOverflow: 'Stack Overflow',
+    wallpaper: 'Wallpaper',
+    presetWallpapers: 'Preset Wallpapers',
+    localUpload: 'Local Upload',
+    uploadImage: 'Upload Image',
+    clickSelectOrDrag: 'Click to select or drag image here',
+    onlineWallpaper: 'Online Wallpaper',
+    randomWallpaper: 'Random Wallpaper',
+    fromWpApi: 'From wp.upx8.com',
+    done: 'Done',
+    restoreDefault: 'Restore Default',
+    selectCityLocation: '🗺️ Select City Location on Map',
+    clickMapSelect: 'Click on the map to select a location',
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    mediaExtraction: 'Media Extraction',
+    videos: 'Videos',
+    audios: 'Audios',
+    images: 'Images',
+    analyzingPage: 'Analyzing page...',
+    noUrlNavigate: 'Current page has no URL, please navigate to a webpage first',
+    extractionFailed: 'Extraction failed: {0}',
+    noVideosFound: 'No videos found',
+    noAudioFound: 'No audio found',
+    noImagesFound: 'No images found',
+    copy: 'Copy',
+    open: 'Open',
+    copiedClipboard: 'Copied to clipboard',
+    ready: 'READY',
+    checking: 'Checking...',
+    builtInProxy: 'Built-in Proxy',
+    running: 'Running',
+    stopped: 'Stopped',
+    proxyConnected: 'Proxy Connected',
+    proxyNotStarted: 'Proxy Not Started',
+    address: 'Address',
+    type: 'Type',
+    latency: 'Latency',
+    refreshPage: 'Refresh Page',
+    openInNewTab: 'Open in New Tab',
+    copyUrl: 'Copy URL',
+    proxySettings: 'Proxy Settings',
+    connectionDiagnostics: 'Connection Diagnostics',
+    connectionRefused: 'Connection refused - please check your network connection',
+    clickDiagnostics: 'Click "Diagnostics" for details',
+    retry: 'Retry',
+    proxyMode: 'Proxy Mode',
+    engine: 'Engine',
+    blinkElectron: 'Blink (Electron)',
+    forwardProxy: 'Forward Proxy',
+    currentPage: 'Current Page',
+    retryCurrentPage: 'Retry Current Page',
+    close: 'Close',
+    fetchingWallpaper: 'Fetching wallpaper...',
+    wallpaperApplied: 'Wallpaper applied',
+    onlineWallpaperApplied: 'Online wallpaper applied',
+    failedReadImage: 'Failed to read image',
+    failedFetchWallpaper: 'Failed to fetch wallpaper: {0}',
+    networkErrorWallpaper: 'Network error, failed to fetch wallpaper',
+    timeoutWallpaper: 'Timeout fetching wallpaper',
+    pleaseSelectImage: 'Please select an image file',
+    clearRecentVisits: 'Clear recent visits',
+  },
+  zh: {
+    newTab: '新标签页',
+    enterAddress: '输入地址或搜索...',
+    searchWeb: '搜索网页或输入地址...',
+    back: '后退',
+    forward: '前进',
+    refresh: '刷新',
+    home: '主页',
+    toggleTheme: '切换主题',
+    extractMedia: '提取媒体',
+    diagnostics: '诊断',
+    controlPanel: '控制面板',
+    switchLanguage: '切换语言',
+    freeProxyBrowser: '免费代理浏览器',
+    lightweightBrowser: '轻量级专用浏览器，内置代理管理',
+    google: '谷歌',
+    bing: '必应',
+    baidu: '百度',
+    proxy: '代理:',
+    uptime: '运行时间:',
+    tabs: '标签:',
+    todayOverview: '今日概览',
+    fetchingWeather: '正在获取天气...',
+    autoDetect: '自动检测',
+    selectCityMap: '🗺️ 在地图上选择城市',
+    customCity: '自定义城市...',
+    quickAccess: '快捷访问',
+    addQuickLink: '添加快捷链接',
+    recentVisits: '最近访问',
+    clear: '清除',
+    controlPanelLabel: '控制面板',
+    github: 'GitHub',
+    youtube: 'YouTube',
+    twitter: 'Twitter/X',
+    wikipedia: '维基百科',
+    bilibili: '哔哩哔哩',
+    microsoft: '微软',
+    spotify: 'Spotify',
+    reddit: 'Reddit',
+    stackOverflow: 'Stack Overflow',
+    wallpaper: '壁纸',
+    presetWallpapers: '预设壁纸',
+    localUpload: '本地上传',
+    uploadImage: '上传图片',
+    clickSelectOrDrag: '点击选择或拖拽图片到此处',
+    onlineWallpaper: '在线壁纸',
+    randomWallpaper: '随机壁纸',
+    fromWpApi: '来自 wp.upx8.com',
+    done: '完成',
+    restoreDefault: '恢复默认',
+    selectCityLocation: '🗺️ 在地图上选择城市位置',
+    clickMapSelect: '点击地图选择位置',
+    confirm: '确认',
+    cancel: '取消',
+    mediaExtraction: '媒体提取',
+    videos: '视频',
+    audios: '音频',
+    images: '图片',
+    analyzingPage: '分析页面中...',
+    noUrlNavigate: '当前页面没有URL，请先导航到网页',
+    extractionFailed: '提取失败: {0}',
+    noVideosFound: '未找到视频',
+    noAudioFound: '未找到音频',
+    noImagesFound: '未找到图片',
+    copy: '复制',
+    open: '打开',
+    copiedClipboard: '已复制到剪贴板',
+    ready: '就绪',
+    checking: '检查中...',
+    builtInProxy: '内置代理',
+    running: '运行中',
+    stopped: '已停止',
+    proxyConnected: '代理已连接',
+    proxyNotStarted: '代理未启动',
+    address: '地址',
+    type: '类型',
+    latency: '延迟',
+    refreshPage: '刷新页面',
+    openInNewTab: '在新标签页打开',
+    copyUrl: '复制网址',
+    proxySettings: '代理设置',
+    connectionDiagnostics: '连接诊断',
+    connectionRefused: '连接被拒绝 - 请检查网络连接',
+    clickDiagnostics: '点击"诊断"查看详情',
+    retry: '重试',
+    proxyMode: '代理模式',
+    engine: '引擎',
+    blinkElectron: 'Blink (Electron)',
+    forwardProxy: '转发代理',
+    currentPage: '当前页面',
+    retryCurrentPage: '重试当前页面',
+    close: '关闭',
+    fetchingWallpaper: '获取壁纸中...',
+    wallpaperApplied: '壁纸已应用',
+    onlineWallpaperApplied: '在线壁纸已应用',
+    failedReadImage: '读取图片失败',
+    failedFetchWallpaper: '获取壁纸失败: {0}',
+    networkErrorWallpaper: '网络错误，获取壁纸失败',
+    timeoutWallpaper: '获取壁纸超时',
+    pleaseSelectImage: '请选择图片文件',
+    clearRecentVisits: '清除最近访问',
+  }
+};
+
+let currentLang = localStorage.getItem('browser-lang') || 'en';
+
+function _t(key, ...args) {
+  const text = browserTranslations[currentLang][key] || browserTranslations.en[key] || key;
+  return args.length ? text.replace(/{(\d+)}/g, (m, i) => args[i]) : text;
+}
+
+function toggleLanguage() {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  localStorage.setItem('browser-lang', currentLang);
+  applyTranslations();
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (key) el.textContent = _t(key);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (key) el.placeholder = _t(key);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    if (key) el.title = _t(key);
+  });
+  updateProxyStatusDisplay();
+}
+
+function updateProxyStatusDisplay() {
+  const text = document.getElementById('proxyStatusText');
+  const sbProxyStatus = document.getElementById('sbProxyStatus');
+  const proxyLabel = document.querySelector('.proxy-card .proxy-label');
+  if (text && text.textContent.includes('Built-in Proxy')) {
+    if (text.textContent.includes('Running')) text.textContent = _t('builtInProxy') + ': ' + _t('running');
+    else text.textContent = _t('builtInProxy') + ': ' + _t('stopped');
+  }
+  if (sbProxyStatus) {
+    if (sbProxyStatus.textContent === 'Running') sbProxyStatus.textContent = _t('running');
+    else if (sbProxyStatus.textContent === 'Stopped') sbProxyStatus.textContent = _t('stopped');
+  }
+  if (proxyLabel) {
+    if (proxyLabel.textContent === 'Proxy Connected') proxyLabel.textContent = _t('proxyConnected');
+    else if (proxyLabel.textContent === 'Proxy Not Started') proxyLabel.textContent = _t('proxyNotStarted');
+  }
+}
+
+function _te(key) { return _t(key); }
+</script>
+<script>
 // ========== Tab Management ==========
-let tabs = [{ id: 1, title: 'New Tab', url: '', favicon: '\u26A1' }];
+let tabs = [{ id: 1, title: _t('newTab'), url: '', favicon: '\u26A1' }];
 let activeTab = 1;
 let nextTabId = 2;
 
 function newTab(url) {
   const id = nextTabId++;
-  tabs.push({ id, title: 'New Tab', url: url || '', favicon: '\u26A1' });
+  tabs.push({ id, title: _t('newTab'), url: url || '', favicon: '\u26A1' });
   renderTabs();
   selectTab(id);
   if (url) navigateTo(url);
@@ -2351,12 +2609,12 @@ function showErrorMessage(url) {
   overlay.innerHTML = `
     <div class="error-icon">&#9888;</div>
     <div class="error-url">${safeUrlDisplay}</div>
-    <div class="error-msg">Connection refused - please check your network connection</div>
-    <div class="error-msg" style="font-size:12px;color:var(--text2);margin-top:-12px">Click "Diagnostics" for details</div>
+    <div class="error-msg">${_t('connectionRefused')}</div>
+    <div class="error-msg" style="font-size:12px;color:var(--text2);margin-top:-12px">${_t('clickDiagnostics')}</div>
     <div class="error-actions">
-      <button class="error-btn" onclick="reloadPage()">Retry</button>
-      <button class="error-btn" onclick="loadUrl('${safeUrl}')">Proxy Mode</button>
-      <button class="error-btn primary" onclick="showDiagnostics()">Diagnostics</button>
+      <button class="error-btn" onclick="reloadPage()">${_t('retry')}</button>
+      <button class="error-btn" onclick="loadUrl('${safeUrl}')">${_t('proxyMode')}</button>
+      <button class="error-btn primary" onclick="showDiagnostics()">${_t('diagnostics')}</button>
     </div>
   `;
   content.appendChild(overlay);
@@ -2373,15 +2631,15 @@ function showDiagnostics() {
   const tab = tabs.find(t => t.id === activeTab);
   const currentUrl = escapeHtml(tab ? tab.url : '(none)');
   panel.innerHTML = `
-    <div style="font-size:16px;font-weight:600;margin-bottom:12px">&#128295; Connection Diagnostics</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:12px">&#128295; ${_t('connectionDiagnostics')}</div>
     <div style="text-align:left;font-size:13px;line-height:2;min-width:320px">
-      <div>Engine: <span style="color:var(--success)">Blink (Electron)</span></div>
-      <div>Forward Proxy: <span style="color:var(--success)">Built-in 127.0.0.1:1080</span></div>
-      <div>Current Page: <span style="word-break:break-all">${currentUrl}</span></div>
+      <div>${_t('engine')}: <span style="color:var(--success)">${_t('blinkElectron')}</span></div>
+      <div>${_t('forwardProxy')}: <span style="color:var(--success)">${_t('builtInProxy')} 127.0.0.1:1080</span></div>
+      <div>${_t('currentPage')}: <span style="word-break:break-all">${currentUrl}</span></div>
     </div>
     <div class="error-actions" style="margin-top:16px">
-      <button class="error-btn primary" onclick="reloadPage()">Retry Current Page</button>
-      <button class="error-btn" onclick="document.getElementById('diagPanel').remove()">Close</button>
+      <button class="error-btn primary" onclick="reloadPage()">${_t('retryCurrentPage')}</button>
+      <button class="error-btn" onclick="document.getElementById('diagPanel').remove()">${_t('close')}</button>
     </div>
   `;
   document.getElementById('contentArea').appendChild(panel);
@@ -2411,9 +2669,9 @@ async function checkProxyStatus() {
       if (data && data.host) {
         const detail = document.querySelector('.proxy-card .proxy-detail');
         if (detail) {
-          detail.innerHTML = '<div>Address: ' + escapeHtml(data.host) + (data.port ? ':' + data.port : '') + '</div>' +
-            '<div>Type: ' + escapeHtml(data.type || 'SOCKS5') + '</div>' +
-            (data.latency ? '<div>Latency: ' + data.latency + 'ms</div>' : '');
+          detail.innerHTML = '<div>' + _t('address') + ' ' + escapeHtml(data.host) + (data.port ? ':' + data.port : '') + '</div>' +
+            '<div>' + _t('type') + ' ' + escapeHtml(data.type || 'SOCKS5') + '</div>' +
+            (data.latency ? '<div>' + _t('latency') + ' ' + data.latency + 'ms</div>' : '');
         }
       }
     }
@@ -2424,17 +2682,17 @@ async function checkProxyStatus() {
   if (running) {
     if (dot) dot.className = 'status-dot ok';
     if (sbDot) sbDot.className = 'status-dot ok';
-    if (text) text.textContent = 'Built-in Proxy: Running';
-    if (sbProxyStatus) sbProxyStatus.textContent = 'Running';
-    if (proxyLabel) { proxyLabel.textContent = 'Proxy Connected'; proxyLabel.style.color = 'var(--success)'; }
+    if (text) text.textContent = _t('builtInProxy') + ': ' + _t('running');
+    if (sbProxyStatus) sbProxyStatus.textContent = _t('running');
+    if (proxyLabel) { proxyLabel.textContent = _t('proxyConnected'); proxyLabel.style.color = 'var(--success)'; }
     if (proxyCore) { proxyCore.style.background = 'var(--success)'; proxyCore.style.boxShadow = '0 0 12px var(--success)'; }
     if (proxyRing) proxyRing.style.borderColor = 'var(--success)';
   } else {
     if (dot) dot.className = 'status-dot err';
     if (sbDot) sbDot.className = 'status-dot err';
-    if (text) text.textContent = 'Built-in Proxy: Stopped';
-    if (sbProxyStatus) sbProxyStatus.textContent = 'Stopped';
-    if (proxyLabel) { proxyLabel.textContent = 'Proxy Not Started'; proxyLabel.style.color = 'var(--text3)'; }
+    if (text) text.textContent = _t('builtInProxy') + ': ' + _t('stopped');
+    if (sbProxyStatus) sbProxyStatus.textContent = _t('stopped');
+    if (proxyLabel) { proxyLabel.textContent = _t('proxyNotStarted'); proxyLabel.style.color = 'var(--text3)'; }
     if (proxyCore) { proxyCore.style.background = 'var(--text3)'; proxyCore.style.boxShadow = 'none'; }
     if (proxyRing) proxyRing.style.borderColor = 'var(--text3)';
   }
@@ -2498,15 +2756,15 @@ function applyImageFile(file) {
   if (!file) return;
   // Check if it's an image
   if (!file.type.startsWith('image/')) {
-    showToast('Please select an image file', 'error');
+    showToast(_t('pleaseSelectImage'), 'error');
     return;
   }
   var reader = new FileReader();
   reader.onload = function(ev) {
     applyWallpaper({ type: 'image', value: ev.target.result });
-    showToast('Wallpaper applied', 'success');
+    showToast(_t('wallpaperApplied'), 'success');
   };
-  reader.onerror = function() { showToast('Failed to read image', 'error'); };
+  reader.onerror = function() { showToast(_t('failedReadImage'), 'error'); };
   reader.readAsDataURL(file);
 }
 
@@ -2551,7 +2809,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ========== Online Wallpaper API ==========
 function fetchApiWallpaper() {
-  showToast('Fetching wallpaper...');
+  showToast(_t('fetchingWallpaper'));
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'https://wp.upx8.com/api.php', true);
   xhr.responseType = 'blob';
@@ -2561,16 +2819,16 @@ function fetchApiWallpaper() {
       var reader = new FileReader();
       reader.onload = function(ev) {
         applyWallpaper({ type: 'image', value: ev.target.result });
-        showToast('Online wallpaper applied', 'success');
+        showToast(_t('onlineWallpaperApplied'), 'success');
       };
-      reader.onerror = function() { showToast('Failed to read wallpaper', 'error'); };
+      reader.onerror = function() { showToast(_t('failedReadImage'), 'error'); };
       reader.readAsDataURL(blob);
     } else {
-      showToast('Failed to fetch wallpaper: ' + xhr.status, 'error');
+      showToast(_t('failedFetchWallpaper', xhr.status), 'error');
     }
   };
-  xhr.onerror = function() { showToast('Network error, failed to fetch wallpaper', 'error'); };
-  xhr.ontimeout = function() { showToast('Timeout fetching wallpaper', 'error'); };
+  xhr.onerror = function() { showToast(_t('networkErrorWallpaper'), 'error'); };
+  xhr.ontimeout = function() { showToast(_t('timeoutWallpaper'), 'error'); };
   xhr.send();
 }
 
@@ -2615,7 +2873,7 @@ function loadWallpaper() {
 
 function selectPreset(index) {
   applyWallpaper({ type: 'preset', value: WP_PRESETS[index].bg, index: index });
-  showToast('Wallpaper: ' + WP_PRESETS[index].name, 'success');
+  showToast(_t('wallpaperApplied'), 'success');
 }
 
 function resetWallpaper() {
@@ -2701,7 +2959,7 @@ async function startExtraction(url) {
     }
   } catch (e) {
     loading.style.display = 'none';
-    content.innerHTML = '<div class="extract-empty"><div class="icon">&#9888;</div>Extraction failed: ' + e.message + '</div>';
+    content.innerHTML = '<div class="extract-empty"><div class="icon">&#9888;</div>' + _t('extractionFailed', e.message) + '</div>';
   }
 }
 
@@ -2746,7 +3004,8 @@ function renderExtractTab(tab) {
   if (!extractData) { content.innerHTML = ''; return; }
   const items = extractData[tab] || [];
   if (items.length === 0) {
-    content.innerHTML = '<div class="extract-empty"><div class="icon">&#128270;</div>No ' + (tab === 'videos' ? 'videos' : tab === 'audios' ? 'audio' : 'images') + ' found</div>';
+    const key = tab === 'videos' ? 'noVideosFound' : tab === 'audios' ? 'noAudioFound' : 'noImagesFound';
+    content.innerHTML = '<div class="extract-empty"><div class="icon">&#128270;</div>' + _t(key) + '</div>';
     return;
   }
   content.innerHTML = '<div class="extract-section">' + items.map((item, i) => {
@@ -2760,8 +3019,8 @@ function renderExtractTab(tab) {
     return '<div class="extract-item">' + thumb +
       '<span class="url" title="' + safeUrl + '">' + safeUrl + '</span>' +
       (meta ? '<span class="meta">' + escapeHtml(meta) + '</span>' : '') +
-      '<button class="action" onclick="copyToClipboard(\'' + jsUrl + '\')">Copy</button>' +
-      '<button class="action" onclick="window.open(\'' + jsUrl + '\',\'_blank\',\'noopener\')">Open</button>' +
+      '<button class="action" onclick="copyToClipboard(\'' + jsUrl + '\')">' + _t('copy') + '</button>' +
+      '<button class="action" onclick="window.open(\'' + jsUrl + '\',\'_blank\',\'noopener\')">' + _t('open') + '</button>' +
       '</div>';
   }).join('') + '</div>';
 }
@@ -2769,7 +3028,7 @@ function renderExtractTab(tab) {
 function copyToClipboard(text) {
   if (navigator.clipboard) {
     navigator.clipboard.writeText(text).then(() => {
-      showToast('Copied to clipboard', 'success');
+      showToast(_t('copiedClipboard'), 'success');
     }).catch(() => {});
   }
 }
