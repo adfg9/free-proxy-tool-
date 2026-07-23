@@ -1820,7 +1820,7 @@ input:checked + .toggle-slider:before {
           <div class="ranking-list" id="topProxiesList">
             <div class="empty-state">
               <div class="empty-state-icon">📊</div>
-              <div class="empty-state-text">Loading top proxies...</div>
+              <div class="empty-state-text" data-i18n="loading">Loading top proxies...</div>
             </div>
           </div>
         </div>
@@ -1828,10 +1828,10 @@ input:checked + .toggle-slider:before {
 
       <div class="card">
         <div class="card-header">
-          <h2>Daily Quote</h2>
+          <h2 data-i18n="dailyQuote">Daily Quote</h2>
         </div>
         <div class="card-body">
-          <div id="quoteContainer" class="quote-text" style="font-style: italic; color: var(--text2); line-height: 1.6;">
+          <div id="quoteContainer" class="quote-text" style="font-style: italic; color: var(--text2); line-height: 1.6;" data-i18n="loading">
             Loading quote...
           </div>
         </div>
@@ -1847,8 +1847,8 @@ input:checked + .toggle-slider:before {
               <div class="activity-dot info"></div>
               <div class="activity-content">
                 <div class="activity-title"><span data-i18n="initialized">GUI Initialized</span></div>
-                <div class="activity-desc">Management interface loaded</div>
-                <div class="activity-time" id="initTime">just now</div>
+                <div class="activity-desc" data-i18n="managementInterface">Management interface loaded</div>
+                <div class="activity-time" id="initTime" data-i18n="justNow">just now</div>
               </div>
             </div>
           </div>
@@ -1861,11 +1861,11 @@ input:checked + .toggle-slider:before {
   <div class="tab-content" id="tab-proxies" style="display:none;">
     <div class="card stable-pool-card">
       <div class="card-header">
-        <h2>Proxy Management</h2>
+        <h2 data-i18n="tabProxy">Proxy Management</h2>
         <div class="flex gap-8">
           <button class="btn btn-primary btn-sm" onclick="startAutoFind()">⚡ <span data-i18n="findStableProxies">Find Stable Proxies</span></button>
-          <button class="btn btn-outline btn-sm" onclick="testAllProxies()">🧪 Test All</button>
-          <button class="btn btn-outline btn-sm" onclick="fetchFreeProxies()">📥 Fetch List</button>
+          <button class="btn btn-outline btn-sm" onclick="testAllProxies()">🧪 <span data-i18n="testAllBtn">Test All</span></button>
+          <button class="btn btn-outline btn-sm" onclick="fetchFreeProxies()">📥 <span data-i18n="fetchListBtn">Fetch List</span></button>
         </div>
       </div>
       <div class="card-body">
@@ -1913,20 +1913,20 @@ input:checked + .toggle-slider:before {
           </div>
           <div class="sp-progress-info">
             <div class="flex justify-between items-center">
-              <span id="autoFindStage">Initializing...</span>
+              <span id="autoFindStage" data-i18n="initializingStatus">Initializing...</span>
               <span id="autoFindCount">0 / 0</span>
             </div>
             <div class="sp-progress-bar mt-8">
               <div class="sp-progress-fill" id="autoFindBar" style="width: 0%;"></div>
             </div>
-            <div class="sp-progress-stage" id="autoFindDetail">Preparing proxy list...</div>
+            <div class="sp-progress-stage" id="autoFindDetail" data-i18n="preparingProxyList">Preparing proxy list...</div>
           </div>
         </div>
 
         <div class="sp-toolbar">
           <input type="text" class="sp-filter-input" id="proxyFilter" placeholder="Filter by host, IP, type..." data-i18n-placeholder="proxyFilterPlaceholder" oninput="filterProxies()">
           <div class="sp-type-chips">
-            <div class="sp-chip active" data-type="all" onclick="filterByType('all', this)">All</div>
+            <div class="sp-chip active" data-type="all" onclick="filterByType('all', this)" data-i18n="filterAll">All</div>
             <div class="sp-chip" data-type="socks5" onclick="filterByType('socks5', this)">SOCKS5</div>
             <div class="sp-chip" data-type="http" onclick="filterByType('http', this)">HTTP</div>
             <div class="sp-chip" data-type="socks4" onclick="filterByType('socks4', this)">SOCKS4</div>
@@ -1942,18 +1942,18 @@ input:checked + .toggle-slider:before {
           <table class="sp-table">
             <thead>
               <tr>
-                <th>Grade</th>
-                <th>Host</th>
-                <th>Port</th>
-                <th>Type</th>
-                <th>Latency</th>
-                <th>Tests</th>
-                <th>Source</th>
-                <th>Actions</th>
+                <th data-i18n="gradeLabel">Grade</th>
+                <th data-i18n="host">Host</th>
+                <th data-i18n="port">Port</th>
+                <th data-i18n="type">Type</th>
+                <th data-i18n="latency">Latency</th>
+                <th data-i18n="tests">Tests</th>
+                <th data-i18n="source">Source</th>
+                <th data-i18n="action">Actions</th>
               </tr>
             </thead>
             <tbody id="proxyTableBody">
-              <tr><td colspan="8" class="text-center text-muted">Loading proxies...</td></tr>
+              <tr><td colspan="8" class="text-center text-muted"><span data-i18n="loading">Loading proxies...</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -1962,7 +1962,7 @@ input:checked + .toggle-slider:before {
 
     <div class="card mt-16">
       <div class="card-header">
-        <h2>Test Single Proxy</h2>
+        <h2 data-i18n="testSingleProxy">Test Single Proxy</h2>
       </div>
       <div class="card-body">
         <div class="form-group">
@@ -1984,7 +1984,7 @@ input:checked + .toggle-slider:before {
           </div>
           <div class="form-row" style="justify-content: flex-end;">
             <label>&nbsp;</label>
-            <button class="btn btn-primary" onclick="testSingleProxy()">🧪 Test Proxy</button>
+            <button class="btn btn-primary" onclick="testSingleProxy()">🧪 <span data-i18n="testProxy">Test Proxy</span></button>
           </div>
         </div>
         <div id="testResult" style="display:none; margin-top: 12px;"></div>
@@ -1993,7 +1993,7 @@ input:checked + .toggle-slider:before {
 
     <div class="card mt-16">
       <div class="card-header">
-        <h2>Add Manual Proxy</h2>
+        <h2 data-i18n="addManualProxy">Add Manual Proxy</h2>
       </div>
       <div class="card-body">
         <div class="form-group">
@@ -2015,7 +2015,7 @@ input:checked + .toggle-slider:before {
           </div>
           <div class="form-row" style="justify-content: flex-end;">
             <label>&nbsp;</label>
-            <button class="btn btn-success" onclick="addManualProxy()">➕ Add to Pool</button>
+            <button class="btn btn-success" onclick="addManualProxy()">➕ <span data-i18n="addToPool">Add to Pool</span></button>
           </div>
         </div>
       </div>
@@ -2027,8 +2027,8 @@ input:checked + .toggle-slider:before {
     <div class="grid">
       <div class="card">
         <div class="card-header">
-          <h2>Cloudflare WARP</h2>
-          <span id="warpStatusBadge" class="badge badge-err">Disconnected</span>
+          <h2 data-i18n="warpTitle">Cloudflare WARP</h2>
+          <span id="warpStatusBadge" class="badge badge-err" data-i18n="warpDisconnected">Disconnected</span>
         </div>
         <div class="card-body">
           <div class="flex items-center gap-16 mb-16">
@@ -2040,27 +2040,27 @@ input:checked + .toggle-slider:before {
             </div>
           </div>
           <div style="flex: 1;">
-            <h3 style="margin-bottom: 8px;">WARP VPN</h3>
-            <p class="text-muted text-sm" style="margin-bottom: 12px;">
+            <h3 style="margin-bottom: 8px;" data-i18n="warpVpn">WARP VPN</h3>
+            <p class="text-muted text-sm" style="margin-bottom: 12px;" data-i18n="warpDesc">
               Cloudflare WARP provides a fast, secure VPN connection.
             </p>
             <div id="warpInstalled" class="badge badge-warn" data-i18n="checkingInstallation">Checking installation status...</div>
           </div>
         </div>
         <div class="flex gap-8">
-          <button class="btn btn-success" id="warpConnectBtn" onclick="connectWarp()">🔗 Connect</button>
-          <button class="btn btn-outline" id="warpDisconnectBtn" onclick="disconnectWarp()" style="display:none;">⏏ Disconnect</button>
-          <button class="btn btn-outline" onclick="registerWarp()">📝 Register</button>
+          <button class="btn btn-success" id="warpConnectBtn" onclick="connectWarp()">🔗 <span data-i18n="connectBtn">Connect</span></button>
+          <button class="btn btn-outline" id="warpDisconnectBtn" onclick="disconnectWarp()" style="display:none;">⏏ <span data-i18n="disconnectBtn">Disconnect</span></button>
+          <button class="btn btn-outline" onclick="registerWarp()">📝 <span data-i18n="registerBtn">Register</span></button>
         </div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <h2>WARP Status</h2>
+          <h2 data-i18n="warpStatus">WARP Status</h2>
         </div>
         <div class="card-body">
-          <div class="code-block" id="warpRawStatus">Loading...</div>
+          <div class="code-block" id="warpRawStatus" data-i18n="loading">Loading...</div>
           <div class="mt-12">
             <button class="btn btn-outline btn-sm" onclick="refreshWarpStatus()">↻ <span data-i18n="refreshStatus">Refresh Status</span></button>
           </div>
@@ -2078,7 +2078,7 @@ input:checked + .toggle-slider:before {
       </div>
       <div class="stat-card">
         <div class="value" id="statSuccessRate">0%</div>
-        <div class="label">Success Rate</div>
+        <div class="label" data-i18n="successRate">Success Rate</div>
       </div>
       <div class="stat-card">
         <div class="value" id="statAvgLatency">0ms</div>
@@ -2093,7 +2093,7 @@ input:checked + .toggle-slider:before {
     <div class="grid">
       <div class="card">
         <div class="card-header">
-          <h2>Latency Distribution</h2>
+          <h2 data-i18n="latencyDistribution">Latency Distribution</h2>
         </div>
         <div class="card-body">
           <div class="chart-container">
@@ -2104,7 +2104,7 @@ input:checked + .toggle-slider:before {
 
       <div class="card">
         <div class="card-header">
-          <h2>Proxy Types Distribution</h2>
+          <h2 data-i18n="proxyTypesDistribution">Proxy Types Distribution</h2>
         </div>
         <div class="card-body">
           <div class="chart-container">
@@ -2115,10 +2115,10 @@ input:checked + .toggle-slider:before {
 
       <div class="card full">
         <div class="card-header">
-          <h2>Test History</h2>
+          <h2 data-i18n="testHistory">Test History</h2>
           <div class="flex gap-8">
             <button class="btn btn-outline btn-sm" onclick="loadHistory()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
-            <button class="btn btn-danger btn-sm" onclick="clearStats()">🗑 Clear</button>
+            <button class="btn btn-danger btn-sm" onclick="clearStats()">🗑 <span data-i18n="clearBtn">Clear</span></button>
           </div>
         </div>
         <div class="card-body">
@@ -2126,16 +2126,16 @@ input:checked + .toggle-slider:before {
             <table>
               <thead>
                 <tr>
-                  <th>Time</th>
-                  <th>Host</th>
-                  <th>Port</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  <th>Latency</th>
+                  <th data-i18n="timeLabel">Time</th>
+                  <th data-i18n="host">Host</th>
+                  <th data-i18n="port">Port</th>
+                  <th data-i18n="type">Type</th>
+                  <th data-i18n="statusLabel">Status</th>
+                  <th data-i18n="latency">Latency</th>
                 </tr>
               </thead>
               <tbody id="historyTableBody">
-                <tr><td colspan="6" class="text-center text-muted">Loading history...</td></tr>
+                <tr><td colspan="6" class="text-center text-muted"><span data-i18n="loadingHistory">Loading history...</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -2149,7 +2149,7 @@ input:checked + .toggle-slider:before {
     <div class="grid">
       <div class="card">
         <div class="card-header">
-          <h2>Proxy Server Control</h2>
+          <h2 data-i18n="proxyServerControl">Proxy Server Control</h2>
           <span id="serverStatusBadge" class="badge badge-err" data-i18n="stopped">Stopped</span>
         </div>
         <div class="card-body">
@@ -2161,11 +2161,11 @@ input:checked + .toggle-slider:before {
           </div>
         </div>
         <div class="text-center mb-16">
-          <div style="font-size: 18px; font-weight: 700;" id="serverStatusText">Server is stopped</div>
-          <div class="text-muted text-sm mt-8" id="serverPortText">Port: -</div>
+          <div style="font-size: 18px; font-weight: 700;" id="serverStatusText" data-i18n="statusStopped">Server is stopped</div>
+          <div class="text-muted text-sm mt-8" id="serverPortText"><span data-i18n="portLabel">Port</span>: -</div>
         </div>
         <div class="flex gap-8 justify-center">
-          <button class="btn btn-primary" id="startServerBtn" onclick="startServer()">▶ Start Server</button>
+          <button class="btn btn-primary" id="startServerBtn" onclick="startServer()">▶ <span data-i18n="startServerBtn">Start Server</span></button>
           <button class="btn btn-danger" id="stopServerBtn" onclick="stopServer()" style="display:none;">⏹ <span data-i18n="stopServerBtn">Stop Server</span></button>
         </div>
         </div>
@@ -2173,7 +2173,7 @@ input:checked + .toggle-slider:before {
 
       <div class="card">
         <div class="card-header">
-          <h2>Server Settings</h2>
+          <h2 data-i18n="serverSettings">Server Settings</h2>
         </div>
         <div class="card-body">
           <div class="form-row">
@@ -2181,26 +2181,26 @@ input:checked + .toggle-slider:before {
             <input type="number" class="input" id="serverPortInput" value="1080" min="1" max="65535">
           </div>
           <div class="form-row">
-            <label>Upstream Proxy (optional)</label>
+            <label data-i18n="upstreamProxy">Upstream Proxy (optional)</label>
             <input type="text" class="input" id="upstreamProxy" placeholder="socks5://host:port or http://host:port" data-i18n-placeholder="serverUpstreamPlaceholder">
-            <div class="text-sm text-muted mt-8">
+            <div class="text-sm text-muted mt-8" data-i18n="upstreamProxyDesc">
               Route all traffic through another proxy. Format: socks5://host:port, http://host:port
             </div>
           </div>
-          <button class="btn btn-primary w-full" onclick="setUpstreamProxy()">🔗 Set Upstream</button>
+          <button class="btn btn-primary w-full" onclick="setUpstreamProxy()">🔗 <span data-i18n="setUpstream">Set Upstream</span></button>
         </div>
       </div>
 
       <div class="card full">
         <div class="card-header">
-          <h2>System Proxy</h2>
-          <span id="sysProxyBadge" class="badge badge-err">Disabled</span>
+          <h2 data-i18n="systemProxy">System Proxy</h2>
+          <span id="sysProxyBadge" class="badge badge-err" data-i18n="sysProxyDisabled">Disabled</span>
         </div>
         <div class="card-body">
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="enableSystemProxy">Enable System Proxy</div>
-              <div class="setting-desc">Route all system traffic through the local proxy server</div>
+              <div class="setting-desc" data-i18n="systemProxyDesc">Route all system traffic through the local proxy server</div>
             </div>
             <label class="toggle-switch">
               <input type="checkbox" id="sysProxyToggle" onchange="toggleSystemProxy()">
@@ -2210,11 +2210,11 @@ input:checked + .toggle-slider:before {
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="pacFileUrl">PAC File URL</div>
-              <div class="setting-desc">Auto-configuration script for advanced setups</div>
+              <div class="setting-desc" data-i18n="pacFileDesc">Auto-configuration script for advanced setups</div>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="copyPacUrl()">📋 Copy URL</button>
+            <button class="btn btn-outline btn-sm" onclick="copyPacUrl()">📋 <span data-i18n="copyUrlBtn">Copy URL</span></button>
           </div>
-          <div class="code-block mt-12" id="pacUrlDisplay">Loading...</div>
+          <div class="code-block mt-12" id="pacUrlDisplay" data-i18n="loading">Loading...</div>
         </div>
       </div>
     </div>
@@ -2253,18 +2253,18 @@ input:checked + .toggle-slider:before {
         <div class="flex gap-8">
           <select id="logLevelFilter" class="sp-sort-select" onchange="filterLogs()">
             <option value="all" data-i18n="logLevelAll">All Levels</option>
-            <option value="info">Info</option>
+            <option value="info" data-i18n="logLevelInfo">Info</option>
             <option value="warn" data-i18n="logLevelWarn">Warning</option>
-            <option value="error">Error</option>
+            <option value="error" data-i18n="logLevelError">Error</option>
             <option value="success" data-i18n="logLevelSuccess">Success</option>
           </select>
           <button class="btn btn-outline btn-sm" onclick="loadLogs()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
-          <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑 Clear</button>
+          <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑 <span data-i18n="clearBtn">Clear</span></button>
         </div>
       </div>
       <div class="card-body" style="padding: 0; height: 500px;">
         <div class="log-box" id="logBox" style="height: 100%; border: none;">
-          <div class="text-muted">Loading logs...</div>
+          <div class="text-muted" data-i18n="loadingLogs">Loading logs...</div>
         </div>
       </div>
     </div>
@@ -2275,13 +2275,13 @@ input:checked + .toggle-slider:before {
     <div class="grid">
       <div class="card">
         <div class="card-header">
-          <h2>General Settings</h2>
+          <h2 data-i18n="generalSettings">General Settings</h2>
         </div>
         <div class="card-body">
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="theme">Theme</div>
-              <div class="setting-desc">Choose your preferred visual theme</div>
+              <div class="setting-desc" data-i18n="themeDesc">Choose your preferred visual theme</div>
             </div>
             <select id="themeSelect" class="sp-sort-select" onchange="changeTheme(this.value)">
               <option value="dark" data-i18n="themeDark">Dark</option>
@@ -2292,7 +2292,7 @@ input:checked + .toggle-slider:before {
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="defaultMode">Default Mode</div>
-              <div class="setting-desc">Default proxy mode</div>
+              <div class="setting-desc" data-i18n="defaultModeDesc">Default proxy mode</div>
             </div>
             <select id="defaultMode" class="sp-sort-select" onchange="saveConfig('defaultMode', this.value)">
               <option value="auto" data-i18n="modeAuto">Auto</option>
@@ -2303,14 +2303,14 @@ input:checked + .toggle-slider:before {
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="defaultPort">Default Port</div>
-              <div class="setting-desc">Default port for the proxy server</div>
+              <div class="setting-desc" data-i18n="defaultPortDesc">Default port for the proxy server</div>
             </div>
             <input type="number" class="input" style="width: 100px;" id="defaultPort" value="1080" onchange="saveConfig('defaultPort', parseInt(this.value))">
           </div>
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="proxyTestCount">Proxy Test Count</div>
-              <div class="setting-desc">Number of proxies to test in batch</div>
+              <div class="setting-desc" data-i18n="proxyTestCountDesc">Number of proxies to test in batch</div>
             </div>
             <input type="number" class="input" style="width: 100px;" id="proxyTestCount" value="30" onchange="saveConfig('proxyTestCount', parseInt(this.value))">
           </div>
@@ -2319,25 +2319,25 @@ input:checked + .toggle-slider:before {
 
       <div class="card">
         <div class="card-header">
-          <h2>Log Settings</h2>
+          <h2 data-i18n="logSettings">Log Settings</h2>
         </div>
         <div class="card-body">
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="logLevel">Log Level</div>
-              <div class="setting-desc">Minimum level to log</div>
+              <div class="setting-desc" data-i18n="logLevelDesc">Minimum level to log</div>
             </div>
             <select id="logLevel" class="sp-sort-select" onchange="saveConfig('logLevel', this.value)">
-              <option value="debug">Debug</option>
-              <option value="info">Info</option>
+              <option value="debug" data-i18n="logLevelDebug">Debug</option>
+              <option value="info" data-i18n="logLevelInfo">Info</option>
               <option value="warn" data-i18n="logLevelWarn">Warning</option>
-              <option value="error">Error</option>
+              <option value="error" data-i18n="logLevelError">Error</option>
             </select>
           </div>
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="logToFile">Log to File</div>
-              <div class="setting-desc">Save logs to file</div>
+              <div class="setting-desc" data-i18n="logToFileDesc">Save logs to file</div>
             </div>
             <label class="toggle-switch">
               <input type="checkbox" id="logToFile" checked onchange="saveConfig('logToFile', this.checked)">
@@ -2380,7 +2380,7 @@ input:checked + .toggle-slider:before {
           </div>
           <div class="mt-16 flex gap-8">
             <button class="btn btn-outline btn-sm" onclick="loadDiagnostics()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
-            <button class="btn btn-outline btn-sm" onclick="resetConfig()">🔄 Reset to Defaults</button>
+            <button class="btn btn-outline btn-sm" onclick="resetConfig()">🔄 <span data-i18n="resetToDefaults">Reset to Defaults</span></button>
           </div>
         </div>
       </div>
@@ -2401,14 +2401,14 @@ input:checked + .toggle-slider:before {
     </div>
     <div class="modal-body">
       <div class="form-row">
-        <label data-i18n="appName">App Name</label>
+        <label data-i18n="appNameLabel">App Name</label>
         <input type="text" class="input" id="appNameInput" placeholder="e.g. Google Chrome" data-i18n-placeholder="appNamePlaceholder">
       </div>
       <div class="form-row">
         <label data-i18n="appPath">App Path</label>
         <div class="flex gap-8">
           <input type="text" class="input" id="appPathInput" placeholder="C:\path\to\app.exe" style="flex:1;">
-          <button class="btn btn-outline btn-sm" onclick="browseApp()">📁 Browse</button>
+          <button class="btn btn-outline btn-sm" onclick="browseApp()">📁 <span data-i18n="browseBtn">Browse</span></button>
         </div>
       </div>
       <div class="form-row">
@@ -2421,7 +2421,7 @@ input:checked + .toggle-slider:before {
       <div class="form-row">
         <label data-i18n="processName">Process Name (optional)</label>
         <input type="text" class="input" id="appProcessInput" placeholder="e.g. chrome.exe" data-i18n-placeholder="processNamePlaceholder">
-        <div class="text-sm text-muted mt-8">Process name to kill before launching (optional)</div>
+        <div class="text-sm text-muted mt-8" data-i18n="processNameDesc">Process name to kill before launching (optional)</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -2727,7 +2727,7 @@ async function startServer() {
       addActivity('success', _t('proxyServerStartedActivity'), _t('startedOnPortActivity', data.port));
       updateServerStatus(true, data.port);
     } else {
-      toast('err', _t('serverStartFailed', data.error || 'Unknown error'));
+      toast('err', _t('serverStartFailed', data.error || _t('unknown')));
     }
   } catch (e) {}
 }
@@ -2793,7 +2793,7 @@ async function registerWarp() {
     if (data.success) {
       toast('ok', _t('warpRegistered'));
     } else {
-      toast('err', _t('warpRegisterFailed', data.raw || 'Unknown error'));
+      toast('err', _t('warpRegisterFailed', data.raw || _t('unknown')));
     }
     refreshWarpStatus();
   } catch (e) {}
@@ -3001,7 +3001,7 @@ function _doRenderTopProxies() {
           </div>
         </div>
         <div class="ranking-actions">
-          <button class="btn btn-outline btn-sm" onclick="testOneProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">Test</button>
+          <button class="btn btn-outline btn-sm" onclick="testOneProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">${_t('testBtn')}</button>
         </div>
       </div>
     `;
@@ -3091,16 +3091,16 @@ async function startAutoFind() {
 }
 
 function handleAutoFindStage(data) {
-  document.getElementById('autoFindStage').textContent = data.message || 'Processing...';
-  document.getElementById('autoFindDetail').textContent = `Stage: ${data.stage || 'unknown'}`;
+  document.getElementById('autoFindStage').textContent = data.message || _t('processing');
+  document.getElementById('autoFindDetail').textContent = _t('stageLabel') + ': ' + (data.stage || _t('unknown'));
 }
 
 function handleAutoFindProgress(data) {
   const progress = document.getElementById('autoFindProgress');
   progress.style.display = 'flex';
-  document.getElementById('autoFindCount').textContent = `${data.tested} / ${data.total} (${data.alive} alive)`;
+  document.getElementById('autoFindCount').textContent = `${data.tested} / ${data.total} (${data.alive} ${_t('aliveLabel')})`;
   document.getElementById('autoFindBar').style.width = `${(data.tested / data.total) * 100}%`;
-  document.getElementById('autoFindDetail').textContent = `${data.alive} alive so far - ${data.current ? 'Last: ' + data.current.host : ''}`;
+  document.getElementById('autoFindDetail').textContent = `${data.alive} ${_t('aliveSoFar')} - ${data.current ? _t('lastLabel') + ': ' + data.current.host : ''}`;
 }
 
 function handleAutoFindComplete(data) {
@@ -3240,7 +3240,7 @@ function drawLatencyChart() {
     ctx.fillStyle = 'var(--text2)';
     ctx.font = '12px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('No latency data available', w / 2, h / 2);
+    ctx.fillText(_t('noLatencyData'), w / 2, h / 2);
     return;
   }
 
@@ -3301,7 +3301,7 @@ function drawTypeChart() {
     ctx.fillStyle = 'var(--text2)';
     ctx.font = '12px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('No type data available', w / 2, h / 2);
+    ctx.fillText(_t('noTypeData'), w / 2, h / 2);
     return;
   }
 
@@ -3350,7 +3350,7 @@ async function loadApps() {
       grid.innerHTML = `
         <div class="empty-state" style="grid-column: 1 / -1;">
           <div class="empty-state-icon">📱</div>
-          <div class="empty-state-text">No apps configured. Click "Add App" to get started.</div>
+          <div class="empty-state-text" data-i18n="noAppsConfigured">No apps configured. Click "Add App" to get started.</div>
         </div>
       `;
       return;
@@ -3360,10 +3360,10 @@ async function loadApps() {
         <div class="app-icon">📱</div>
         <div class="app-name">${app.name}</div>
         <div class="app-path" title="${app.path}">${app.path}</div>
-        <div class="text-sm text-muted">Mode: ${app.mode || 'http'}</div>
+        <div class="text-sm text-muted">${_t('modeLabel')}: ${app.mode || 'http'}</div>
         <div class="app-actions">
-          <button class="btn btn-primary btn-sm" onclick="launchApp('${app.name}')">🚀 Launch</button>
-          <button class="btn btn-outline btn-sm" onclick="editApp('${app.name}')">✏️</button>
+          <button class="btn btn-primary btn-sm" onclick="launchApp('${app.name}')">🚀 ${_t('launchBtn')}</button>
+          <button class="btn btn-outline btn-sm" onclick="editApp('${app.name}')" title="${_t('editApp')}">✏️</button>
           <button class="btn btn-danger btn-sm" onclick="removeApp('${app.name}')">🗑</button>
         </div>
       </div>
@@ -3373,7 +3373,7 @@ async function loadApps() {
 
 function showAddAppModal() {
   editingApp = null;
-  document.getElementById('appModalTitle').textContent = 'Add App';
+  document.getElementById('appModalTitle').textContent = _t('addApp');
   document.getElementById('appNameInput').value = '';
   document.getElementById('appPathInput').value = '';
   document.getElementById('appModeSelect').value = 'http';
@@ -3391,7 +3391,7 @@ async function editApp(name) {
     const app = (data.apps || []).find(a => a.name === name);
     if (!app) return;
     editingApp = name;
-    document.getElementById('appModalTitle').textContent = 'Edit App';
+    document.getElementById('appModalTitle').textContent = _t('editApp');
     document.getElementById('appNameInput').value = app.name;
     document.getElementById('appPathInput').value = app.path;
     document.getElementById('appModeSelect').value = app.mode || 'http';
@@ -3418,7 +3418,7 @@ async function saveApp() {
     }
     if (data.success) {
       toast('ok', _t('appUpdatedAdded', editingApp ? _t('edit') : _t('add'), name));
-      addActivity('success', editingApp ? 'Edit App' : 'Add App', name);
+      addActivity('success', editingApp ? _t('editApp') : _t('addApp'), name);
       closeAppModal();
       loadApps();
     } else {
@@ -3707,10 +3707,10 @@ window.addEventListener('load', () => {
         if (data.lang) { currentLang = data.lang; localStorage.setItem('fpt-lang', currentLang); }
         applyI18n();
         updateLangLabel();
-        if (window.toast) window.toast('info', currentLang === 'zh' ? '已切换为中文' : 'Switched to English');
+        if (window.toast) window.toast('info', currentLang === 'zh' ? window._t('languageSwitchedZh') : window._t('languageSwitchedEn'));
       })
       .catch(function() {
-        if (window.toast) window.toast('err', 'Language switch failed');
+        if (window.toast) window.toast('err', window._t('languageSwitchFailed'));
       });
   };
 
