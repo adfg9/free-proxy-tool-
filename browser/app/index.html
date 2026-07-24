@@ -2389,21 +2389,8 @@ function applyTranslations() {
 }
 
 function updateProxyStatusDisplay() {
-  const text = document.getElementById('proxyStatusText');
-  const sbProxyStatus = document.getElementById('sbProxyStatus');
-  const proxyLabel = document.querySelector('.proxy-card .proxy-label');
-  if (text && text.textContent.includes('Built-in Proxy')) {
-    if (text.textContent.includes('Running')) text.textContent = _t('builtInProxy') + ': ' + _t('running');
-    else text.textContent = _t('builtInProxy') + ': ' + _t('stopped');
-  }
-  if (sbProxyStatus) {
-    if (sbProxyStatus.textContent === 'Running') sbProxyStatus.textContent = _t('running');
-    else if (sbProxyStatus.textContent === 'Stopped') sbProxyStatus.textContent = _t('stopped');
-  }
-  if (proxyLabel) {
-    if (proxyLabel.textContent === 'Proxy Connected') proxyLabel.textContent = _t('proxyConnected');
-    else if (proxyLabel.textContent === 'Proxy Not Started') proxyLabel.textContent = _t('proxyNotStarted');
-  }
+  // Re-run full proxy status check so all text uses current language
+  checkProxyStatus();
 }
 
 function _te(key) { return _t(key); }
@@ -2655,28 +2642,40 @@ async function checkProxyStatus() {
   const proxyCore = document.querySelector('.proxy-card .breathe-core');
   const proxyRing = document.querySelector('.proxy-card .breathe-ring');
 
-  // Probe :1080 port to avoid false reports
+  // First: check if built-in :1080 proxy port is listening (most reliable for standalone browser)
   let running = false;
+  let proxyInfo = null;
   try {
+    // Quick TCP probe via fetch — connect to :1080, any response (even error) means port is open
     const ac = new AbortController();
-    const t = setTimeout(() => ac.abort(), 2000);
-    // Detect through backend API, more reliable (does not depend on network reachability)
-    const res = await fetch('http://127.0.0.1:3000/api/proxy/status', { signal: ac.signal });
+    const t = setTimeout(() => ac.abort(), 1500);
+    await fetch('http://127.0.0.1:1080/', { signal: ac.signal, mode: 'no-cors' });
     clearTimeout(t);
-    if (res.ok) {
-      const data = await res.json();
-      running = !!(data && (data.running || data.active || data.enabled));
-      if (data && data.host) {
-        const detail = document.querySelector('.proxy-card .proxy-detail');
-        if (detail) {
-          detail.innerHTML = '<div>' + _t('address') + ' ' + escapeHtml(data.host) + (data.port ? ':' + data.port : '') + '</div>' +
-            '<div>' + _t('type') + ' ' + escapeHtml(data.type || 'SOCKS5') + '</div>' +
-            (data.latency ? '<div>' + _t('latency') + ' ' + data.latency + 'ms</div>' : '');
-        }
-      }
+    // If fetch didn't throw, port is open → proxy is running
+    running = true;
+  } catch (err) {
+    // Connection refused → port not open → proxy stopped
+    // Abort error (timeout) could mean port is filtered, not necessarily stopped
+    if (err && err.name === 'AbortError') {
+      // Timeout — try backend API as fallback
     }
-  } catch (e) {
-    running = false;
+  }
+
+  // Also try backend API for detailed info (or as fallback)
+  if (!running) {
+    try {
+      const ac2 = new AbortController();
+      const t2 = setTimeout(() => ac2.abort(), 2000);
+      const res = await fetch('http://127.0.0.1:3000/api/proxy/status', { signal: ac2.signal });
+      clearTimeout(t2);
+      if (res.ok) {
+        const data = await res.json();
+        running = !!(data && (data.running || data.active || data.enabled));
+        if (data && data.host) proxyInfo = data;
+      }
+    } catch (e) {
+      // Backend API not available either
+    }
   }
 
   if (running) {
@@ -2687,6 +2686,14 @@ async function checkProxyStatus() {
     if (proxyLabel) { proxyLabel.textContent = _t('proxyConnected'); proxyLabel.style.color = 'var(--success)'; }
     if (proxyCore) { proxyCore.style.background = 'var(--success)'; proxyCore.style.boxShadow = '0 0 12px var(--success)'; }
     if (proxyRing) proxyRing.style.borderColor = 'var(--success)';
+    if (proxyInfo && proxyInfo.host) {
+      const detail = document.querySelector('.proxy-card .proxy-detail');
+      if (detail) {
+        detail.innerHTML = '<div>' + _t('address') + ' ' + escapeHtml(proxyInfo.host) + (proxyInfo.port ? ':' + proxyInfo.port : '') + '</div>' +
+          '<div>' + _t('type') + ' ' + escapeHtml(proxyInfo.type || 'SOCKS5') + '</div>' +
+          (proxyInfo.latency ? '<div>' + _t('latency') + ' ' + proxyInfo.latency + 'ms</div>' : '');
+      }
+    }
   } else {
     if (dot) dot.className = 'status-dot err';
     if (sbDot) sbDot.className = 'status-dot err';
