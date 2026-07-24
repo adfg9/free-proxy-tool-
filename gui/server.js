@@ -108,8 +108,34 @@ function saveProxyApps(apps) {
 // ========== Stable Proxy Pool ==========
 function loadStableProxies() {
   try {
-    if (!fs.existsSync(STABLE_PROXIES_FILE)) return [];
-    return JSON.parse(fs.readFileSync(STABLE_PROXIES_FILE, 'utf8'));
+    if (!fs.existsSync(STABLE_PROXIES_FILE)) {
+      // First run: initialize with built-in proxies
+      const builtins = BUILTIN_PROXIES.map(p => ({ host: p.host, port: p.port, type: p.type, latency: 0, ip: '', source: 'Built-in', tests: 0, builtin: true, added: Date.now() }));
+      saveStableProxies(builtins);
+      return builtins;
+    }
+    const list = JSON.parse(fs.readFileSync(STABLE_PROXIES_FILE, 'utf8'));
+    // Ensure built-in proxies are always present
+    const builtinSet = new Set(BUILTIN_PROXIES.map(p => p.host + ':' + p.port));
+    const existingSet = new Set(list.map(p => p.host + ':' + p.port));
+    let changed = false;
+    for (const bp of BUILTIN_PROXIES) {
+      const key = bp.host + ':' + bp.port;
+      if (!existingSet.has(key)) {
+        list.push({ host: bp.host, port: bp.port, type: bp.type, latency: 0, ip: '', source: 'Built-in', tests: 0, builtin: true, added: Date.now() });
+        changed = true;
+      }
+    }
+    // Mark built-in proxies with builtin flag
+    for (const p of list) {
+      if (builtinSet.has(p.host + ':' + p.port) && !p.builtin) {
+        p.builtin = true;
+        if (!p.source) p.source = 'Built-in';
+        changed = true;
+      }
+    }
+    if (changed) saveStableProxies(list);
+    return list;
   } catch { return []; }
 }
 function saveStableProxies(proxies) {
