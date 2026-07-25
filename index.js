@@ -447,7 +447,7 @@ async function main() {
     }
 
     case 'gui': {
-      const port = parseInt(arg1) || getMergedConfig().guiPort || 3000;
+      const port = parseInt(arg1) || getMergedConfig().guiPort || 1001;
       log('info', `Starting Web UI... Port: ${port}`);
       const guiServer = require('./gui/server');
       guiServer.start(port);
