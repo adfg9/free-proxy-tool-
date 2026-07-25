@@ -1,2876 +1,509 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark" data-i18n-root>
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-<title data-i18n="title">Free Proxy Tool - GUI Management Interface</title>
+<title>Free Proxy Tool</title>
 <style>
-:root {
-  --tile-blue: #0078D7;
-  --tile-green: #107C10;
-  --tile-teal: #008272;
-  --tile-emerald: #0B6A3A;
-  --tile-rose: #D13438;
-  --tile-violet: #5C2D91;
-  --tile-surface: #f2f2f2;
-  --tile-surface2: #ffffff;
-  --bg: #f2f2f2;
-  --text: #1a1a1a;
-  --text2: #5c5c5c;
-  --border: #d0d0d0;
-  --primary: #0078D7;
-  --primary-glow: rgba(0,120,215,0.2);
-  --success: #107C10;
-  --success-glow: rgba(16,124,16,0.2);
-  --danger: #D13438;
-  --danger-glow: rgba(209,52,56,0.2);
-  --warning: #FF8C00;
-  --teal: #008272;
-  --violet: #5C2D91;
-  --orange: #FF8C00;
-  --radius: 0px;
-  --radius-sm: 0px;
-  --glass-bg: #f2f2f2;
-  --glass-border: #d0d0d0;
-  --glass-shadow: none;
-  --card-bg: #ffffff;
-  --card-header-bg: #fafafa;
-  --hover-bg: #deecf9;
-  --log-bg: #f5f5f5;
-  --input-bg: #ffffff;
-  --glow-blue: rgba(0,120,215,0.1);
-  --glow-green: rgba(16,124,16,0.1);
-  --gradient-accent: #0078D7;
-  --gradient-primary: #0078D7;
-  --gradient-success: #107C10;
-  --gradient-danger: #D13438;
-  --grid-line: rgba(0,0,0,0.06);
-  --status-online: #107C10;
-  --status-offline: #6c6c6c;
-  --status-warning: #B77310;
-  --status-error: #D13438;
-  --physics-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --physics-smooth: cubic-bezier(0.22, 1, 0.36, 1);
-  --physics-snap: cubic-bezier(0.5, 0, 0, 1.25);
-  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --dur-fast: 0.15s;
-  --dur-med: 0.26s;
-  --dur-slow: 0.4s;
-}
-
-/* ===== Dark Theme (Win10 Dark Mode) ===== */
-html[data-theme="dark"] {
-  --tile-blue: #0078D7;
-  --tile-green: #107C10;
-  --tile-teal: #008272;
-  --tile-emerald: #0B6A3A;
-  --tile-rose: #D13438;
-  --tile-violet: #5C2D91;
-  --tile-surface: #1f1f1f;
-  --tile-surface2: #2d2d2d;
-  --bg: #1f1f1f;
-  --text: #ffffff;
-  --text2: #a0a0a0;
-  --border: #3d3d3d;
-  --primary: #0078D7;
-  --primary-glow: rgba(0,120,215,0.3);
-  --success: #4cc24c;
-  --success-glow: rgba(76,194,76,0.3);
-  --danger: #e81123;
-  --danger-glow: rgba(232,17,35,0.3);
-  --warning: #ffb900;
-  --teal: #008272;
-  --violet: #5C2D91;
-  --orange: #ff8c00;
-  --radius: 0px;
-  --radius-sm: 0px;
-  --glass-bg: #2d2d2d;
-  --glass-border: #3d3d3d;
-  --glass-shadow: none;
-  --card-bg: #2d2d2d;
-  --card-header-bg: #1f1f1f;
-  --hover-bg: #3d3d3d;
-  --log-bg: #1f1f1f;
-  --input-bg: #1f1f1f;
-  --glow-blue: rgba(0,120,215,0.15);
-  --glow-green: rgba(76,194,76,0.15);
-  --gradient-accent: #0078D7;
-  --gradient-primary: #0078D7;
-  --gradient-success: #4cc24c;
-  --gradient-danger: #e81123;
-  --grid-line: rgba(255,255,255,0.06);
-  --status-online: #4cc24c;
-  --status-offline: #6c6c6c;
-  --status-warning: #ffb900;
-  --status-error: #e81123;
-}
-
-/* ===== Pixel Theme (Retro CRT) ===== */
-html[data-theme="pixel"] {
-  --tile-blue: #00d4ff;
-  --tile-green: #33ff33;
-  --tile-teal: #00ffaa;
-  --tile-emerald: #00cc66;
-  --tile-rose: #ff3333;
-  --tile-violet: #aa66ff;
-  --tile-surface: #001a12;
-  --tile-surface2: #00281a;
-  --bg: #001a12;
-  --text: #b3ffcc;
-  --text2: #66cc88;
-  --border: #004d36;
-  --primary: #00d4ff;
-  --primary-glow: rgba(0,212,255,0.2);
-  --success: #33ff33;
-  --success-glow: rgba(51,255,51,0.2);
-  --danger: #ff3333;
-  --danger-glow: rgba(255,51,51,0.2);
-  --warning: #ffff00;
-  --teal: #00ffaa;
-  --violet: #aa66ff;
-  --orange: #ffaa00;
-  --radius: 0px;
-  --radius-sm: 0px;
-  --glass-bg: #00281a;
-  --glass-border: #004d36;
-  --glass-shadow: none;
-  --card-bg: #00281a;
-  --card-header-bg: #001a12;
-  --hover-bg: #003322;
-  --log-bg: #001a12;
-  --input-bg: #001a12;
-  --glow-blue: rgba(0,212,255,0.1);
-  --glow-green: rgba(51,255,51,0.1);
-  --gradient-accent: #00d4ff;
-  --gradient-primary: #00d4ff;
-  --gradient-success: #33ff33;
-  --gradient-danger: #ff3333;
-  --grid-line: rgba(0,255,128,0.04);
-  --status-online: #33ff33;
-  --status-offline: #666666;
-  --status-warning: #ffff00;
-  --status-error: #ff3333;
-  --accent-yellow: #ffff00;
-  --accent-red: #ff3333;
-  --accent-blue: #00d4ff;
-}
-
-html[data-theme="dark"] .header { background: #2d2d2d; }
-html[data-theme="dark"] .card { background: #2d2d2d; }
-html[data-theme="dark"] .card-body { background: transparent; }
-html[data-theme="dark"] .btn-outline { background: transparent; border-color: var(--border); color: var(--text); }
-html[data-theme="dark"] .btn-outline:hover { background: #3d3d3d; border-color: var(--primary); }
-html[data-theme="dark"] .input, html[data-theme="dark"] select, html[data-theme="dark"] textarea {
-  background: #1f1f1f; border-color: #3d3d3d; color: var(--text);
-}
-html[data-theme="dark"] .input:focus, html[data-theme="dark"] select:focus, html[data-theme="dark"] textarea:focus {
-  border-color: var(--primary);
-}
-html[data-theme="dark"] .tab.active { color: var(--primary); }
-html[data-theme="dark"] .modal { background: #2d2d2d; }
-html[data-theme="dark"] .modal-overlay { background: rgba(0,0,0,0.6); }
-html[data-theme="dark"] table th { background: #3d3d3d; }
-html[data-theme="dark"] tr:nth-child(even) td { background: #262626; }
-html[data-theme="dark"] tr:hover td { background: #3a3a3a; }
-html[data-theme="dark"] .ranking-item { background: #2d2d2d; border-color: #3d3d3d; }
-html[data-theme="dark"] .ranking-list { border-color: #3d3d3d; }
-html[data-theme="dark"] .log-box { background: #1f1f1f; border-color: #3d3d3d; }
-html[data-theme="dark"] .log-entry { border-color: #3d3d3d; }
-html[data-theme="dark"] .stat-card { border-color: #3d3d3d; }
-html[data-theme="dark"] .badge-ok { background: rgba(76,194,76,0.15); color: #4cc24c; border-color: rgba(76,194,76,0.3); }
-html[data-theme="dark"] .badge-warn { background: rgba(255,185,0,0.15); color: #ffb900; border-color: rgba(255,185,0,0.3); }
-html[data-theme="dark"] .badge-err { background: rgba(232,17,35,0.15); color: #e81123; border-color: rgba(232,17,35,0.3); }
-html[data-theme="dark"] .progress-bar { background: #3d3d3d; }
-html[data-theme="dark"] .progress-fill { background: var(--primary); }
-html[data-theme="dark"] .wp-card { background: #3d3d3d; border-color: #4d4d4d; }
-html[data-theme="dark"] .wp-card:hover { border-color: var(--primary); }
-html[data-theme="dark"] .preset-chip { background: transparent; border-color: #3d3d3d; color: var(--text); }
-html[data-theme="dark"] .preset-chip:hover { border-color: var(--primary); background: #3a3a3a; }
-html[data-theme="dark"] .toggle-slider { background: #5c5c5c; }
-html[data-theme="dark"] input:checked + .toggle-slider { background: var(--primary); }
-html[data-theme="dark"] .code-block { background: #1f1f1f; border-color: #3d3d3d; }
-html[data-theme="dark"] .speed-score-circle { border-color: #3d3d3d; }
-html[data-theme="dark"] .orbit-center { background: #1f1f1f; border-color: #3d3d3d; }
-html[data-theme="dark"] .orbit-ring { border-color: #3d3d3d; }
-html[data-theme="dark"] #guiBgOverlay { background: rgba(10,10,15,0.7); }
-html[data-theme="dark"] .footer { color: #a0a0a0; border-top-color: #3d3d3d; }
-html[data-theme="dark"]::-webkit-scrollbar-track { background: #1f1f1f; border-color: #3d3d3d; }
-html[data-theme="dark"]::-webkit-scrollbar-thumb { background: #5c5c5c; border-color: #4d4d4d; }
-html[data-theme="dark"]::-webkit-scrollbar-thumb:hover { background: #6c6c6c; }
-html[data-theme="dark"]::-webkit-scrollbar-thumb:active { background: #7c7c7c; }
-html[data-theme="dark"] .toast-ok { background: #1a3a1a; color: #4cc24c; border-color: #4cc24c; }
-html[data-theme="dark"] .toast-err { background: #3a1a1a; color: #e81123; border-color: #e81123; }
-html[data-theme="dark"] .toast-info { background: #1a2a3a; color: #60a5fa; border-color: #0078D7; }
-html[data-theme="dark"] .toast-warn { background: #3a2a1a; color: #ffb900; border-color: #ffb900; }
-html[data-theme="dark"] .metric-card { backdrop-filter: none; -webkit-backdrop-filter: none; }
-html[data-theme="dark"] .metric-card:hover { border-color: rgba(255,255,255,0.15); }
-html[data-theme="dark"] .metric-icon { box-shadow: none; }
-
-/* ===== Pixel Theme Overrides ===== */
-html[data-theme="pixel"] body {
-  font-family: 'Courier New', 'Consolas', monospace;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  image-rendering: pixelated;
-}
-html[data-theme="pixel"] body::before {
-  background:
-    linear-gradient(rgba(0,0,0,0.2) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.2) 1px, transparent 1px);
-  background-size: 8px 8px;
-  opacity: 0.25;
-  z-index: 9999;
-}
-html[data-theme="pixel"] body::after {
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0,0,0,0.1) 0px,
-    rgba(0,0,0,0.1) 1px,
-    transparent 1px,
-    transparent 4px
-  );
-  z-index: 9998;
-  animation: pixelScanline 8s linear infinite;
-}
-@keyframes pixelScanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
-}
-
-html[data-theme="pixel"] .header {
-  background: var(--tile-surface);
-  border-bottom: 3px solid var(--border);
-  box-shadow: none;
-}
-html[data-theme="pixel"] .header::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent-red), var(--accent-yellow), var(--accent-blue));
-}
-html[data-theme="pixel"] .logo {
-  color: var(--accent-yellow);
-  text-shadow: 2px 2px 0 var(--accent-red);
-}
-html[data-theme="pixel"] .nav-tab {
-  border-radius: 0;
-  border: 2px solid var(--border);
-  background: var(--tile-surface2);
-  transition: none;
-}
-html[data-theme="pixel"] .nav-tab:hover {
-  background: var(--hover-bg);
-  border-color: var(--accent-yellow);
-  color: var(--accent-yellow);
-}
-html[data-theme="pixel"] .nav-tab.active {
-  background: var(--tile-surface);
-  border-color: var(--accent-yellow);
-  color: var(--accent-yellow);
-  border-bottom-color: var(--tile-surface);
-}
-html[data-theme="pixel"] .btn {
-  border-radius: 0;
-  border: 2px solid var(--border);
-  font-family: 'Courier New', monospace;
-  font-weight: 700;
-  transition: none;
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-}
-html[data-theme="pixel"] .btn:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
-}
-html[data-theme="pixel"] .btn:active {
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
-}
-html[data-theme="pixel"] .btn-primary { background: var(--accent-yellow); color: #000; border-color: var(--accent-yellow); }
-html[data-theme="pixel"] .btn-outline { background: var(--tile-surface2); color: var(--text); }
-html[data-theme="pixel"] .btn-outline:hover { background: var(--hover-bg); border-color: var(--accent-yellow); color: var(--accent-yellow); }
-html[data-theme="pixel"] .btn-sm { padding: 5px 12px; font-size: 11px; }
-html[data-theme="pixel"] .input,
-html[data-theme="pixel"] select,
-html[data-theme="pixel"] textarea {
-  border-radius: 0;
-  border: 2px solid var(--border);
-  background: var(--input-bg);
-  font-family: 'Courier New', monospace;
-  font-weight: 700;
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
-}
-html[data-theme="pixel"] .input:focus,
-html[data-theme="pixel"] select:focus,
-html[data-theme="pixel"] textarea:focus {
-  border-color: var(--accent-yellow);
-  box-shadow: 0 0 0 2px rgba(255,255,0,0.2);
-}
-html[data-theme="pixel"] .card {
-  border-radius: 0;
-  border: 2px solid var(--border);
-  background: var(--card-bg);
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
-}
-html[data-theme="pixel"] .card-header {
-  border-bottom: 2px solid var(--border);
-  background: var(--card-header-bg);
-}
-html[data-theme="pixel"] .card-header h3 {
-  font-family: 'Courier New', monospace;
-  letter-spacing: 1px;
-}
-html[data-theme="pixel"] .card:hover {
-  border-color: var(--accent-yellow);
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-}
-html[data-theme="pixel"] .stat-card {
-  border: 2px solid var(--border);
-  border-radius: 0;
-  box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
-}
-html[data-theme="pixel"] .stat-card:hover {
-  border-color: var(--accent-yellow);
-}
-html[data-theme="pixel"] .metric-card {
-  border-radius: 0;
-  border: 2px solid var(--border);
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-  backdrop-filter: none;
-}
-html[data-theme="pixel"] .metric-card:hover {
-  border-color: var(--accent-yellow);
-}
-html[data-theme="pixel"] .metric-icon {
-  border-radius: 0;
-  box-shadow: none;
-}
-html[data-theme="pixel"] .badge {
-  border-radius: 0;
-  border: 2px solid currentColor;
-  font-weight: 700;
-}
-html[data-theme="pixel"] .badge-ok { background: rgba(51,255,51,0.1); color: var(--success); }
-html[data-theme="pixel"] .badge-warn { background: rgba(255,255,0,0.1); color: var(--warning); }
-html[data-theme="pixel"] .badge-err { background: rgba(255,51,51,0.1); color: var(--danger); }
-html[data-theme="pixel"] .tab {
-  border-radius: 0;
-  border-bottom: 2px solid transparent;
-}
-html[data-theme="pixel"] .tab.active {
-  color: var(--accent-yellow);
-  border-bottom-color: var(--accent-yellow);
-}
-html[data-theme="pixel"] .toggle-switch .toggle-slider {
-  border-radius: 0;
-  background: var(--border);
-}
-html[data-theme="pixel"] input:checked + .toggle-slider { background: var(--accent-yellow); }
-html[data-theme="pixel"] .toggle-slider::before { border-radius: 0; }
-html[data-theme="pixel"] .modal {
-  border-radius: 0;
-  border: 3px solid var(--border);
-  background: var(--card-bg);
-  box-shadow: 6px 6px 0 rgba(0,0,0,0.4);
-}
-html[data-theme="pixel"] .modal-overlay { background: rgba(0,0,0,0.7); }
-html[data-theme="pixel"] .modal-header {
-  border-bottom: 2px solid var(--border);
-}
-html[data-theme="pixel"] .modal-close {
-  border-radius: 0;
-  border: 2px solid var(--border);
-}
-html[data-theme="pixel"] .table-container {
-  border: 2px solid var(--border);
-  border-radius: 0;
-}
-html[data-theme="pixel"] table th {
-  background: var(--card-header-bg);
-  border-bottom: 2px solid var(--border);
-}
-html[data-theme="pixel"] table td,
-html[data-theme="pixel"] table th {
-  border-right: 1px solid var(--border);
-}
-html[data-theme="pixel"] tr:nth-child(even) td { background: rgba(0,255,128,0.03); }
-html[data-theme="pixel"] tr:hover td { background: var(--hover-bg); }
-html[data-theme="pixel"] .log-box {
-  border: 2px solid var(--border);
-  border-radius: 0;
-  background: var(--log-bg);
-}
-html[data-theme="pixel"] .log-entry {
-  border-bottom: 1px solid var(--border);
-  font-family: 'Courier New', monospace;
-}
-html[data-theme="pixel"] .progress-bar { background: var(--border); border-radius: 0; }
-html[data-theme="pixel"] .progress-fill { background: var(--accent-yellow); border-radius: 0; }
-html[data-theme="pixel"] .wp-card {
-  border-radius: 0;
-  border: 2px solid var(--border);
-  background: var(--tile-surface2);
-}
-html[data-theme="pixel"] .wp-card:hover { border-color: var(--accent-yellow); }
-html[data-theme="pixel"] .preset-chip {
-  border-radius: 0;
-  border: 2px solid var(--border);
-  background: var(--tile-surface2);
-}
-html[data-theme="pixel"] .preset-chip:hover { border-color: var(--accent-yellow); background: var(--hover-bg); }
-html[data-theme="pixel"] .code-block {
-  border-radius: 0;
-  border: 2px solid var(--border);
-  background: var(--log-bg);
-  font-family: 'Courier New', monospace;
-}
-html[data-theme="pixel"] .speed-score-circle { border-radius: 0; border: 2px solid var(--border); }
-html[data-theme="pixel"] .orbit-center { border-radius: 0; }
-html[data-theme="pixel"] .orbit-ring { border-radius: 0; }
-html[data-theme="pixel"] .footer { border-top: 2px solid var(--border); color: var(--text2); }
-html[data-theme="pixel"]::-webkit-scrollbar {
-  width: 12px; height: 12px;
-}
-html[data-theme="pixel"]::-webkit-scrollbar-track {
-  background: var(--bg);
-  border-left: 2px solid var(--border);
-}
-html[data-theme="pixel"]::-webkit-scrollbar-thumb {
-  background: var(--tile-surface2);
-  border: 2px solid var(--border);
-}
-html[data-theme="pixel"]::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-yellow);
-  border-color: var(--accent-yellow);
-}
-html[data-theme="pixel"] .toast {
-  border-radius: 0;
-  border: 2px solid currentColor;
-  font-family: 'Courier New', monospace;
-  font-weight: 700;
-}
-html[data-theme="pixel"] .toast-ok { background: rgba(51,255,51,0.1); color: var(--success); }
-html[data-theme="pixel"] .toast-err { background: rgba(255,51,51,0.1); color: var(--danger); }
-html[data-theme="pixel"] .toast-info { background: rgba(0,212,255,0.1); color: var(--primary); }
-html[data-theme="pixel"] .toast-warn { background: rgba(255,255,0,0.1); color: var(--warning); }
-html[data-theme="pixel"] .ranking-item {
-  border-radius: 0;
-  border: 2px solid var(--border);
-  background: var(--tile-surface2);
-}
-html[data-theme="pixel"] .ranking-list { border-color: var(--border); }
-html[data-theme="pixel"] .sp-stat {
-  border-radius: 0;
-  border: 2px solid var(--border);
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-}
-html[data-theme="pixel"] .sp-stat:hover { box-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
-html[data-theme="pixel"] .sp-chip {
-  border-radius: 0;
-  border: 2px solid var(--border);
-  background: var(--tile-surface2);
-}
-html[data-theme="pixel"] .sp-chip:hover { border-color: var(--accent-yellow); }
-html[data-theme="pixel"] .sp-radar { border-radius: 0; }
-html[data-theme="pixel"] .sp-progress { border-radius: 0; }
-html[data-theme="pixel"] .header-right .btn[style*="linear-gradient"] {
-  background: var(--accent-red) !important;
-  color: #fff !important;
-  border: 2px solid var(--accent-red) !important;
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.3) !important;
-}
-html[data-theme="pixel"] .header-right .btn[style*="linear-gradient"]:hover {
-  background: #ff5555 !important;
-  border-color: #ff5555 !important;
-}
-
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: "Segoe UI", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  position: relative;
-  overflow-x: hidden;
-  transition: background-color 260ms ease, color 260ms ease;
-}
+:root { --bg:#0d1117; --surface:#161b22; --surface2:#21262d; --border:#30363d; --text:#e6edf3; --text2:#8b949e; --text3:#484f58; --primary:#58a6ff; --success:#3fb950; --warning:#d29922; --danger:#f85149; --radius:6px; --shadow:0 1px 3px rgba(0,0,0,.3); }
+[data-theme="light"] { --bg:#ffffff; --surface:#f6f8fa; --surface2:#eaeef2; --border:#d0d7de; --text:#1f2328; --text2:#656d76; --text3:#8b949e; --primary:#0969da; --success:#1a7f37; --warning:#9a6700; --danger:#cf222e; --shadow:0 1px 3px rgba(0,0,0,.12); }
+html { font-size:14px; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--text); line-height:1.5; display:flex; height:100vh; overflow:hidden; }
 
-/* ===== Background Grid (Win10 subtle) ===== */
-body::before {
-  content: '';
-  position: fixed; inset: 0; z-index: -2; pointer-events: none;
-  opacity: 0.3;
-}
+/* Sidebar */
+.sidebar { width:220px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
+.sidebar .brand { padding:16px 20px; font-weight:700; font-size:15px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+.sidebar .brand .logo { font-size:20px; }
+.sidebar nav { padding:8px; flex:1; }
+.sidebar nav a { display:flex; align-items:center; gap:10px; padding:9px 14px; border-radius:var(--radius); color:var(--text2); text-decoration:none; font-size:13px; cursor:pointer; margin-bottom:2px; transition:.15s; }
+.sidebar nav a:hover { background:var(--surface2); color:var(--text); }
+.sidebar nav a.active { background:var(--primary); color:#fff; font-weight:500; }
+.sidebar .bottom { padding:12px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.sidebar .bottom .lang-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text2); padding:5px 12px; border-radius:var(--radius); cursor:pointer; font-size:12px; }
+.sidebar .bottom .lang-btn:hover { color:var(--text); background:var(--border); }
 
-/* ===== Background Layer (transparent - guiBg shows through) ===== */
-body::after {
-  content: '';
-  position: fixed; inset: 0; z-index: -3;
-  background: transparent;
-  pointer-events: none;
-}
+/* Main */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.toolbar { padding:12px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; background:var(--surface); flex-shrink:0; }
+.toolbar .page-title { font-weight:600; font-size:16px; }
+.toolbar .spacer { flex:1; }
+.toolbar .badge { font-size:11px; padding:2px 8px; border-radius:10px; background:var(--surface2); color:var(--text2); }
+.content { flex:1; overflow-y:auto; padding:20px; display:none; }
+.content.active { display:block; }
 
-/* ===== Header (Win10 Metro style) ===== */
-.header {
-  position: sticky; top: 0; z-index: 50;
-  display: flex; align-items: center; justify-content: space-between;
-  height: 64px; padding: 0 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--card-bg);
-}
-.header h1 {
-  font-size: 15px;
-  font-weight: 820;
-  letter-spacing: -0.3px;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.header h1 span { color: var(--primary); }
-.header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.lang-toggle-btn {
-  font-weight: 700;
-  border-color: var(--primary);
-  color: var(--primary);
-  min-width: 64px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.lang-toggle-btn:hover {
-  background: var(--primary);
-  color: #fff;
-}
-.badge {
-  padding: 4px 12px; font-size: 11px; font-weight: 600;
-  border-radius: 0;
-  border: 1px solid transparent;
-}
-.badge-ok { background: #dff6dd; color: #107C10; border-color: #107C10; }
-.badge-err { background: #fde7e9; color: #D13438; border-color: #D13438; }
-.badge-warn { background: #fff4ce; color: #8a6500; border-color: #FF8C00; }
+/* Cards */
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px; }
+.card-header { padding:12px 16px; font-weight:600; font-size:13px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+.card-body { padding:16px; }
 
-/* ===== Layout ===== */
-.container { max-width: 1280px; margin: 0 auto; padding: 24px; position: relative; z-index: 1; }
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-.full { grid-column: 1 / -1; }
+/* Status Grid */
+.status-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-bottom:20px; }
+.status-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+.status-card .label { font-size:11px; text-transform:uppercase; color:var(--text3); letter-spacing:.5px; margin-bottom:6px; }
+.status-card .value { font-size:22px; font-weight:700; }
+.status-card .sub { font-size:12px; color:var(--text2); margin-top:4px; }
+.status-card .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+.dot.ok { background:var(--success); }
+.dot.err { background:var(--danger); }
+.dot.warn { background:var(--warning); }
 
-/* ===== Cards (Win10 Metro flat) ===== */
-.card {
-  background: var(--card-bg);
-  border-radius: 0;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border);
-  position: relative;
-  overflow: hidden;
-}
-.card-header {
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-  gap: 8px;
-  border-bottom: 1px solid var(--border);
-  background: var(--card-header-bg);
-}
-.card-header h2 {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: -0.2px;
-  color: var(--text);
-}
-.card-body {
-  padding: 14px 16px;
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-}
+/* Table */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; padding:8px 10px; border-bottom:2px solid var(--border); color:var(--text2); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap; }
+td { padding:8px 10px; border-bottom:1px solid var(--border); }
+tr:hover td { background:var(--surface2); }
+.mono { font-family:'SF Mono',Consolas,Menlo,monospace; font-size:12px; }
+.text-muted { color:var(--text2); }
+.text-sm { font-size:12px; }
+.text-right { text-align:right; }
 
-/* ===== Status Indicator (Win10 flat) ===== */
-.status-indicator {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 3px 10px; border-radius: 0; font-size: 11px; font-weight: 600;
-  transition: all var(--dur-med) var(--ease-in-out);
-}
-.status-indicator.online { background: #dff6dd; color: var(--status-online); border: 1px solid #107C10; }
-.status-indicator.offline { background: var(--card-header-bg); color: var(--status-offline); border: 1px solid #6c6c6c; }
-.status-indicator.warning { background: #fff4ce; color: var(--status-warning); border: 1px solid #FF8C00; }
-.status-indicator.error { background: #fde7e9; color: var(--status-error); border: 1px solid #D13438; }
-.status-dot {
-  width: 8px; height: 8px; border-radius: 0;
-  transition: all var(--dur-med) var(--ease-in-out);
-}
-.status-indicator.online .status-dot { background: var(--status-online); }
-.status-indicator.offline .status-dot { background: var(--status-offline); }
-.status-indicator.warning .status-dot { background: var(--status-warning); animation: pulse-glow 2s ease-in-out infinite; }
-.status-indicator.error .status-dot { background: var(--status-error); animation: pulse-glow 1s ease-in-out infinite; }
+/* Buttons */
+.btn { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; font-size:12px; border-radius:var(--radius); border:1px solid var(--border); background:var(--surface2); color:var(--text); cursor:pointer; white-space:nowrap; transition:.15s; text-decoration:none; }
+.btn:hover { background:var(--border); }
+.btn-primary { background:var(--primary); color:#fff; border-color:var(--primary); }
+.btn-primary:hover { filter:brightness(1.1); }
+.btn-success { background:var(--success); color:#fff; border-color:var(--success); }
+.btn-success:hover { filter:brightness(1.1); }
+.btn-danger { background:var(--danger); color:#fff; border-color:var(--danger); }
+.btn-danger:hover { filter:brightness(1.1); }
+.btn-sm { padding:3px 8px; font-size:11px; }
+.btn-ghost { background:transparent; border-color:transparent; color:var(--text2); }
+.btn-ghost:hover { background:var(--surface2); color:var(--text); }
+.flex { display:flex; align-items:center; }
+.gap-4 { gap:4px; }
+.gap-8 { gap:8px; }
+.gap-12 { gap:12px; }
 
-/* ===== Metric Card (Enhanced) ===== */
-.metric-card {
-  background: var(--tile-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--radius);
-  padding: 20px;
-  border: 1px solid var(--border);
-  box-shadow: var(--glass-shadow);
-  position: relative;
-  overflow: hidden;
-  transition: transform var(--dur-slow) var(--physics-bounce), box-shadow var(--dur-med) var(--ease-in-out), border-color var(--dur-med) var(--ease-in-out);
-  will-change: transform;
-}
-.metric-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: var(--gradient-accent);
-  opacity: 0;
-  transition: opacity var(--dur-med) var(--ease-in-out);
-}
-.metric-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255,255,255,0.15);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
-}
-.metric-card:hover::before { opacity: 1; }
-.metric-icon {
-  width: 44px; height: 44px; border-radius: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; margin-bottom: 14px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-}
-.metric-value {
-  font-size: 32px; font-weight: 850; letter-spacing: -0.6px;
-  color: var(--text); font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
-.metric-label {
-  font-size: 12px; color: var(--text2); letter-spacing: 0.5px;
-  font-weight: 500; margin-top: 6px; text-transform: uppercase;
-}
-.metric-trend {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 11px; margin-top: 8px; padding: 3px 8px; border-radius: 0;
-}
-.metric-trend.up { background: rgba(34,197,94,0.1); color: var(--success); }
-.metric-trend.down { background: rgba(239,68,68,0.1); color: var(--danger); }
-.metric-trend.steady { background: rgba(100,116,139,0.1); color: var(--text2); }
+/* Grade badge */
+.grade { display:inline-block; width:22px; height:22px; line-height:22px; text-align:center; border-radius:50%; font-size:10px; font-weight:700; }
+.grade-S { background:#1a7f3740; color:var(--success); }
+.grade-A { background:#58a6ff40; color:var(--primary); }
+.grade-B { background:#d2992240; color:var(--warning); }
+.grade-C { background:#f0883e40; color:#f0883e; }
+.grade-D { background:#f8514940; color:var(--danger); }
 
-/* ===== Activity Timeline (New) ===== */
-.activity-timeline {
-  display: flex; flex-direction: column; gap: 12px;
-}
-.activity-item {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px; border-radius: var(--radius-sm);
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  transition: background var(--dur-fast) linear;
-}
-.activity-item:hover {
-  background: var(--hover-bg);
-  border-color: var(--primary);
-}
-.activity-dot {
-  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
-}
-.activity-dot.success { background: var(--success); }
-.activity-dot.error { background: var(--danger); }
-.activity-dot.info { background: var(--primary); }
-.activity-dot.warn { background: var(--warning); }
-.activity-content { flex: 1; min-width: 0; }
-.activity-title { font-size: 13px; color: var(--text); font-weight: 500; }
-.activity-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
-.activity-time { font-size: 10px; color: #808080; font-family: monospace; }
+/* Latency bar */
+.lat-bar { display:inline-block; width:60px; height:4px; background:var(--surface2); border-radius:2px; vertical-align:middle; margin-left:6px; overflow:hidden; }
+.lat-bar-fill { height:100%; border-radius:2px; transition:width .3s; }
 
-/* ===== Real-time Stats (Win10 flat) ===== */
-.realtime-stats {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
-  border: 1px solid var(--border);
-}
-.realtime-item {
-  text-align: center; padding: 16px 12px;
-  background: var(--card-bg); border-radius: 0;
-  border-right: 1px solid var(--border);
-}
-.realtime-item:last-child { border-right: none; }
-.realtime-item .value { font-size: 24px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
-.realtime-item .label { font-size: 11px; color: var(--text2); margin-top: 4px; }
+/* Built-in tag */
+.builtin-tag { display:inline-block; font-size:9px; padding:1px 5px; border-radius:3px; background:var(--primary); color:#fff; margin-left:4px; vertical-align:middle; }
 
-/* ===== Speed Score (Win10 flat) ===== */
-.speed-score {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 6px 14px; border-radius: 0;
-  font-size: 12px; font-weight: 600;
-}
-.speed-score.fast { background: #dff6dd; color: var(--success); border: 1px solid #107C10; }
-.speed-score.medium { background: #fff4ce; color: var(--warning); border: 1px solid #FF8C00; }
-.speed-score.slow { background: #fde7e9; color: var(--danger); border: 1px solid #D13438; }
+/* Input */
+input,select { padding:5px 10px; font-size:13px; border-radius:var(--radius); border:1px solid var(--border); background:var(--bg); color:var(--text); outline:none; }
+input:focus,select:focus { border-color:var(--primary); box-shadow:0 0 0 2px var(--primary)40; }
 
-/* ===== Proxy Score Badge (Win10 flat) ===== */
-.proxy-score {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px; border-radius: 0;
-  font-size: 12px; font-weight: 700;
-}
-.proxy-score.high { background: #107C10; color: #fff; }
-.proxy-score.medium { background: #FF8C00; color: #fff; }
-.proxy-score.low { background: #D13438; color: #fff; }
+/* Toast */
+.toast-container { position:fixed; top:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+.toast { padding:10px 16px; border-radius:var(--radius); font-size:13px; box-shadow:var(--shadow); animation:slideIn .2s ease; max-width:360px; }
+.toast-info { background:var(--surface2); border:1px solid var(--border); color:var(--text); }
+.toast-ok { background:#1a7f37; color:#fff; }
+.toast-err { background:var(--danger); color:#fff; }
+.toast-warn { background:var(--warning); color:#fff; }
+@keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
 
-/* ===== Orbit Animation (New) ===== */
-.orbit-container {
-  position: relative;
-  width: 160px;
-  height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-.orbit-container:active {
-  transform: scale(0.98);
-}
-.orbit-ring {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 0;
-  border: 3px solid #d0d0d0;
-  transition: border-color 1s var(--ease-in-out);
-}
-.orbit-ring.active {
-  border-color: var(--success);
-  box-shadow: none;
-}
-.orbit-ring.error {
-  border-color: var(--danger);
-}
-.orbit-ring.warning {
-  border-color: var(--warning);
-}
-.orbit-center {
-  width: 70px;
-  height: 70px;
-  border-radius: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  transition: all 0.8s var(--ease-in-out);
-  z-index: 2;
-  background: var(--card-header-bg);
-  border: 2px solid var(--border);
-}
-.orbit-center.error { color: var(--danger); border-color: var(--danger); }
-.orbit-center.success { color: var(--success); border-color: var(--success); }
-.orbit-center.warning { color: var(--warning); border-color: var(--warning); }
-.orbit-ball {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  margin-left: -8px;
-  margin-top: -8px;
-  background: var(--danger);
-  box-shadow: 0 0 8px var(--danger);
-  z-index: 3;
-  transform: translateX(78px) translateY(-78px);
-  transition: background 0.8s var(--ease-in-out);
-}
-.orbit-ball.success {
-  background: var(--success);
-  box-shadow: none;
-}
-.orbit-ball.warning {
-  background: var(--warning);
-  box-shadow: none;
-}
-.orbit-ball.spinning {
-  animation: orbit-spin 1.5s ease-in-out forwards;
-}
-.orbit-ball.spinning-reverse {
-  animation: orbit-spin-reverse 1.5s ease-in-out forwards;
-}
-@keyframes orbit-spin {
-  0% { transform: translateX(78px) translateY(-78px); }
-  12.5% { transform: translateX(78px) translateY(0); }
-  25% { transform: translateX(78px) translateY(78px); }
-  37.5% { transform: translateX(0) translateY(78px); }
-  50% { transform: translateX(-78px) translateY(78px); }
-  62.5% { transform: translateX(-78px) translateY(0); }
-  75% { transform: translateX(-78px) translateY(-78px); }
-  87.5% { transform: translateX(0) translateY(-78px); }
-  100% { transform: translateX(78px) translateY(-78px); }
-}
-@keyframes orbit-spin-reverse {
-  0% { transform: translateX(78px) translateY(-78px); }
-  12.5% { transform: translateX(0) translateY(-78px); }
-  25% { transform: translateX(-78px) translateY(-78px); }
-  37.5% { transform: translateX(-78px) translateY(0); }
-  50% { transform: translateX(-78px) translateY(78px); }
-  62.5% { transform: translateX(0) translateY(78px); }
-  75% { transform: translateX(78px) translateY(78px); }
-  87.5% { transform: translateX(78px) translateY(0); }
-  100% { transform: translateX(78px) translateY(-78px); }
-}
-.orbit-icon {
-  transition: all 0.6s var(--physics-bounce);
-  display: inline-block;
-}
-.orbit-icon.flipping {
-  animation: icon-flip 1s var(--physics-bounce) forwards;
-}
-@keyframes icon-flip {
-  0% { transform: scale(1) rotateY(0deg); opacity: 1; }
-  45% { transform: scale(1.4) rotateY(90deg); opacity: 0.3; }
-  55% { transform: scale(1.4) rotateY(-90deg); opacity: 0.3; }
-  100% { transform: scale(1) rotateY(0deg); opacity: 1; }
-}
+/* Progress */
+.progress-wrap { display:none; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px; }
+.progress-bar { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; margin-top:8px; }
+.progress-fill { height:100%; background:var(--primary); border-radius:3px; transition:width .3s; }
+.progress-info { font-size:12px; color:var(--text2); margin-top:4px; }
 
-/* ===== Proxy Ranking (Win10 flat) ===== */
-.ranking-list {
-  display: flex; flex-direction: column; gap: 0;
-  border: 1px solid var(--border);
-}
-.ranking-item {
-  display: flex; align-items: center; gap: 14px;
-  padding: 12px 16px; border-radius: 0;
-  background: var(--card-bg);
-  border: none;
-  border-bottom: 1px solid var(--border);
-  transition: background var(--dur-fast) linear;
-  position: relative; overflow: hidden;
-  animation: rank-slide-in 0.5s var(--ease-expo) backwards;
-}
-.ranking-item:last-child { border-bottom: none; }
-.ranking-item:hover {
-  background: var(--hover-bg);
-  border-color: transparent;
-  transform: none;
-}
-.ranking-item::before {
-  content: '';
-  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  opacity: 0;
-}
-.ranking-item.rank-1::before { background: #fbbf24; opacity: 1; }
-.ranking-item.rank-2::before { background: #94a3b8; opacity: 1; }
-.ranking-item.rank-3::before { background: #fb923c; opacity: 1; }
-.ranking-medal {
-  width: 32px; height: 32px; border-radius: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 700; flex-shrink: 0;
-}
-.ranking-medal.rank-1 { background: #fbbf24; color: #78350f; box-shadow: none; }
-.ranking-medal.rank-2 { background: #94a3b8; color: #1e293b; box-shadow: none; }
-.ranking-medal.rank-3 { background: #fb923c; color: #fff; box-shadow: none; }
-.ranking-medal.rank-other { background: #e5e5e5; color: #5c5c5c; font-size: 14px; }
-.ranking-info { flex: 1; min-width: 0; }
-.ranking-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.ranking-host { font-size: 13px; font-weight: 600; color: var(--text); font-family: 'SF Mono', monospace; }
-.ranking-type { font-size: 9px; padding: 2px 6px; border-radius: 0; background: #deecf9; color: var(--primary); font-weight: 600; }
-.ranking-stats { display: flex; align-items: center; gap: 16px; }
-.ranking-stat { display: flex; align-items: center; gap: 6px; }
-.ranking-stat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
-.ranking-stat-value { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.ranking-bar {
-  height: 3px; border-radius: 0; margin-top: 8px; overflow: hidden;
-  background: var(--border);
-}
-.ranking-bar-fill {
-  height: 100%; border-radius: 0;
-  transition: width 0.3s linear;
-}
-.ranking-actions { display: flex; gap: 6px; flex-shrink: 0; }
-@keyframes rank-slide-in {
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:999; display:none; align-items:center; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; min-width:400px; max-width:600px; box-shadow:0 8px 32px rgba(0,0,0,.4); }
+.modal h3 { margin-bottom:12px; }
+.modal .actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
 
-/* ===== Charts Auto-Refresh Animation ===== */
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
-}
+/* Empty */
+.empty { text-align:center; padding:40px 20px; color:var(--text3); }
+.empty .icon { font-size:32px; margin-bottom:8px; }
 
-/* ===== Stats Grid (Enhanced) ===== */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 24px;
-}
-.stat-card {
-  border-radius: 0;
-  padding: 20px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  cursor: default;
-  border: none;
-  box-shadow: none;
-  position: relative;
-  overflow: hidden;
-}
-.stat-card .value {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: #fff !important;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
-.stat-card .label {
-  font-size: 11px;
-  color: rgba(255,255,255,0.8);
-  letter-spacing: 0.4px;
-  font-weight: 500;
-  margin-top: 4px;
-  text-transform: uppercase;
-}
-.stat-card:nth-child(1) { background: #0078D7; box-shadow: none; }
-.stat-card:nth-child(2) { background: #107C10; box-shadow: none; }
-.stat-card:nth-child(3) { background: #008272; box-shadow: none; }
-.stat-card:nth-child(4) { background: #0B6A3A; box-shadow: none; }
-.stat-card:nth-child(5) { background: #D13438; box-shadow: none; }
-.stat-card:nth-child(6) { background: #5C2D91; box-shadow: none; }
+/* loading spinner */
+.spinner { display:inline-block; width:14px; height:14px; border:2px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .6s linear infinite; vertical-align:middle; }
+@keyframes spin { to{transform:rotate(360deg)} }
 
-/* ===== Buttons (Win10 Metro flat) ===== */
-.btn {
-  padding: 7px 16px; border: 1px solid transparent; cursor: pointer;
-  font-size: 12px; font-weight: 500;
-  display: inline-flex; align-items: center; gap: 6px;
-  border-radius: 0;
-  transition: opacity var(--dur-fast) var(--ease-in-out),
-              background var(--dur-med) var(--ease-in-out),
-              transform var(--dur-fast) var(--spring-bounce),
-              box-shadow var(--dur-med) var(--ease-in-out),
-              border-color var(--dur-fast) linear;
-  will-change: transform;
-}
-.btn:active { transform: scale(0.96); opacity: 0.8; }
-.btn:hover:not(:active) { transform: translateY(-1px); }
-.btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
-.btn-primary:hover { background: #106EBE; border-color: #106EBE; }
-.btn-success { background: var(--success); color: #fff; border-color: var(--success); }
-.btn-success:hover { background: #0e6c0e; border-color: #0e6c0e; }
-.btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
-.btn-danger:hover { background: #bf2d31; border-color: #bf2d31; }
-.btn-outline { background: var(--card-bg); color: var(--text); border-color: var(--border); }
-.btn-outline:hover { background: var(--hover-bg); border-color: var(--primary); color: var(--text); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
-.btn-sm { padding: 6px 14px; font-size: 11px; }
+/* Pre / logs */
+.logs-area { background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); padding:12px; font-family:'SF Mono',Consolas,monospace; font-size:12px; max-height:400px; overflow-y:auto; white-space:pre-wrap; word-break:break-all; line-height:1.7; }
 
-/* ===== Table (Win10 flat style) ===== */
-/* ===== Stable Pool Cool UI ===== */
-.stable-pool-card { position: relative; overflow: hidden; }
-.stable-pool-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--primary), var(--success), var(--warning), var(--danger), var(--primary));
-  background-size: 300% 100%;
-  animation: spGradient 8s linear infinite;
-}
-@keyframes spGradient { 0% { background-position: 0% 0; } 100% { background-position: 300% 0; } }
+/* Tab nav within cards */
+.tab-nav { display:flex; gap:2px; margin-bottom:12px; }
+.tab-nav .tab-btn { padding:6px 14px; font-size:12px; border:1px solid var(--border); background:var(--surface2); color:var(--text2); cursor:pointer; border-radius:var(--radius) var(--radius) 0 0; }
+.tab-nav .tab-btn.active { background:var(--surface); color:var(--text); border-bottom-color:var(--surface); }
 
-/* Stats overview */
-.sp-stats {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
-}
-.sp-stat {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 14px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
-  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
-}
-.sp-stat:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left-color: var(--success); }
-.sp-stat:nth-child(2) { border-left-color: var(--success); }
-.sp-stat:nth-child(3) { border-left-color: var(--warning); }
-.sp-stat:nth-child(4) { border-left-color: var(--danger); }
-.sp-stat-icon {
-  width: 38px; height: 38px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-.sp-stat-num { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1; }
-.sp-stat-label { font-size: 11px; color: var(--text2); margin-top: 3px; letter-spacing: 0.3px; }
+/* App cards */
+.app-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
+.app-card { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:12px; cursor:pointer; transition:.15s; text-align:center; }
+.app-card:hover { border-color:var(--primary); }
+.app-card .icon { font-size:24px; margin-bottom:6px; }
+.app-card .name { font-size:12px; font-weight:500; }
+.app-card .path { font-size:10px; color:var(--text3); margin-top:2px; word-break:break-all; }
 
-/* Radar animation during auto-find */
-.sp-progress {
-  display: flex; gap: 18px; align-items: center;
-  padding: 16px; margin-bottom: 16px;
-  background: linear-gradient(135deg, var(--card-bg), var(--card-header-bg));
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
-}
-.sp-radar-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.sp-radar {
-  position: relative; width: 64px; height: 64px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,120,215,0.08), transparent 70%);
-  border: 1px solid var(--border);
-}
-.sp-radar-ring {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
-  border: 1px solid rgba(0,120,215,0.3);
-  border-radius: 50%;
-  animation: spPulse 2s ease-out infinite;
-}
-.sp-radar-ring:nth-child(1) { width: 20px; height: 20px; animation-delay: 0s; }
-.sp-radar-ring:nth-child(2) { width: 40px; height: 40px; animation-delay: 0.4s; }
-.sp-radar-ring:nth-child(3) { width: 60px; height: 60px; animation-delay: 0.8s; }
-@keyframes spPulse {
-  0% { opacity: 1; transform: translate(-50%,-50%) scale(0.7); }
-  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.1); }
-}
-.sp-radar-sweep {
-  position: absolute; top: 0; left: 50%; width: 50%; height: 50%;
-  transform-origin: bottom left;
-  background: conic-gradient(from 0deg, transparent 0deg, rgba(0,120,215,0.5) 60deg, transparent 90deg);
-  animation: spSweep 2s linear infinite;
-}
-@keyframes spSweep { to { transform: rotate(360deg); } }
-.sp-radar-dot {
-  position: absolute; top: 50%; left: 50%;
-  width: 6px; height: 6px;
-  background: var(--primary);
-  border-radius: 50%;
-  transform: translate(-50%,-50%);
-  box-shadow: 0 0 12px var(--primary);
-  animation: spBlink 1s ease-in-out infinite;
-}
-@keyframes spBlink { 50% { opacity: 0.3; } }
-.sp-radar-label { font-size: 11px; color: var(--text2); white-space: nowrap; }
-.sp-progress-info { flex: 1; }
-.sp-progress-bar {
-  position: relative; height: 10px;
-  background: var(--log-bg); border: 1px solid var(--border);
-  overflow: hidden;
-}
-.sp-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--success));
-  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
-  position: relative;
-}
-.sp-progress-fill::after {
-  content: ''; position: absolute; top: 0; right: 0; width: 20px; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6));
-  animation: spShine 1.5s ease-in-out infinite;
-}
-@keyframes spShine { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
-.sp-progress-stage { font-size: 11px; color: var(--text2); margin-top: 6px; letter-spacing: 0.3px; }
-
-/* Filter toolbar */
-.sp-toolbar {
-  display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;
-}
-.sp-filter-input {
-  flex: 1; min-width: 200px; padding: 8px 12px;
-  background: var(--input-bg); border: 1px solid var(--border); color: var(--text);
-  font-size: 12px; outline: none; transition: border-color 0.2s;
-}
-.sp-filter-input:focus { border-color: var(--primary); }
-.sp-type-chips { display: flex; gap: 4px; }
-.sp-chip {
-  padding: 6px 12px; font-size: 11px; cursor: pointer;
-  background: var(--card-bg); border: 1px solid var(--border); color: var(--text2);
-  transition: all 0.2s;
-}
-.sp-chip:hover { border-color: var(--primary); color: var(--primary); }
-.sp-chip.active {
-  background: var(--primary); color: #fff; border-color: var(--primary);
-  box-shadow: 0 2px 6px var(--primary-glow);
-}
-.sp-sort-select {
-  padding: 8px 12px; background: var(--input-bg); border: 1px solid var(--border);
-  color: var(--text); font-size: 12px; outline: none; cursor: pointer;
-}
-
-/* Table enhancements */
-.sp-table tr { transition: background 0.15s; }
-.sp-table tr:hover { background: var(--hover-bg) !important; }
-.sp-grade {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px; font-size: 12px; font-weight: 700;
-  border-radius: 4px; letter-spacing: 0;
-}
-.sp-grade-S { background: linear-gradient(135deg,#FF8C00,#ff5500); color: #fff; box-shadow: 0 2px 8px rgba(255,140,0,0.4); }
-.sp-grade-A { background: linear-gradient(135deg,#107C10,#0b5a0c); color: #fff; }
-.sp-grade-B { background: linear-gradient(135deg,#0078D7,#005a9e); color: #fff; }
-.sp-grade-C { background: var(--log-bg); color: var(--text2); border: 1px solid var(--border); }
-.sp-grade-D { background: var(--log-bg); color: var(--danger); border: 1px solid var(--danger); }
-.sp-latency-bar {
-  display: inline-block; width: 50px; height: 4px;
-  background: var(--log-bg); margin-left: 6px; vertical-align: middle;
-  position: relative; overflow: hidden;
-}
-.sp-latency-bar-fill { position: absolute; left: 0; top: 0; height: 100%; }
-.sp-builtin-tag {
-  display: inline-block; font-size: 9px; padding: 1px 6px;
-  background: linear-gradient(135deg,#0078D7,#005a9e); color: #fff;
-  margin-left: 6px; letter-spacing: 0.5px;
-}
-.sp-launch-app-item:hover {
-  border-color: var(--primary) !important;
-  background: var(--hover-bg) !important;
-  transform: translateY(-1px);
-}
-
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-th {
-  text-align: left; padding: 10px 12px; background: var(--card-header-bg);
-  color: var(--text); font-weight: 600; font-size: 11px;
-  letter-spacing: 0.3px; text-transform: uppercase;
-  border-bottom: 2px solid var(--border);
-}
-td {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
-}
-tr:last-child td { border-bottom: none; }
-tr:nth-child(even) td { background: var(--card-header-bg); }
-tr:hover td { background: var(--hover-bg); transition: none; }
-.mono { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 12px; }
-
-/* ===== Progress (Win10 flat) ===== */
-.progress-bar {
-  height: 4px; background: var(--border); border-radius: 0; overflow: hidden; margin-top: 12px;
-}
-.progress-fill {
-  height: 100%;
-  background: var(--primary);
-  transition: width 0.3s linear;
-  position: relative;
-}
-.progress-fill::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: transparent;
-}
-
-/* ===== Log (Win10 flat) ===== */
-.log-box {
-  background: var(--log-bg); padding: 12px;
-  font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px;
-  overflow-y: auto; line-height: 1.6; color: var(--text2);
-  height: 100%;
-  box-shadow: none;
-  border: 1px solid var(--border);
-  border-radius: 0;
-}
-.log-ok { color: var(--success); }
-.log-err { color: var(--danger); }
-.log-info { color: var(--primary); }
-.log-warn { color: var(--warning); }
-
-/* ===== Tabs (Win10 Metro style) ===== */
-.tabs {
-  display: flex; gap: 0;
-  margin-bottom: 20px;
-  border-bottom: 2px solid var(--border);
-  background: transparent;
-  overflow-x: auto;
-  overflow-y: hidden;
-  flex-wrap: nowrap;
-  scrollbar-width: thin;
-}
-.tab {
-  padding: 10px 16px; cursor: pointer; font-size: 12px;
-  font-weight: 500; color: var(--text2);
-  border: none; border-bottom: 2px solid transparent;
-  background: transparent;
-  border-radius: 0;
-  margin-bottom: -2px;
-  flex-shrink: 0;
-  white-space: nowrap;
-  transition: color var(--dur-fast) linear,
-              border-color var(--dur-fast) linear;
-}
-.tab.active { background: transparent; color: var(--primary); border-bottom: 2px solid var(--primary); box-shadow: none; }
-.tab:hover:not(.active) { color: var(--text); background: transparent; border-bottom: 2px solid #b0b0b0; }
-
-/* ===== Tab Index (EUI-NEO style) ===== */
-.tab-idx {
-  font-size: 10px;
-  font-weight: 800;
-  opacity: 0.45;
-  margin-right: 2px;
-  font-feature-settings: "tnum";
-}
-
-/* ===== Tab Content Transition ===== */
-.tab-content {
-  animation: tabIn 0.35s var(--spring-smooth);
-}
-@keyframes tabIn {
-  from { opacity: 0; transform: translateY(12px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* ===== Animations ===== */
-@keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(24px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes fadeSlideDown {
-  from { opacity: 0; transform: translateY(-16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes breathe {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.8); }
-}
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 8px rgba(59,130,246,0.15); }
-  50% { box-shadow: 0 0 24px rgba(59,130,246,0.3); }
-}
-
-/* ===== Stat Card Hover (Win10 flat) ===== */
-.stat-card {
-  transition: none;
-}
-.stat-card:hover {
-  transform: none;
-  box-shadow: none !important;
-}
-
-/* ===== Card Hover (Win10 flat) ===== */
-.card {
-  transition: border-color var(--dur-fast) linear;
-}
-.card:hover {
-  transform: none;
-  border-color: var(--primary);
-  box-shadow: none;
-}
-
-/* ===== Dashboard stat cards entrance stagger ===== */
-.stats-grid .stat-card {
-  animation: fadeSlideUp 0.4s var(--spring-smooth) both;
-}
-.stats-grid .stat-card:nth-child(1) { animation-delay: 0.02s; }
-.stats-grid .stat-card:nth-child(2) { animation-delay: 0.06s; }
-.stats-grid .stat-card:nth-child(3) { animation-delay: 0.10s; }
-.stats-grid .stat-card:nth-child(4) { animation-delay: 0.14s; }
-.stats-grid .stat-card:nth-child(5) { animation-delay: 0.18s; }
-.stats-grid .stat-card:nth-child(6) { animation-delay: 0.22s; }
-
-/* ===== Grid cards entrance ===== */
-.grid .card {
-  animation: fadeSlideUp 0.4s var(--spring-smooth) both;
-}
-.grid .card:nth-child(1) { animation-delay: 0.04s; }
-.grid .card:nth-child(2) { animation-delay: 0.08s; }
-.grid .card:nth-child(3) { animation-delay: 0.12s; }
-.grid .card:nth-child(4) { animation-delay: 0.16s; }
-
-/* ===== Badge subtle pulse for live indicators ===== */
-.badge-ok {
-  transition: background var(--dur-med) var(--ease-in-out),
-              color var(--dur-med) var(--ease-in-out);
-}
-.badge-ok:not(#diagBadge):not(#warpBadge):not(#serverBadge) {
-  animation: pulseGlow 3s var(--ease-in-out) infinite;
-}
-
-/* ===== Log entry transition ===== */
-.log-box > div {
-  transition: opacity 0.3s var(--ease-out-expo),
-              transform 0.3s var(--spring-smooth);
-}
-
-/* ===== Quote text fade-in ===== */
-.quote-text {
-  animation: fadeSlideDown 0.5s var(--spring-smooth);
-}
-.quote-loading, .quote-error {
-  animation: fadeSlideUp 0.3s var(--spring-smooth);
-}
-
-/* ===== Toast enhancement ===== */
-.toast {
-  transition: transform 0.4s var(--spring-bounce),
-              opacity 0.4s var(--ease-out-expo),
-              box-shadow 0.3s ease;
-}
-.toast.show { animation: toastIn 0.4s var(--spring-bounce); }
-@keyframes toastIn {
-  from { transform: translateY(80px) scale(0.9); opacity: 0; }
-  to { transform: translateY(0) scale(1); opacity: 1; }
-}
-
-/* ===== Modal entrance ===== */
-.modal-overlay.show .modal {
-  animation: modalIn 0.35s var(--physics-bounce);
-}
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.9) translateY(20px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* ===== Additional styles - Inputs ===== */
-.input, select, textarea {
-  padding: 8px 12px;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 12px;
-  border-radius: 0;
-  outline: none;
-  transition: border-color 0.2s;
-  font-family: inherit;
-}
-.input:focus, select:focus, textarea:focus {
-  border-color: var(--primary);
-}
-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-.form-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-.form-row label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text2);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.form-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.form-group .form-row {
-  margin-bottom: 0;
-}
-
-/* ===== Toggle Switch ===== */
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 22px;
-}
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: .3s;
-  border-radius: 22px;
-}
-.toggle-slider:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: .3s;
-  border-radius: 50%;
-}
-input:checked + .toggle-slider {
-  background-color: var(--primary);
-}
-input:checked + .toggle-slider:before {
-  transform: translateX(22px);
-}
-
-/* ===== Toast Container ===== */
-.toast-container {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 99999;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  pointer-events: none;
-}
-.toast {
-  padding: 12px 18px;
-  border-radius: 0;
-  font-size: 12px;
-  font-weight: 500;
-  min-width: 240px;
-  max-width: 360px;
-  pointer-events: auto;
-  border: 1px solid;
-  background: var(--card-bg);
-  color: var(--text);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-}
-.toast-ok { background: #dff6dd; color: #107C10; border-color: #107C10; }
-.toast-err { background: #fde7e9; color: #D13438; border-color: #D13438; }
-.toast-info { background: #deecf9; color: #0078D7; border-color: #0078D7; }
-.toast-warn { background: #fff4ce; color: #8a6500; border-color: #FF8C00; }
-
-/* ===== Modal ===== */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 200;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.modal-overlay.show {
-  display: flex;
-}
-.modal {
-  background: var(--card-bg);
-  border-radius: 0;
-  border: 1px solid var(--border);
-  width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-}
-.modal-header {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.modal-header h3 {
-  font-size: 14px;
-  font-weight: 700;
-}
-.modal-close {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--text2);
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 0;
-  font-size: 16px;
-  line-height: 1;
-}
-.modal-close:hover {
-  background: var(--hover-bg);
-  color: var(--text);
-}
-.modal-body {
-  padding: 18px;
-  overflow-y: auto;
-  flex: 1;
-}
-.modal-footer {
-  padding: 12px 18px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-/* ===== Code Block ===== */
-.code-block {
-  background: var(--log-bg);
-  border: 1px solid var(--border);
-  padding: 12px;
-  border-radius: 0;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 11px;
-  overflow-x: auto;
-  color: var(--text2);
-  line-height: 1.6;
-}
-
-/* ===== Footer ===== */
-.footer {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-  text-align: center;
-  font-size: 11px;
-  color: var(--text2);
-}
-
-/* ===== Scrollbar ===== */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-::-webkit-scrollbar-thumb {
-  background: #b0b0b0;
-  border-radius: 0;
-  border: 2px solid var(--bg);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #909090;
-}
-::-webkit-scrollbar-thumb:active {
-  background: #707070;
-}
-
-/* ===== WARP Card ===== */
-.wp-card {
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 0;
-  background: var(--card-bg);
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.wp-card:hover {
-  border-color: var(--primary);
-}
-.wp-icon {
-  font-size: 28px;
-  flex-shrink: 0;
-}
-.wp-info { flex: 1; min-width: 0; }
-.wp-name { font-size: 13px; font-weight: 600; }
-.wp-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
-
-/* ===== Preset Chips ===== */
-.preset-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 1px solid var(--border);
-  border-radius: 0;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s;
-  background: var(--card-bg);
-  color: var(--text);
-}
-.preset-chip:hover {
-  border-color: var(--primary);
-  background: var(--hover-bg);
-}
-
-/* ===== Chart Container ===== */
-.chart-container {
-  width: 100%;
-  height: 200px;
-  position: relative;
-}
-.chart-canvas {
-  width: 100%;
-  height: 100%;
-}
-
-/* ===== App Grid ===== */
-.app-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-}
-.app-card {
-  padding: 14px;
-  border: 1px solid var(--border);
-  background: var(--card-bg);
-  border-radius: 0;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.app-card:hover {
-  border-color: var(--primary);
-  background: var(--hover-bg);
-  transform: translateY(-2px);
-}
-.app-icon {
-  font-size: 28px;
-}
-.app-name {
-  font-size: 13px;
-  font-weight: 600;
-}
-.app-path {
-  font-size: 10px;
-  color: var(--text2);
-  font-family: monospace;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.app-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-/* ===== Setting Row ===== */
-.setting-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-}
-.setting-row:last-child {
-  border-bottom: none;
-}
-.setting-info {
-  flex: 1;
-}
-.setting-label {
-  font-size: 13px;
-  font-weight: 500;
-}
-.setting-desc {
-  font-size: 11px;
-  color: var(--text2);
-  margin-top: 2px;
-}
-
-/* ===== Empty State ===== */
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text2);
-}
-.empty-state-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-  opacity: 0.5;
-}
-.empty-state-text {
-  font-size: 13px;
-}
-
-/* ===== Flex helpers ===== */
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.gap-8 { gap: 8px; }
-.gap-12 { gap: 12px; }
-.gap-16 { gap: 16px; }
-.mt-8 { margin-top: 8px; }
-.mt-12 { margin-top: 12px; }
-.mt-16 { margin-top: 16px; }
-.mb-8 { margin-bottom: 8px; }
-.mb-12 { margin-bottom: 12px; }
-.mb-16 { margin-bottom: 16px; }
-.w-full { width: 100%; }
-.text-sm { font-size: 11px; }
-.text-muted { color: var(--text2); }
-.font-mono { font-family: monospace; }
-.text-center { text-align: center; }
+/* Settings */
+.setting-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
+.setting-row:last-child { border-bottom:none; }
+.setting-row .desc { font-size:12px; color:var(--text2); margin-top:2px; }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1 class="logo">⚡ <span data-i18n="appName">Free Proxy Tool</span> <span data-i18n="managementInterface">Management Interface</span></h1>
-  <div class="header-right">
-    <span id="serverBadge" class="badge badge-err" data-i18n="serverOff">Server OFF</span>
-    <span id="warpBadge" class="badge badge-err" data-i18n="warpOff">WARP OFF</span>
-    <span id="diagBadge" class="badge badge-warn">Loading...</span>
-
-    <button id="langToggle" class="btn btn-outline btn-sm lang-toggle-btn" title="" data-i18n-title="languageTooltip" onclick="toggleLanguage()">🌐 <span id="langLabel">EN</span></button>
-    <button id="themeToggle" class="btn btn-outline btn-sm" title="" data-i18n-title="themeTooltip">🌙</button>
-    <button id="disconnectAllBtn" class="btn btn-danger btn-sm" title="" data-i18n-title="disconnectAllTooltip">✕ <span data-i18n="disconnectAllBtn">Disconnect All</span></button>
+<div class="sidebar">
+  <div class="brand"><span class="logo">&#9889;</span> Free Proxy</div>
+  <nav>
+    <a class="active" data-page="dashboard" onclick="switchPage('dashboard')">&#9632; Dashboard</a>
+    <a data-page="proxies" onclick="switchPage('proxies')">&#128279; Proxies</a>
+    <a data-page="apps" onclick="switchPage('apps')">&#128187; Apps</a>
+    <a data-page="logs" onclick="switchPage('logs')">&#128214; Logs</a>
+    <a data-page="settings" onclick="switchPage('settings')">&#9881; Settings</a>
+  </nav>
+  <div class="bottom">
+    <span class="text-muted text-sm" id="statusDot"></span>
+    <button class="lang-btn" onclick="toggleLang()" id="langBtn">EN</button>
   </div>
 </div>
 
-<div class="container">
-  <div class="tabs" id="mainTabs">
-    <button class="tab active" data-tab="dashboard"><span class="tab-idx">01</span> <span data-i18n="tabDashboard">Dashboard</span></button>
-    <button class="tab" data-tab="proxies"><span class="tab-idx">02</span> <span data-i18n="tabProxy">Proxy Management</span></button>
-    <button class="tab" data-tab="warp"><span class="tab-idx">03</span> <span data-i18n="tabWarp">WARP</span></button>
-    <button class="tab" data-tab="stats"><span class="tab-idx">04</span> <span data-i18n="statistics">Statistics</span></button>
-    <button class="tab" data-tab="server"><span class="tab-idx">05</span> <span data-i18n="localServer">Local Server</span></button>
-    <button class="tab" data-tab="apps"><span class="tab-idx">06</span> <span data-i18n="appProxy">App Proxy</span></button>
-    <button class="tab" data-tab="logs"><span class="tab-idx">07</span> <span data-i18n="tabLogs">Logs</span></button>
-    <button class="tab" data-tab="settings"><span class="tab-idx">08</span> <span data-i18n="tabSettings">Settings</span></button>
-  </div>
+<div class="main">
 
-  <!-- Dashboard Tab -->
-  <div class="tab-content" id="tab-dashboard">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="value" id="dashProxiesTested">0</div>
-        <div class="label" data-i18n="dashProxiesTested">Proxies Tested</div>
-      </div>
-      <div class="stat-card">
-        <div class="value" id="dashAliveCount">0</div>
-        <div class="label" data-i18n="dashAliveCount">Alive Proxies</div>
-      </div>
-      <div class="stat-card">
-        <div class="value" id="dashAvgLatency">0ms</div>
-        <div class="label" data-i18n="dashAvgLatency">Avg Latency</div>
-      </div>
-      <div class="stat-card">
-        <div class="value" id="dashStableCount">0</div>
-        <div class="label" data-i18n="dashStableCount">Stable Pool</div>
+<!-- ========== DASHBOARD ========== -->
+<div class="content active" id="page-dashboard">
+  <div class="toolbar"><span class="page-title">Dashboard</span></div>
+  <div style="padding:20px">
+    <div class="status-grid" id="statusGrid"></div>
+    <div class="card">
+      <div class="card-header">Quick Actions</div>
+      <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="toggleProxyServer()" id="btnProxyToggle">Start Proxy</button>
+        <button class="btn btn-success" onclick="autoFind()">Auto Find</button>
+        <button class="btn" onclick="fetchFreeProxies()">Fetch Free</button>
+        <button class="btn" onclick="toggleWarp()" id="btnWarpToggle">Toggle WARP</button>
+        <button class="btn" onclick="setSystemProxy()" id="btnSysProxy">Set System Proxy</button>
       </div>
     </div>
-
-    <div class="grid">
-      <div class="card">
-        <div class="card-header">
-          <h2 data-i18n="connectionStatus">Connection Status</h2>
-        </div>
-        <div class="card-body">
-          <div class="flex items-center justify-between">
-            <div class="orbit-container" id="orbitContainer">
-              <div class="orbit-ring" id="orbitRing"></div>
-              <div class="orbit-ball" id="orbitBall"></div>
-              <div class="orbit-center" id="orbitCenter">
-                <span class="orbit-icon" id="orbitIcon">🔌</span>
-              </div>
-            </div>
-            <div style="flex:1; margin-left: 20px;">
-              <div class="status-indicator online" id="dashStatus" style="margin-bottom: 12px;">
-                <span class="status-dot"></span>
-                <span id="dashStatusText" data-i18n="checking">Checking...</span>
-              </div>
-              <div class="text-muted text-sm" id="dashStatusDetail" style="margin-bottom: 12px;">
-                <span data-i18n="initializingStatus">Initializing connection status...</span>
-              </div>
-              <div class="realtime-stats" style="margin-top: 12px;">
-                <div class="realtime-item">
-                  <div class="value" id="dashServerStatus" data-i18n="off">OFF</div>
-                  <div class="label" data-i18n="dashServerStatus">Proxy Server</div>
-                </div>
-                <div class="realtime-item">
-                  <div class="value" id="dashWarpStatus" data-i18n="off">OFF</div>
-                  <div class="label" data-i18n="dashWarpStatus">WARP</div>
-                </div>
-                <div class="realtime-item">
-                  <div class="value" id="dashSysProxy" data-i18n="off">OFF</div>
-                  <div class="label" data-i18n="dashSysProxy">System Proxy</div>
-                </div>
-                <div class="realtime-item">
-                  <div class="value" id="dashPort">-</div>
-                  <div class="label" data-i18n="dashPort">Port</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2><span data-i18n="quickActions">Quick Actions</span></h2>
-        </div>
-        <div class="card-body">
-          <div class="grid" style="grid-template-columns: 1fr 1fr;">
-            <button class="btn btn-primary" onclick="startServer()">▶ <span data-i18n="startProxyServer">Start Proxy Server</span></button>
-            <button class="btn btn-outline" onclick="stopServer()">⏹ <span data-i18n="stopServerBtn">Stop Server</span></button>
-            <button class="btn btn-success" onclick="connectWarp()">🔗 <span data-i18n="connectWarpBtn">Connect WARP</span></button>
-            <button class="btn btn-outline" onclick="disconnectWarp()">⏏ <span data-i18n="disconnectWarpBtn">Disconnect WARP</span></button>
-            <button class="btn btn-outline" onclick="switchTab('proxies')">🔍 <span data-i18n="testProxiesBtn">Test Proxies</span></button>
-            <button class="btn btn-outline" onclick="startAutoFind()">⚡ <span data-i18n="autoFindBtn">Auto-Find</span></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card full">
-        <div class="card-header">
-          <h2><span data-i18n="topProxies">Top Proxies</span></h2>
-          <button class="btn btn-outline btn-sm" onclick="loadStableProxies()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
-        </div>
-        <div class="card-body">
-          <div class="ranking-list" id="topProxiesList">
-            <div class="empty-state">
-              <div class="empty-state-icon">📊</div>
-              <div class="empty-state-text" data-i18n="loading">Loading top proxies...</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 data-i18n="dailyQuote">Daily Quote</h2>
-        </div>
-        <div class="card-body">
-          <div id="quoteContainer" class="quote-text" style="font-style: italic; color: var(--text2); line-height: 1.6;" data-i18n="loading">
-            Loading quote...
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2><span data-i18n="recentActivity">Recent Activity</span></h2>
-        </div>
-        <div class="card-body">
-          <div class="activity-timeline" id="activityTimeline">
-            <div class="activity-item">
-              <div class="activity-dot info"></div>
-              <div class="activity-content">
-                <div class="activity-title"><span data-i18n="initialized">GUI Initialized</span></div>
-                <div class="activity-desc" data-i18n="managementInterface">Management interface loaded</div>
-                <div class="activity-time" id="initTime" data-i18n="justNow">just now</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="card">
+      <div class="card-header">Recent Activity</div>
+      <div class="card-body" id="recentActivity" style="font-size:12px;color:var(--text2);min-height:60px">Loading...</div>
     </div>
   </div>
+</div>
 
-  <!-- Proxy Management Tab -->
-  <div class="tab-content" id="tab-proxies" style="display:none;">
-    <div class="card stable-pool-card">
-      <div class="card-header">
-        <h2 data-i18n="tabProxy">Proxy Management</h2>
+<!-- ========== PROXIES ========== -->
+<div class="content" id="page-proxies">
+  <div class="toolbar">
+    <span class="page-title">Proxies</span>
+    <span class="badge" id="proxyCount">0</span>
+    <div class="spacer"></div>
+    <input placeholder="Filter..." id="proxyFilter" oninput="renderProxies()" style="width:160px">
+    <select id="proxyTypeFilter" onchange="renderProxies()">
+      <option value="all">All Types</option>
+      <option value="socks5">SOCKS5</option>
+      <option value="socks4">SOCKS4</option>
+      <option value="http">HTTP</option>
+    </select>
+    <select id="proxySort" onchange="renderProxies()">
+      <option value="latency">Latency</option>
+      <option value="host">Host</option>
+      <option value="tests">Tests</option>
+    </select>
+    <button class="btn btn-primary btn-sm" onclick="fetchFreeProxies()">Fetch</button>
+    <button class="btn btn-sm" onclick="autoFind()">Auto Find</button>
+  </div>
+  <div style="padding:20px">
+    <div class="progress-wrap" id="autoFindProgress">
+      <div style="font-size:13px;font-weight:500" id="autoFindTitle">Auto Finding...</div>
+      <div class="progress-bar"><div class="progress-fill" id="autoFindBar" style="width:0%"></div></div>
+      <div class="progress-info" id="autoFindInfo"></div>
+    </div>
+    <div class="card">
+      <div class="card-header" style="justify-content:space-between">
+        <span>Proxy List</span>
         <div class="flex gap-8">
-          <button class="btn btn-primary btn-sm" onclick="startAutoFind()">⚡ <span data-i18n="findStableProxies">Find Stable Proxies</span></button>
-          <button class="btn btn-outline btn-sm" onclick="testAllProxies()">🧪 <span data-i18n="testAllBtn">Test All</span></button>
-          <button class="btn btn-outline btn-sm" onclick="fetchFreeProxies()">📥 <span data-i18n="fetchListBtn">Fetch List</span></button>
+          <button class="btn btn-sm" onclick="addManualProxy()">+ Add Manual</button>
+          <button class="btn btn-sm btn-danger" onclick="clearProxies()">Clear</button>
+          <button class="btn btn-sm" onclick="loadProxies()">&#8635;</button>
         </div>
       </div>
-      <div class="card-body">
-        <div class="sp-stats">
-          <div class="sp-stat">
-            <div class="sp-stat-icon">📊</div>
-            <div>
-              <div class="sp-stat-num" id="spTotal">0</div>
-              <div class="sp-stat-label" data-i18n="proxyTotal">Total Proxies</div>
-            </div>
-          </div>
-          <div class="sp-stat">
-            <div class="sp-stat-icon">✅</div>
-            <div>
-              <div class="sp-stat-num" id="spAlive">0</div>
-              <div class="sp-stat-label" data-i18n="proxyAlive">Alive</div>
-            </div>
-          </div>
-          <div class="sp-stat">
-            <div class="sp-stat-icon">⏱️</div>
-            <div>
-              <div class="sp-stat-num" id="spLatency">0ms</div>
-              <div class="sp-stat-label" data-i18n="proxyBestLatency">Best Latency</div>
-            </div>
-          </div>
-          <div class="sp-stat">
-            <div class="sp-stat-icon">⭐</div>
-            <div>
-              <div class="sp-stat-num" id="spBuiltin">0</div>
-              <div class="sp-stat-label" data-i18n="proxyBuiltin">Built-in</div>
-            </div>
-          </div>
-        </div>
-
-        <div id="autoFindProgress" style="display:none;" class="sp-progress">
-          <div class="sp-radar-wrap">
-            <div class="sp-radar">
-              <div class="sp-radar-ring"></div>
-              <div class="sp-radar-ring"></div>
-              <div class="sp-radar-ring"></div>
-              <div class="sp-radar-sweep"></div>
-              <div class="sp-radar-dot"></div>
-            </div>
-            <div class="sp-radar-label"><span data-i18n="proxyScanning">Scanning...</span></div>
-          </div>
-          <div class="sp-progress-info">
-            <div class="flex justify-between items-center">
-              <span id="autoFindStage" data-i18n="initializingStatus">Initializing...</span>
-              <span id="autoFindCount">0 / 0</span>
-            </div>
-            <div class="sp-progress-bar mt-8">
-              <div class="sp-progress-fill" id="autoFindBar" style="width: 0%;"></div>
-            </div>
-            <div class="sp-progress-stage" id="autoFindDetail" data-i18n="preparingProxyList">Preparing proxy list...</div>
-          </div>
-        </div>
-
-        <div class="sp-toolbar">
-          <input type="text" class="sp-filter-input" id="proxyFilter" placeholder="Filter by host, IP, type..." data-i18n-placeholder="proxyFilterPlaceholder" oninput="filterProxies()">
-          <div class="sp-type-chips">
-            <div class="sp-chip active" data-type="all" onclick="filterByType('all', this)" data-i18n="filterAll">All</div>
-            <div class="sp-chip" data-type="socks5" onclick="filterByType('socks5', this)">SOCKS5</div>
-            <div class="sp-chip" data-type="http" onclick="filterByType('http', this)">HTTP</div>
-            <div class="sp-chip" data-type="socks4" onclick="filterByType('socks4', this)">SOCKS4</div>
-          </div>
-          <select class="sp-sort-select" id="proxySort" onchange="sortProxies()">
-            <option value="latency"><span data-i18n="sortFastest">Sort: Fastest</span></option>
-            <option value="tests"><span data-i18n="sortMostTests">Sort: Most Tests</span></option>
-            <option value="host"><span data-i18n="sortHostAz">Sort: Host A-Z</span></option>
-          </select>
-        </div>
-
+      <div class="card-body" style="padding:0">
         <div class="table-wrap">
-          <table class="sp-table">
+          <table>
             <thead>
-              <tr>
-                <th data-i18n="gradeLabel">Grade</th>
-                <th data-i18n="host">Host</th>
-                <th data-i18n="port">Port</th>
-                <th data-i18n="type">Type</th>
-                <th data-i18n="latency">Latency</th>
-                <th data-i18n="tests">Tests</th>
-                <th data-i18n="source">Source</th>
-                <th data-i18n="action">Actions</th>
-              </tr>
+              <tr><th style="width:32px">#</th><th>Host</th><th style="width:60px">Port</th><th style="width:70px">Type</th><th style="width:100px">Latency</th><th style="width:50px">Tests</th><th style="width:80px">Source</th><th style="width:180px">Actions</th></tr>
             </thead>
-            <tbody id="proxyTableBody">
-              <tr><td colspan="8" class="text-center text-muted"><span data-i18n="loading">Loading proxies...</span></td></tr>
-            </tbody>
+            <tbody id="proxyTableBody"></tbody>
           </table>
         </div>
       </div>
     </div>
-
-    <div class="card mt-16">
-      <div class="card-header">
-        <h2 data-i18n="testSingleProxy">Test Single Proxy</h2>
-      </div>
-      <div class="card-body">
-        <div class="form-group">
-          <div class="form-row">
-            <label data-i18n="host">Host</label>
-            <input type="text" class="input" id="testHost" placeholder="e.g. 192.168.1.1" data-i18n-placeholder="testHostPlaceholder">
-          </div>
-          <div class="form-row">
-            <label data-i18n="port">Port</label>
-            <input type="number" class="input" id="testPort" placeholder="e.g. 1080" data-i18n-placeholder="testPortPlaceholder">
-          </div>
-          <div class="form-row">
-            <label data-i18n="type">Type</label>
-            <select id="testType">
-              <option value="socks5">SOCKS5</option>
-              <option value="socks4">SOCKS4</option>
-              <option value="http">HTTP</option>
-            </select>
-          </div>
-          <div class="form-row" style="justify-content: flex-end;">
-            <label>&nbsp;</label>
-            <button class="btn btn-primary" onclick="testSingleProxy()">🧪 <span data-i18n="testProxy">Test Proxy</span></button>
-          </div>
-        </div>
-        <div id="testResult" style="display:none; margin-top: 12px;"></div>
-      </div>
-    </div>
-
-    <div class="card mt-16">
-      <div class="card-header">
-        <h2 data-i18n="addManualProxy">Add Manual Proxy</h2>
-      </div>
-      <div class="card-body">
-        <div class="form-group">
-          <div class="form-row">
-            <label data-i18n="host">Host</label>
-            <input type="text" class="input" id="addHost" placeholder="Proxy host address" data-i18n-placeholder="proxyHostPlaceholder">
-          </div>
-          <div class="form-row">
-            <label data-i18n="port">Port</label>
-            <input type="number" class="input" id="addPort" placeholder="Port number" data-i18n-placeholder="proxyPortPlaceholder">
-          </div>
-          <div class="form-row">
-            <label data-i18n="type">Type</label>
-            <select id="addType">
-              <option value="socks5">SOCKS5</option>
-              <option value="socks4">SOCKS4</option>
-              <option value="http">HTTP</option>
-            </select>
-          </div>
-          <div class="form-row" style="justify-content: flex-end;">
-            <label>&nbsp;</label>
-            <button class="btn btn-success" onclick="addManualProxy()">➕ <span data-i18n="addToPool">Add to Pool</span></button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- WARP Tab -->
-  <div class="tab-content" id="tab-warp" style="display:none;">
-    <div class="grid">
-      <div class="card">
-        <div class="card-header">
-          <h2 data-i18n="warpTitle">Cloudflare WARP</h2>
-          <span id="warpStatusBadge" class="badge badge-err" data-i18n="warpDisconnected">Disconnected</span>
-        </div>
-        <div class="card-body">
-          <div class="flex items-center gap-16 mb-16">
-          <div class="orbit-container" id="warpOrbit">
-            <div class="orbit-ring error" id="warpOrbitRing"></div>
-            <div class="orbit-ball" id="warpOrbitBall"></div>
-            <div class="orbit-center error" id="warpOrbitCenter">
-              <span class="orbit-icon" id="warpOrbitIcon">🌐</span>
-            </div>
-          </div>
-          <div style="flex: 1;">
-            <h3 style="margin-bottom: 8px;" data-i18n="warpVpn">WARP VPN</h3>
-            <p class="text-muted text-sm" style="margin-bottom: 12px;" data-i18n="warpDesc">
-              Cloudflare WARP provides a fast, secure VPN connection.
-            </p>
-            <div id="warpInstalled" class="badge badge-warn" data-i18n="checkingInstallation">Checking installation status...</div>
-          </div>
-        </div>
-        <div class="flex gap-8">
-          <button class="btn btn-success" id="warpConnectBtn" onclick="connectWarp()">🔗 <span data-i18n="connectBtn">Connect</span></button>
-          <button class="btn btn-outline" id="warpDisconnectBtn" onclick="disconnectWarp()" style="display:none;">⏏ <span data-i18n="disconnectBtn">Disconnect</span></button>
-          <button class="btn btn-outline" onclick="registerWarp()">📝 <span data-i18n="registerBtn">Register</span></button>
-        </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 data-i18n="warpStatus">WARP Status</h2>
-        </div>
-        <div class="card-body">
-          <div class="code-block" id="warpRawStatus" data-i18n="loading">Loading...</div>
-          <div class="mt-12">
-            <button class="btn btn-outline btn-sm" onclick="refreshWarpStatus()">↻ <span data-i18n="refreshStatus">Refresh Status</span></button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Statistics Tab -->
-  <div class="tab-content" id="tab-stats" style="display:none;">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="value" id="statTotalTests">0</div>
-        <div class="label" data-i18n="tests">Total Tests</div>
-      </div>
-      <div class="stat-card">
-        <div class="value" id="statSuccessRate">0%</div>
-        <div class="label" data-i18n="successRate">Success Rate</div>
-      </div>
-      <div class="stat-card">
-        <div class="value" id="statAvgLatency">0ms</div>
-        <div class="label" data-i18n="dashAvgLatency">Avg Latency</div>
-      </div>
-      <div class="stat-card">
-        <div class="value" id="statBestLatency">0ms</div>
-        <div class="label" data-i18n="proxyBestLatency">Best Latency</div>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <div class="card-header">
-          <h2 data-i18n="latencyDistribution">Latency Distribution</h2>
-        </div>
-        <div class="card-body">
-          <div class="chart-container">
-            <canvas id="latencyChart" class="chart-canvas"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 data-i18n="proxyTypesDistribution">Proxy Types Distribution</h2>
-        </div>
-        <div class="card-body">
-          <div class="chart-container">
-            <canvas id="typeChart" class="chart-canvas"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div class="card full">
-        <div class="card-header">
-          <h2 data-i18n="testHistory">Test History</h2>
-          <div class="flex gap-8">
-            <button class="btn btn-outline btn-sm" onclick="loadHistory()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
-            <button class="btn btn-danger btn-sm" onclick="clearStats()">🗑 <span data-i18n="clearBtn">Clear</span></button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th data-i18n="timeLabel">Time</th>
-                  <th data-i18n="host">Host</th>
-                  <th data-i18n="port">Port</th>
-                  <th data-i18n="type">Type</th>
-                  <th data-i18n="statusLabel">Status</th>
-                  <th data-i18n="latency">Latency</th>
-                </tr>
-              </thead>
-              <tbody id="historyTableBody">
-                <tr><td colspan="6" class="text-center text-muted"><span data-i18n="loadingHistory">Loading history...</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Local Server Tab -->
-  <div class="tab-content" id="tab-server" style="display:none;">
-    <div class="grid">
-      <div class="card">
-        <div class="card-header">
-          <h2 data-i18n="proxyServerControl">Proxy Server Control</h2>
-          <span id="serverStatusBadge" class="badge badge-err" data-i18n="stopped">Stopped</span>
-        </div>
-        <div class="card-body">
-          <div class="orbit-container mx-auto mb-16" style="margin: 0 auto 16px;">
-          <div class="orbit-ring error" id="serverOrbitRing"></div>
-          <div class="orbit-ball" id="serverOrbitBall"></div>
-          <div class="orbit-center error" id="serverOrbitCenter">
-            <span class="orbit-icon" id="serverOrbitIcon">🖥️</span>
-          </div>
-        </div>
-        <div class="text-center mb-16">
-          <div style="font-size: 18px; font-weight: 700;" id="serverStatusText" data-i18n="statusStopped">Server is stopped</div>
-          <div class="text-muted text-sm mt-8" id="serverPortText"><span data-i18n="portLabel">Port</span>: -</div>
-        </div>
-        <div class="flex gap-8 justify-center">
-          <button class="btn btn-primary" id="startServerBtn" onclick="startServer()">▶ <span data-i18n="startServerBtn">Start Server</span></button>
-          <button class="btn btn-danger" id="stopServerBtn" onclick="stopServer()" style="display:none;">⏹ <span data-i18n="stopServerBtn">Stop Server</span></button>
-        </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 data-i18n="serverSettings">Server Settings</h2>
-        </div>
-        <div class="card-body">
-          <div class="form-row">
-            <label data-i18n="serverListenPort">Listen Port</label>
-            <input type="number" class="input" id="serverPortInput" value="1080" min="1" max="65535">
-          </div>
-          <div class="form-row">
-            <label data-i18n="upstreamProxy">Upstream Proxy (optional)</label>
-            <input type="text" class="input" id="upstreamProxy" placeholder="socks5://host:port or http://host:port" data-i18n-placeholder="serverUpstreamPlaceholder">
-            <div class="text-sm text-muted mt-8" data-i18n="upstreamProxyDesc">
-              Route all traffic through another proxy. Format: socks5://host:port, http://host:port
-            </div>
-          </div>
-          <button class="btn btn-primary w-full" onclick="setUpstreamProxy()">🔗 <span data-i18n="setUpstream">Set Upstream</span></button>
-        </div>
-      </div>
-
-      <div class="card full">
-        <div class="card-header">
-          <h2 data-i18n="systemProxy">System Proxy</h2>
-          <span id="sysProxyBadge" class="badge badge-err" data-i18n="sysProxyDisabled">Disabled</span>
-        </div>
-        <div class="card-body">
-          <div class="setting-row">
-            <div class="setting-info">
-              <div class="setting-label" data-i18n="enableSystemProxy">Enable System Proxy</div>
-              <div class="setting-desc" data-i18n="systemProxyDesc">Route all system traffic through the local proxy server</div>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="sysProxyToggle" onchange="toggleSystemProxy()">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="setting-row">
-            <div class="setting-info">
-              <div class="setting-label" data-i18n="pacFileUrl">PAC File URL</div>
-              <div class="setting-desc" data-i18n="pacFileDesc">Auto-configuration script for advanced setups</div>
-            </div>
-            <button class="btn btn-outline btn-sm" onclick="copyPacUrl()">📋 <span data-i18n="copyUrlBtn">Copy URL</span></button>
-          </div>
-          <div class="code-block mt-12" id="pacUrlDisplay" data-i18n="loading">Loading...</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- App Proxy Tab -->
-  <div class="tab-content" id="tab-apps" style="display:none;">
-    <div class="card">
-      <div class="card-header">
-        <h2 data-i18n="proxyApps">Proxy Apps</h2>
-        <div class="flex gap-8">
-          <button class="btn btn-primary btn-sm" onclick="showAddAppModal()">➕ <span data-i18n="addApp">Add App</span></button>
-          <button class="btn btn-outline btn-sm" onclick="loadAppPresets()">📋 <span data-i18n="presets">Presets</span></button>
-        </div>
-      </div>
-      <div class="card-body">
-        <div id="appPresets" style="display:none; margin-bottom: 16px;">
-          <div class="text-sm text-muted mb-8" data-i18n="quickAddDetected">Quick add detected applications:</div>
-          <div id="presetList" class="flex gap-8" style="flex-wrap: wrap;"></div>
-        </div>
-        <div class="app-grid" id="appGrid">
-          <div class="empty-state" style="grid-column: 1 / -1;">
-            <div class="empty-state-icon">📱</div>
-            <div class="empty-state-text" data-i18n="noAppsConfigured">No apps configured. Click "Add App" to get started.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Logs Tab -->
-  <div class="tab-content" id="tab-logs" style="display:none;">
-    <div class="card">
-      <div class="card-header">
-        <h2 data-i18n="systemLogs">System Logs</h2>
-        <div class="flex gap-8">
-          <select id="logLevelFilter" class="sp-sort-select" onchange="filterLogs()">
-            <option value="all" data-i18n="logLevelAll">All Levels</option>
-            <option value="info" data-i18n="logLevelInfo">Info</option>
-            <option value="warn" data-i18n="logLevelWarn">Warning</option>
-            <option value="error" data-i18n="logLevelError">Error</option>
-            <option value="success" data-i18n="logLevelSuccess">Success</option>
-          </select>
-          <button class="btn btn-outline btn-sm" onclick="loadLogs()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
-          <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑 <span data-i18n="clearBtn">Clear</span></button>
-        </div>
-      </div>
-      <div class="card-body" style="padding: 0; height: 500px;">
-        <div class="log-box" id="logBox" style="height: 100%; border: none;">
-          <div class="text-muted" data-i18n="loadingLogs">Loading logs...</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settings Tab -->
-  <div class="tab-content" id="tab-settings" style="display:none;">
-    <div class="grid">
-      <div class="card">
-        <div class="card-header">
-          <h2 data-i18n="generalSettings">General Settings</h2>
-        </div>
-        <div class="card-body">
-          <div class="setting-row">
-            <div class="setting-info">
-              <div class="setting-label" data-i18n="theme">Theme</div>
-              <div class="setting-desc" data-i18n="themeDesc">Choose your preferred visual theme</div>
-            </div>
-            <select id="themeSelect" class="sp-sort-select" onchange="changeTheme(this.value)">
-              <option value="dark" data-i18n="themeDark">Dark</option>
-              <option value="light" data-i18n="themeLight">Light</option>
-              <option value="pixel" data-i18n="themePixel">Pixel/Retro</option>
-            </select>
-          </div>
-          <div class="setting-row">
-            <div class="setting-info">
-              <div class="setting-label" data-i18n="defaultMode">Default Mode</div>
-              <div class="setting-desc" data-i18n="defaultModeDesc">Default proxy mode</div>
-            </div>
-            <select id="defaultMode" class="sp-sort-select" onchange="saveConfig('defaultMode', this.value)">
-              <option value="auto" data-i18n="modeAuto">Auto</option>
-              <option value="socks5">SOCKS5</option>
-              <option value="http">HTTP</option>
-            </select>
-          </div>
-          <div class="setting-row">
-            <div class="setting-info">
-              <div class="setting-label" data-i18n="defaultPort">Default Port</div>
-              <div class="setting-desc" data-i18n="defaultPortDesc">Default port for the proxy server</div>
-            </div>
-            <input type="number" class="input" style="width: 100px;" id="defaultPort" value="1080" onchange="saveConfig('defaultPort', parseInt(this.value))">
-          </div>
-          <div class="setting-row">
-            <div class="setting-info">
-              <div class="setting-label" data-i18n="proxyTestCount">Proxy Test Count</div>
-              <div class="setting-desc" data-i18n="proxyTestCountDesc">Number of proxies to test in batch</div>
-            </div>
-            <input type="number" class="input" style="width: 100px;" id="proxyTestCount" value="30" onchange="saveConfig('proxyTestCount', parseInt(this.value))">
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 data-i18n="logSettings">Log Settings</h2>
-        </div>
-        <div class="card-body">
-          <div class="setting-row">
-            <div class="setting-info">
-              <div class="setting-label" data-i18n="logLevel">Log Level</div>
-              <div class="setting-desc" data-i18n="logLevelDesc">Minimum level to log</div>
-            </div>
-            <select id="logLevel" class="sp-sort-select" onchange="saveConfig('logLevel', this.value)">
-              <option value="debug" data-i18n="logLevelDebug">Debug</option>
-              <option value="info" data-i18n="logLevelInfo">Info</option>
-              <option value="warn" data-i18n="logLevelWarn">Warning</option>
-              <option value="error" data-i18n="logLevelError">Error</option>
-            </select>
-          </div>
-          <div class="setting-row">
-            <div class="setting-info">
-              <div class="setting-label" data-i18n="logToFile">Log to File</div>
-              <div class="setting-desc" data-i18n="logToFileDesc">Save logs to file</div>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="logToFile" checked onchange="saveConfig('logToFile', this.checked)">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="card full">
-        <div class="card-header">
-          <h2>System Information</h2>
-        </div>
-        <div class="card-body">
-          <div class="form-group">
-            <div class="form-row">
-              <label data-i18n="platform">Platform</label>
-              <div class="text-sm" id="sysPlatform">-</div>
-            </div>
-            <div class="form-row">
-              <label data-i18n="nodeVersion">Node Version</label>
-              <div class="text-sm" id="sysNodeVersion">-</div>
-            </div>
-            <div class="form-row">
-              <label data-i18n="uptime">Uptime</label>
-              <div class="text-sm" id="sysUptime">-</div>
-            </div>
-            <div class="form-row">
-              <label data-i18n="memoryUsage">Memory Usage</label>
-              <div class="text-sm" id="sysMemory">-</div>
-            </div>
-            <div class="form-row">
-              <label data-i18n="pid">PID</label>
-              <div class="text-sm" id="sysPid">-</div>
-            </div>
-            <div class="form-row">
-              <label data-i18n="proxyCache">Proxy Cache</label>
-              <div class="text-sm" id="sysProxyCache">-</div>
-            </div>
-          </div>
-          <div class="mt-16 flex gap-8">
-            <button class="btn btn-outline btn-sm" onclick="loadDiagnostics()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
-            <button class="btn btn-outline btn-sm" onclick="resetConfig()">🔄 <span data-i18n="resetToDefaults">Reset to Defaults</span></button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer">
-    <span data-i18n="appName">Free Proxy Tool</span> · <span data-i18n="managementInterface">Management Interface</span> · <span id="footerTime"></span>
   </div>
 </div>
+
+<!-- ========== APPS ========== -->
+<div class="content" id="page-apps">
+  <div class="toolbar">
+    <span class="page-title">Proxy Apps</span>
+    <div class="spacer"></div>
+    <button class="btn btn-sm" onclick="showAddAppModal()">+ Add App</button>
+    <button class="btn btn-sm" onclick="loadApps()">&#8635;</button>
+  </div>
+  <div style="padding:20px">
+    <div class="app-grid" id="appsGrid"></div>
+  </div>
+</div>
+
+<!-- ========== LOGS ========== -->
+<div class="content" id="page-logs">
+  <div class="toolbar">
+    <span class="page-title">Logs</span>
+    <div class="spacer"></div>
+    <button class="btn btn-sm" onclick="loadLogs()">&#8635; Refresh</button>
+    <button class="btn btn-sm btn-danger" onclick="clearLogs()">Clear</button>
+  </div>
+  <div style="padding:20px">
+    <div class="logs-area" id="logsArea">Loading...</div>
+  </div>
+</div>
+
+<!-- ========== SETTINGS ========== -->
+<div class="content" id="page-settings">
+  <div class="toolbar"><span class="page-title">Settings</span></div>
+  <div style="padding:20px;max-width:600px">
+    <div class="card">
+      <div class="card-header">General</div>
+      <div class="card-body">
+        <div class="setting-row">
+          <div><div style="font-weight:500">Theme</div><div class="desc">Dark / Light</div></div>
+          <select id="themeSelect" onchange="setTheme(this.value)">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div><div style="font-weight:500">Default Port</div><div class="desc">Proxy server listen port</div></div>
+          <input type="number" id="cfgPort" value="1080" style="width:80px">
+        </div>
+        <div class="setting-row">
+          <div><div style="font-weight:500">GUI Port</div><div class="desc">Web interface port</div></div>
+          <input type="number" id="cfgGuiPort" value="3000" style="width:80px">
+        </div>
+        <div class="setting-row">
+          <div><div style="font-weight:500">Proxy Test Count</div><div class="desc">Number of proxies to test</div></div>
+          <input type="number" id="cfgTestCount" value="30" style="width:80px">
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="saveConfig()">Save</button>
+          <button class="btn btn-danger" onclick="resetConfig()">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
 
 <!-- Add App Modal -->
-<div class="modal-overlay" id="appModal">
+<div class="modal-overlay" id="addAppModal">
   <div class="modal">
-    <div class="modal-header">
-      <h3 id="appModalTitle" data-i18n="addApp">Add App</h3>
-      <button class="modal-close" onclick="closeAppModal()">×</button>
+    <h3>Add Proxy App</h3>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">App Name</label>
+      <input id="appName" style="width:100%" placeholder="e.g. Chrome">
     </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <label data-i18n="appNameLabel">App Name</label>
-        <input type="text" class="input" id="appNameInput" placeholder="e.g. Google Chrome" data-i18n-placeholder="appNamePlaceholder">
-      </div>
-      <div class="form-row">
-        <label data-i18n="appPath">App Path</label>
-        <div class="flex gap-8">
-          <input type="text" class="input" id="appPathInput" placeholder="C:\path\to\app.exe" style="flex:1;">
-          <button class="btn btn-outline btn-sm" onclick="browseApp()">📁 <span data-i18n="browseBtn">Browse</span></button>
-        </div>
-      </div>
-      <div class="form-row">
-        <label data-i18n="proxyMode">Proxy Mode</label>
-        <select id="appModeSelect">
-          <option value="http" data-i18n="httpProxy">HTTP Proxy</option>
-          <option value="socks5" data-i18n="socks5Proxy">SOCKS5 Proxy</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <label data-i18n="processName">Process Name (optional)</label>
-        <input type="text" class="input" id="appProcessInput" placeholder="e.g. chrome.exe" data-i18n-placeholder="processNamePlaceholder">
-        <div class="text-sm text-muted mt-8" data-i18n="processNameDesc">Process name to kill before launching (optional)</div>
-      </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">Executable Path</label>
+      <input id="appExe" style="width:100%" placeholder="C:\Path\to\app.exe">
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeAppModal()" data-i18n="cancel">Cancel</button>
-      <button class="btn btn-primary" onclick="saveApp()" data-i18n="save">Save</button>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">Args (optional)</label>
+      <input id="appArgs" style="width:100%" placeholder="--flag1 --flag2">
+    </div>
+    <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap" id="appPresets"></div>
+    <div class="actions">
+      <button class="btn" onclick="closeModal('addAppModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addApp()">Add</button>
     </div>
   </div>
 </div>
 
-<!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-const API_BASE = '';
-let ws = null;
-let stableProxies = [];
+// ========== State ==========
 let allProxies = [];
-let currentFilter = 'all';
-let currentSort = 'latency';
-let editingApp = null;
-let activityLog = [];
+let appsList = [];
+let lang = 'en';
+let ws = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  initTheme();
-  initTabs();
-  initWebSocket();
-  loadStatus();
-  loadStableProxies();
-  loadQuote();
-  loadDiagnostics();
-  loadConfig();
-  loadApps();
-  loadLogs();
-  updateFooterTime();
-  setInterval(updateFooterTime, 1000);
-  setInterval(loadStatus, 10000);
-});
+// ========== i18n ==========
+const _tr = {};
+async function loadLang() {
+  try {
+    const r = await fetch('/api/lang');
+    const d = await r.json();
+    lang = d.lang || 'en';
+    Object.assign(_tr, d.translations || {});
+    document.getElementById('langBtn').textContent = lang === 'zh' ? '中' : 'EN';
+  } catch {}
+}
+function _t(key, ...args) {
+  let t = _tr[key] || key;
+  if (args.length) t = t.replace(/{(\d+)}/g, (m, i) => args[i]);
+  return t;
+}
+async function toggleLang() {
+  const next = lang === 'en' ? 'zh' : 'en';
+  try {
+    const r = await fetch('/api/lang', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({lang:next}) });
+    const d = await r.json();
+    lang = d.lang || next;
+    Object.assign(_tr, d.translations || {});
+    document.getElementById('langBtn').textContent = lang === 'zh' ? '中' : 'EN';
+    refreshUI();
+  } catch {}
+}
 
+// ========== Theme ==========
 function initTheme() {
-  const saved = localStorage.getItem('theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', saved);
-  document.getElementById('themeSelect').value = saved;
-  updateThemeIcon(saved);
+  const t = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeSelect').value = t;
+}
+function setTheme(t) { localStorage.setItem('theme', t); document.documentElement.setAttribute('data-theme', t); }
+
+// ========== Navigation ==========
+function switchPage(page) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelector(`nav a[data-page="${page}"]`).classList.add('active');
+  if (page === 'proxies') loadProxies();
+  if (page === 'apps') loadApps();
+  if (page === 'logs') loadLogs();
+  if (page === 'dashboard') loadStatus();
+  if (page === 'settings') loadConfig();
 }
 
-function updateThemeIcon(theme) {
-  const icon = document.getElementById('themeToggle');
-  if (theme === 'dark') icon.textContent = '☀️';
-  else if (theme === 'light') icon.textContent = '🌙';
-  else icon.textContent = '👾';
+// ========== Toast ==========
+function toast(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast toast-' + type;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 3000);
 }
 
-document.getElementById('themeToggle').addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-theme');
-  const themes = ['dark', 'light', 'pixel'];
-  const idx = themes.indexOf(current);
-  const next = themes[(idx + 1) % themes.length];
-  changeTheme(next);
-});
-
-function changeTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
-  document.getElementById('themeSelect').value = theme;
-  updateThemeIcon(theme);
-}
-
-function initTabs() {
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = tab.dataset.tab;
-      switchTab(target);
-    });
-  });
-}
-
-function switchTab(tabName) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
-  document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-  document.getElementById('tab-' + tabName).style.display = 'block';
-  if (tabName === 'stats') {
-    loadStats();
-    loadHistory();
-    setTimeout(drawCharts, 100);
-  }
-  if (tabName === 'logs') loadLogs();
-  if (tabName === 'settings') loadDiagnostics();
-  if (tabName === 'warp') refreshWarpStatus();
-}
-
-function initWebSocket() {
-  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${proto}//${location.host}`;
+// ========== WebSocket ==========
+function initWS() {
   try {
-    ws = new WebSocket(wsUrl);
-    ws.onopen = () => console.log('WebSocket connected');
-    ws.onmessage = handleWebSocketMessage;
-    ws.onclose = () => {
-      console.log('WebSocket closed, reconnecting...');
-      setTimeout(initWebSocket, 3000);
+    ws = new WebSocket('ws://' + location.host);
+    ws.onmessage = (e) => {
+      try { const d = JSON.parse(e.data); handleWS(d); } catch {}
     };
-    ws.onerror = (e) => console.log('WebSocket error');
-  } catch (e) {
-    console.log('WebSocket init failed', e);
+    ws.onclose = () => setTimeout(initWS, 3000);
+  } catch {}
+}
+function handleWS(data) {
+  if (data.type === 'auto-find-progress') updateAutoFindProgress(data);
+  if (data.type === 'auto-find-complete') {
+    document.getElementById('autoFindProgress').style.display = 'none';
+    toast('Auto find complete: ' + (data.found || 0) + ' found', 'ok');
+    loadProxies();
+    loadStatus();
   }
+  if (data.type === 'proxy-status') { serverRunning = data.running; updateStatusUI(); }
 }
 
-let _wsThrottleTimer = null;
-let _wsPendingData = null;
-function handleWebSocketMessage(event) {
-  try {
-    const data = JSON.parse(event.data);
-    switch (data.type) {
-      case 'init':
-        updateServerStatus(data.server.running, data.server.port);
-        updateWarpStatusUI(data.warp.installed, data.warp.connected);
-        break;
-      case 'free-proxy-update':
-        toast('info', _t('proxyCacheUpdated', data.count));
-        break;
-      case 'test-progress':
-        handleTestProgress(data);
-        break;
-      case 'test-complete':
-        handleTestComplete(data);
-        break;
-      case 'auto-find-stage':
-        handleAutoFindStage(data);
-        break;
-      case 'auto-find-progress':
-        handleAutoFindProgress(data);
-        break;
-      case 'auto-find-complete':
-        handleAutoFindComplete(data);
-        break;
-      case 'disconnect-all':
-        toast('warn', _t('allDisconnected'));
-        loadStatus();
-        break;
-    }
-  } catch (e) {
-    console.error('WS parse error', e);
-  }
-}
+// ========== Dashboard ==========
+let serverRunning = false;
+let warpConnected = false;
 
-async function apiCall(path, method = 'GET', body = null) {
-  try {
-    const opts = { method, headers: { 'Content-Type': 'application/json' } };
-    if (body) opts.body = JSON.stringify(body);
-    const res = await fetch(API_BASE + path, opts);
-    const data = await res.json();
-    return data;
-  } catch (e) {
-    toast('err', _t('apiError', e.message));
-    throw e;
-  }
+function refreshUI() {
+  loadStatus();
+  if (document.getElementById('page-proxies').classList.contains('active')) loadProxies();
+  if (document.getElementById('page-logs').classList.contains('active')) loadLogs();
 }
 
 async function loadStatus() {
   try {
-    const data = await apiCall('/api/status');
-    updateServerStatus(data.server.running, data.server.port);
-    updateWarpStatusUI(data.warp.installed, data.warp.connected);
-    updateSystemProxyUI(data.systemProxy);
-    updateDashboardStats(data.stats);
-  } catch (e) {}
+    const r = await fetch('/api/status');
+    const d = await r.json();
+    serverRunning = d.server && d.server.running;
+    warpConnected = d.warp && d.warp.connected;
+    updateStatusUI();
+
+    const grid = document.getElementById('statusGrid');
+    const warpLabel = warpConnected ? '<span class="dot ok"></span>Connected' : '<span class="dot err"></span>Disconnected';
+    const serverLabel = serverRunning ? '<span class="dot ok"></span>Running' : '<span class="dot err"></span>Stopped';
+    const sysLabel = d.systemProxy && d.systemProxy.enabled ? '<span class="dot ok"></span>Enabled' : '<span class="dot err"></span>Disabled';
+    const stats = d.stats || {};
+
+    grid.innerHTML = `
+      <div class="status-card"><div class="label">WARP</div><div class="value" style="font-size:16px">${warpLabel}</div></div>
+      <div class="status-card"><div class="label">Proxy Server</div><div class="value" style="font-size:16px">${serverLabel}</div><div class="sub">Port: ${d.server && d.server.port || 1080}</div></div>
+      <div class="status-card"><div class="label">System Proxy</div><div class="value" style="font-size:16px">${sysLabel}</div></div>
+      <div class="status-card"><div class="label">Tests</div><div class="value">${stats.totalTests || 0}</div><div class="sub">Success: ${stats.successRate || 0}%</div></div>
+    `;
+
+    // Activity
+    document.getElementById('recentActivity').innerHTML = d.warp ? `<div>WARP: ${warpConnected ? 'Connected' : 'Disconnected'}</div><div>Server: ${serverRunning ? 'Running on :' + (d.server.port||1080) : 'Stopped'}</div>` : '<div class="text-muted">No recent activity</div>';
+  } catch { document.getElementById('statusGrid').innerHTML = '<div class="text-muted">Failed to load status</div>'; }
 }
 
-function updateServerStatus(running, port) {
-  const badge = document.getElementById('serverBadge');
-  const statusBadge = document.getElementById('serverStatusBadge');
-  const text = document.getElementById('serverStatusText');
-  const portText = document.getElementById('serverPortText');
-  const startBtn = document.getElementById('startServerBtn');
-  const stopBtn = document.getElementById('stopServerBtn');
-  const dashStatus = document.getElementById('dashServerStatus');
-  const dashPort = document.getElementById('dashPort');
-  const ring = document.getElementById('serverOrbitRing');
-  const center = document.getElementById('serverOrbitCenter');
-  const ball = document.getElementById('serverOrbitBall');
-
-  if (running) {
-    badge.className = 'badge badge-ok';
-    badge.textContent = _t('serverOn');
-    statusBadge.className = 'badge badge-ok';
-    statusBadge.textContent = _t('serverRunning');
-    text.textContent = _t('statusRunning');
-    portText.textContent = _t('portLabel') + ': ' + port;
-    startBtn.style.display = 'none';
-    stopBtn.style.display = 'inline-flex';
-    dashStatus.textContent = _t('on');
-    dashPort.textContent = port;
-    ring.className = 'orbit-ring active';
-    center.className = 'orbit-center success';
-    ball.className = 'orbit-ball success';
-  } else {
-    badge.className = 'badge badge-err';
-    badge.textContent = _t('serverOff');
-    statusBadge.className = 'badge badge-err';
-    statusBadge.textContent = _t('stopped');
-    text.textContent = _t('statusStopped');
-    portText.textContent = _t('portLabel') + ': -';
-    startBtn.style.display = 'inline-flex';
-    stopBtn.style.display = 'none';
-    dashStatus.textContent = _t('off');
-    dashPort.textContent = '-';
-    ring.className = 'orbit-ring error';
-    center.className = 'orbit-center error';
-    ball.className = 'orbit-ball';
+function updateStatusUI() {
+  const dot = document.getElementById('statusDot');
+  if (dot) {
+    dot.innerHTML = serverRunning ? '<span class="dot ok"></span> Online' : '<span class="dot err"></span> Offline';
   }
-  updateOrbitAnimation();
+  const btn = document.getElementById('btnProxyToggle');
+  if (btn) btn.textContent = serverRunning ? 'Stop Proxy' : 'Start Proxy';
+  const btnW = document.getElementById('btnWarpToggle');
+  if (btnW) btnW.textContent = warpConnected ? 'Disconnect WARP' : 'Connect WARP';
 }
 
-function updateWarpStatusUI(installed, connected) {
-  const badge = document.getElementById('warpBadge');
-  const statusBadge = document.getElementById('warpStatusBadge');
-  const installedEl = document.getElementById('warpInstalled');
-  const connectBtn = document.getElementById('warpConnectBtn');
-  const disconnectBtn = document.getElementById('warpDisconnectBtn');
-  const dashStatus = document.getElementById('dashWarpStatus');
-  const ring = document.getElementById('warpOrbitRing');
-  const center = document.getElementById('warpOrbitCenter');
-  const ball = document.getElementById('warpOrbitBall');
-
-  if (installed) {
-    installedEl.className = 'badge badge-ok';
-    installedEl.textContent = '✓ ' + _t('warpInstalled');
-  } else {
-    installedEl.className = 'badge badge-err';
-    installedEl.textContent = '✗ ' + _t('warpNotInstalled');
-  }
-
-  if (connected) {
-    badge.className = 'badge badge-ok';
-    badge.textContent = _t('warpOn');
-    statusBadge.className = 'badge badge-ok';
-    statusBadge.textContent = _t('warpConnected');
-    connectBtn.style.display = 'none';
-    disconnectBtn.style.display = 'inline-flex';
-    dashStatus.textContent = _t('on');
-    ring.className = 'orbit-ring active';
-    center.className = 'orbit-center success';
-    ball.className = 'orbit-ball success';
-  } else {
-    badge.className = 'badge badge-err';
-    badge.textContent = _t('warpOff');
-    statusBadge.className = 'badge badge-err';
-    statusBadge.textContent = _t('warpDisconnected');
-    connectBtn.style.display = 'inline-flex';
-    disconnectBtn.style.display = 'none';
-    dashStatus.textContent = _t('off');
-    ring.className = 'orbit-ring error';
-    center.className = 'orbit-center error';
-    ball.className = 'orbit-ball';
-  }
-}
-
-function updateSystemProxyUI(info) {
-  const badge = document.getElementById('sysProxyBadge');
-  const toggle = document.getElementById('sysProxyToggle');
-  const dash = document.getElementById('dashSysProxy');
-  if (info.enabled) {
-    badge.className = 'badge badge-ok';
-    badge.textContent = _t('sysProxyEnabled');
-    toggle.checked = true;
-    dash.textContent = _t('on');
-  } else {
-    badge.className = 'badge badge-err';
-    badge.textContent = _t('sysProxyDisabled');
-    toggle.checked = false;
-    dash.textContent = _t('off');
-  }
-}
-
-function updateDashboardStats(stats) {
-  document.getElementById('dashProxiesTested').textContent = stats.totalTests || 0;
-  document.getElementById('dashAliveCount').textContent = stats.aliveCount || 0;
-  document.getElementById('dashAvgLatency').textContent = (stats.avgLatency || 0) + 'ms';
-  document.getElementById('dashStableCount').textContent = stats.stableCount || 0;
-
-  const diagBadge = document.getElementById('diagBadge');
-  diagBadge.className = 'badge badge-ok';
-  diagBadge.textContent = _t('systemOk');
-}
-
-function updateOrbitAnimation() {
-  const balls = document.querySelectorAll('.orbit-ball');
-  balls.forEach((ball, i) => {
-    ball.classList.remove('spinning', 'spinning-reverse');
-    void ball.offsetWidth;
-    ball.classList.add(i % 2 === 0 ? 'spinning' : 'spinning-reverse');
-  });
-}
-
-async function startServer() {
-  const port = parseInt(document.getElementById('serverPortInput').value) || 1080;
+async function toggleProxyServer() {
   try {
-    toast('info', _t('serverStarted', '...'));
-    const data = await apiCall('/api/server/start', 'POST', { port });
-    if (data.running) {
-      toast('ok', _t('serverStarted', data.port));
-      addActivity('success', _t('proxyServerStartedActivity'), _t('startedOnPortActivity', data.port));
-      updateServerStatus(true, data.port);
+    if (serverRunning) {
+      await fetch('/api/server/stop', { method:'POST' });
+      toast('Proxy stopped', 'warn');
     } else {
-      toast('err', _t('serverStartFailed', data.error || _t('unknown')));
-    }
-  } catch (e) {}
-}
-
-async function stopServer() {
-  try {
-    toast('info', _t('serverStopped'));
-    const data = await apiCall('/api/server/stop', 'POST');
-    toast('ok', _t('serverStopped'));
-    addActivity('info', _t('proxyServerStoppedActivity'), _t('serverStoppedActivity'));
-    updateServerStatus(false, 0);
-  } catch (e) {}
-}
-
-async function setUpstreamProxy() {
-  const proxy = document.getElementById('upstreamProxy').value.trim();
-  if (!proxy) {
-    toast('warn', _t('upstreamUrlRequired'));
-    return;
-  }
-  try {
-    toast('info', _t('upstreamSet', '...', '...'));
-    const data = await apiCall('/api/server/set-upstream', 'POST', { proxy });
-    if (data.running) {
-      toast('ok', _t('upstreamSet', data.upstream.host, data.upstream.port));
-      addActivity('info', _t('upstreamProxySetActivity'), proxy);
-    } else {
-      toast('err', data.error || _t('upstreamSet'));
-    }
-  } catch (e) {}
-}
-
-async function connectWarp() {
-  try {
-    toast('info', _t('warpConnected'));
-    const data = await apiCall('/api/warp/connect', 'POST');
-    if (data.connected) {
-      toast('ok', _t('warpConnected'));
-      addActivity('success', _t('warpConnectedActivity'), _t('warpConnectionEstablished'));
-    } else {
-      toast('err', _t('warpConnectFailed'));
+      await fetch('/api/server/start', { method:'POST' });
+      toast('Proxy started', 'ok');
     }
     loadStatus();
-    refreshWarpStatus();
-  } catch (e) {}
+  } catch { toast('Failed to toggle proxy', 'err'); }
 }
 
-async function disconnectWarp() {
+async function toggleWarp() {
   try {
-    toast('info', _t('warpDisconnected'));
-    await apiCall('/api/warp/disconnect', 'POST');
-    toast('ok', _t('warpDisconnected'));
-    addActivity('info', _t('warpDisconnectedActivity'), _t('vpnDisconnected'));
-    loadStatus();
-    refreshWarpStatus();
-  } catch (e) {}
-}
-
-async function registerWarp() {
-  try {
-    toast('info', _t('warpRegistered'));
-    const data = await apiCall('/api/warp/register', 'POST');
-    if (data.success) {
-      toast('ok', _t('warpRegistered'));
+    if (warpConnected) {
+      await fetch('/api/warp/disconnect', { method:'POST' });
     } else {
-      toast('err', _t('warpRegisterFailed', data.raw || _t('unknown')));
+      await fetch('/api/warp/connect', { method:'POST' });
     }
-    refreshWarpStatus();
-  } catch (e) {}
+    setTimeout(loadStatus, 2000);
+  } catch { toast('Failed', 'err'); }
 }
 
-async function refreshWarpStatus() {
+async function setSystemProxy() {
   try {
-    const data = await apiCall('/api/status');
-    document.getElementById('warpRawStatus').textContent = data.warp.raw || _t('noStatusData');
-    updateWarpStatusUI(data.warp.installed, data.warp.connected);
-  } catch (e) {}
-}
-
-async function toggleSystemProxy() {
-  const enable = document.getElementById('sysProxyToggle').checked;
-  try {
-    const data = await apiCall('/api/proxy/system', 'POST', { enable });
-    if (data.success) {
-      toast('ok', enable ? _t('sysProxyEnabledMsg') : _t('sysProxyDisabledMsg'));
-      addActivity(enable ? 'success' : 'info', _t('systemProxyActivity'), enable ? _t('sysProxyEnabled') : _t('sysProxyDisabled'));
-    } else {
-      toast('err', _t('sysProxyFailed'));
-      document.getElementById('sysProxyToggle').checked = !enable;
-    }
-    updateSystemProxyUI(data);
-  } catch (e) {
-    document.getElementById('sysProxyToggle').checked = !enable;
-  }
-}
-
-async function copyPacUrl() {
-  try {
-    const data = await apiCall('/api/proxy/pac');
-    navigator.clipboard.writeText(data.url);
-    toast('ok', _t('pacUrlCopied'));
-  } catch (e) {}
-}
-
-async function loadPacUrl() {
-  try {
-    const data = await apiCall('/api/proxy/pac');
-    document.getElementById('pacUrlDisplay').textContent = data.url + '\n\n' + data.content;
-  } catch (e) {}
-}
-
-async function disconnectAll() {
-  if (!confirm(_t('disconnectAllConfirm'))) return;
-  try {
-    toast('info', _t('allDisconnected'));
-    await apiCall('/api/proxy/disconnect-all', 'POST');
-    toast('ok', _t('allDisconnected'));
-    addActivity('warn', _t('disconnectAllActivity'), _t('allConnectionsTerminated'));
+    const r = await fetch('/api/proxy/system', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({enable:true, port:1080}) });
+    const d = await r.json();
+    if (d.success) toast('System proxy set', 'ok');
+    else toast('Failed', 'err');
     loadStatus();
-  } catch (e) {}
+  } catch {}
 }
 
-document.getElementById('disconnectAllBtn').addEventListener('click', disconnectAll);
-
-async function loadStableProxies() {
+// ========== Proxies ==========
+async function loadProxies() {
   try {
-    const data = await apiCall('/api/proxy/stable');
-    stableProxies = data.proxies || [];
-    allProxies = stableProxies;
-    renderProxyTable();
-    renderTopProxies();
-    updateSpStats();
-  } catch (e) {}
-}
-
-function updateSpStats() {
-  const alive = stableProxies.filter(p => p.latency > 0 || p.alive);
-  const builtin = stableProxies.filter(p => p.builtin);
-  const best = stableProxies.filter(p => p.latency > 0).sort((a, b) => a.latency - b.latency)[0];
-  document.getElementById('spTotal').textContent = stableProxies.length;
-  document.getElementById('spAlive').textContent = alive.length;
-  document.getElementById('spLatency').textContent = best ? best.latency + 'ms' : '0ms';
-  document.getElementById('spBuiltin').textContent = builtin.length;
+    const r = await fetch('/api/proxy/stable');
+    const d = await r.json();
+    allProxies = d.proxies || [];
+    document.getElementById('proxyCount').textContent = allProxies.length;
+    renderProxies();
+  } catch {}
 }
 
 function getGrade(latency) {
@@ -2882,846 +515,272 @@ function getGrade(latency) {
   return 'D';
 }
 
-let _proxyTableTimer = null;
-function renderProxyTable() {
-  if (_proxyTableTimer) clearTimeout(_proxyTableTimer);
-  _proxyTableTimer = setTimeout(() => _doRenderProxyTable(), 50);
-}
-function _doRenderProxyTable() {
+function renderProxies() {
   const tbody = document.getElementById('proxyTableBody');
   const filter = document.getElementById('proxyFilter').value.toLowerCase();
-  let filtered = allProxies.filter(p => {
-    if (currentFilter !== 'all' && (p.type || '').toLowerCase() !== currentFilter) return false;
-    if (filter && !p.host.toLowerCase().includes(filter) && !(p.ip || '').toLowerCase().includes(filter)) return false;
+  const typeFilter = document.getElementById('proxyTypeFilter').value;
+  const sort = document.getElementById('proxySort').value;
+
+  let list = allProxies.filter(p => {
+    if (typeFilter !== 'all' && (p.type || '').toLowerCase() !== typeFilter) return false;
+    if (filter && !p.host.toLowerCase().includes(filter) && !(p.ip||'').toLowerCase().includes(filter)) return false;
     return true;
   });
 
-  if (currentSort === 'latency') {
-    filtered.sort((a, b) => (a.latency || 9999) - (b.latency || 9999));
-  } else if (currentSort === 'tests') {
-    filtered.sort((a, b) => (b.tests || 0) - (a.tests || 0));
-  } else if (currentSort === 'host') {
-    filtered.sort((a, b) => a.host.localeCompare(b.host));
-  }
+  if (sort === 'latency') list.sort((a,b) => (a.latency||9999)-(b.latency||9999));
+  else if (sort === 'host') list.sort((a,b) => a.host.localeCompare(b.host));
+  else if (sort === 'tests') list.sort((a,b) => (b.tests||0)-(a.tests||0));
 
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted"><span data-i18n="noProxiesFound">No proxies found</span></td></tr>';
+  if (list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted" style="padding:30px;text-align:center">No proxies found. Click "Fetch" or "Auto Find" to get started.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = filtered.map((p, i) => {
+  tbody.innerHTML = list.map((p, i) => {
     const grade = getGrade(p.latency);
-    const latencyColor = p.latency > 0 && p.latency < 300 ? 'var(--success)' :
-                         p.latency > 0 && p.latency < 600 ? 'var(--warning)' :
-                         p.latency > 0 ? 'var(--danger)' : 'var(--text2)';
-    const latencyPct = p.latency > 0 ? Math.min(100, (1000 - p.latency) / 10) : 0;
-    return `
-      <tr>
-        <td><span class="sp-grade sp-grade-${grade}">${grade}</span></td>
-        <td class="mono">${p.host}${p.builtin ? '<span class="sp-builtin-tag">' + _t('builtInTag') + '</span>' : ''}</td>
-        <td>${p.port}</td>
-        <td><span class="badge badge-ok" style="font-size:10px;">${(p.type || 'socks5').toUpperCase()}</span></td>
-        <td>
-          <span style="color:${latencyColor};font-weight:600;">${p.latency > 0 ? p.latency + 'ms' : _t('noData')}</span>
-          <span class="sp-latency-bar"><span class="sp-latency-bar-fill" style="width:${latencyPct}%;background:${latencyColor};"></span></span>
-        </td>
-        <td>${p.tests || 0}</td>
-        <td class="text-muted text-sm">${p.source || _t('unknown')}</td>
-        <td>
-          <div class="flex gap-8">
-            <button class="btn btn-outline btn-sm" onclick="testOneProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">🧪 ${_t('testBtn')}</button>
-            <button class="btn btn-outline btn-sm" onclick="launchAppWithProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">🚀 ${_t('launchBtn')}</button>
-            ${!p.builtin ? `<button class="btn btn-danger btn-sm" onclick="removeProxy('${p.host}', ${p.port})">🗑</button>` : ''}
-          </div>
-        </td>
-      </tr>
-    `;
+    const lc = p.latency > 0 && p.latency < 300 ? 'var(--success)' : p.latency > 0 && p.latency < 600 ? 'var(--warning)' : p.latency > 0 ? 'var(--danger)' : 'var(--text3)';
+    const lp = p.latency > 0 ? Math.min(100, (1000-p.latency)/10) : 0;
+    const hostSafe = p.host.replace(/'/g, "\\'");
+    const typeSafe = (p.type||'socks5').replace(/'/g, "\\'");
+    return `<tr>
+      <td class="text-muted text-sm">${i+1}</td>
+      <td class="mono">${p.host}${p.builtin ? '<span class="builtin-tag">B</span>' : ''}</td>
+      <td>${p.port}</td>
+      <td><span style="color:var(--primary);font-weight:500">${(p.type||'socks5').toUpperCase()}</span></td>
+      <td><span style="color:${lc};font-weight:600">${p.latency > 0 ? p.latency + 'ms' : '-'}</span><span class="lat-bar"><span class="lat-bar-fill" style="width:${lp}%;background:${lc}"></span></span></td>
+      <td>${p.tests || 0}</td>
+      <td class="text-muted text-sm">${p.source || '-'}</td>
+      <td><div class="flex gap-4">
+        <button class="btn btn-sm btn-ghost" onclick="testProxy('${hostSafe}',${p.port},'${typeSafe}')">&#128269;</button>
+        <button class="btn btn-sm btn-ghost" onclick="launchProxy('${hostSafe}',${p.port},'${typeSafe}')">&#128640;</button>
+        ${!p.builtin ? '<button class="btn btn-sm btn-ghost" onclick="removeProxy(\''+hostSafe+'\','+p.port+')" style="color:var(--danger)">&#128465;</button>' : ''}
+      </div></td>
+    </tr>`;
   }).join('');
 }
 
-function filterProxies() {
-  renderProxyTable();
-}
-
-function filterByType(type, el) {
-  currentFilter = type;
-  document.querySelectorAll('.sp-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  renderProxyTable();
-}
-
-function sortProxies() {
-  currentSort = document.getElementById('proxySort').value;
-  renderProxyTable();
-}
-
-let _topProxyTimer = null;
-function renderTopProxies() {
-  if (_topProxyTimer) clearTimeout(_topProxyTimer);
-  _topProxyTimer = setTimeout(() => _doRenderTopProxies(), 50);
-}
-function _doRenderTopProxies() {
-  const list = document.getElementById('topProxiesList');
-  const top = stableProxies.filter(p => p.latency > 0).sort((a, b) => a.latency - b.latency).slice(0, 5);
-  if (top.length === 0) {
-    list.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">📊</div>
-        <div class="empty-state-text" data-i18n="noStableProxiesYet">No stable proxies yet. Run Auto-Find to discover proxies.</div>
-      </div>
-    `;
-    return;
-  }
-  list.innerHTML = top.map((p, i) => {
-    const rank = i + 1;
-    const medalClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
-    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-    const scorePct = Math.max(0, Math.min(100, (1000 - p.latency) / 10));
-    const barColor = p.latency < 200 ? 'var(--success)' : p.latency < 500 ? 'var(--warning)' : 'var(--danger)';
-    return `
-      <div class="ranking-item rank-${rank <= 3 ? rank : ''}">
-        <div class="ranking-medal ${medalClass}">${medal}</div>
-        <div class="ranking-info">
-          <div class="ranking-header">
-            <span class="ranking-host">${p.host}:${p.port}</span>
-            <span class="ranking-type">${(p.type || 'socks5').toUpperCase()}</span>
-          </div>
-          <div class="ranking-stats">
-            <div class="ranking-stat">
-              <span class="ranking-stat-label" data-i18n="rankLatency">Latency</span>
-              <span class="ranking-stat-value">${p.latency}ms</span>
-            </div>
-            <div class="ranking-stat">
-              <span class="ranking-stat-label" data-i18n="rankTests">Tests</span>
-              <span class="ranking-stat-value">${p.tests || 0}</span>
-            </div>
-          </div>
-          <div class="ranking-bar">
-            <div class="ranking-bar-fill" style="width: ${scorePct}%; background: ${barColor};"></div>
-          </div>
-        </div>
-        <div class="ranking-actions">
-          <button class="btn btn-outline btn-sm" onclick="testOneProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">${_t('testBtn')}</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-async function testSingleProxy() {
-  const host = document.getElementById('testHost').value.trim();
-  const port = parseInt(document.getElementById('testPort').value);
-  const type = document.getElementById('testType').value;
-  if (!host || !port) {
-    toast('warn', _t('enterHostPort'));
-    return;
-  }
-  await testOneProxy(host, port, type);
-}
-
-async function testOneProxy(host, port, type) {
+async function testProxy(host, port, type) {
   try {
-    toast('info', _t('testingHostPort', host, port));
-    const result = await apiCall('/api/proxy/test', 'POST', { host, port, type });
-    const resultEl = document.getElementById('testResult');
-    resultEl.style.display = 'block';
-    if (result.alive) {
-      resultEl.innerHTML = `
-        <div class="card" style="padding: 12px; border-color: var(--success);">
-          <div class="flex items-center justify-between">
-            <span class="speed-score fast">✅ ${_t('aliveLabel')} - ${result.latency}ms</span>
-            <span class="text-muted mono text-sm">IP: ${result.ip || _t('noData')}</span>
-          </div>
-        </div>
-      `;
-      toast('ok', _t('proxyAliveToast', result.latency));
-    } else {
-      resultEl.innerHTML = `
-        <div class="card" style="padding: 12px; border-color: var(--danger);">
-          <span class="speed-score slow">❌ ${_t('failedText')} - ${_t('noResponse')}</span>
-        </div>
-      `;
-      toast('err', _t('proxyTestFailed'));
-    }
-    addActivity(result.alive ? 'success' : 'error', _t('proxyTestActivity'), `${host}:${port} - ${result.alive ? result.latency + 'ms' : _t('failedText')}`);
-    loadStableProxies();
-  } catch (e) {}
+    toast('Testing ' + host + ':' + port + '...', 'info');
+    const r = await fetch('/api/proxy/test', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({host, port, type}) });
+    const d = await r.json();
+    if (d.alive) toast(host + ':' + port + ' - Alive! Latency: ' + d.latency + 'ms', 'ok');
+    else toast(host + ':' + port + ' - Dead', 'err');
+    loadProxies();
+  } catch { toast('Test failed', 'err'); }
 }
 
-async function testAllProxies() {
-  try {
-    toast('info', _t('startingBatchTest'));
-    const max = parseInt(document.getElementById('proxyTestCount').value) || 30;
-    await apiCall('/api/proxy/test-all-free', 'POST', { max });
-    addActivity('info', _t('batchTestActivity'), _t('testingUpToActivity', max));
-  } catch (e) {}
+function launchProxy(host, port, type) {
+  fetch('/api/proxy/launch-app', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({host, port, type}) }).then(() => {
+    toast('Launched with ' + host + ':' + port, 'ok');
+  }).catch(() => toast('Launch failed', 'err'));
 }
 
-function handleTestProgress(data) {
-  const progress = document.getElementById('autoFindProgress');
-  progress.style.display = 'flex';
-  document.getElementById('autoFindStage').textContent = _t('testingProxiesStage');
-  document.getElementById('autoFindCount').textContent = `${data.tested} / ${data.total}`;
-  document.getElementById('autoFindBar').style.width = `${(data.tested / data.total) * 100}%`;
-  document.getElementById('autoFindDetail').textContent = _t('testingBatchDetail', data.tested, data.total);
-}
-
-function handleTestComplete(data) {
-  toast('ok', _t('testCompleteAlive', data.alive.length));
-  addActivity('success', _t('testCompleteActivity'), _t('aliveProxiesFound', data.alive.length));
-  setTimeout(() => {
-    document.getElementById('autoFindProgress').style.display = 'none';
-  }, 2000);
-  loadStableProxies();
-  loadStats();
-}
-
-async function startAutoFind() {
-  try {
-    toast('info', _t('startingAutoFind'));
-    document.getElementById('autoFindProgress').style.display = 'flex';
-    const max = parseInt(document.getElementById('proxyTestCount').value) || 80;
-    await apiCall('/api/proxy/auto-find', 'POST', { max, maxLatency: 800, rounds: 1 });
-    addActivity('info', _t('autoFindActivity'), _t('startedWithProxies', max));
-  } catch (e) {
-    if (e.message && e.message.includes('409')) {
-      toast('warn', _t('autoFindInProgress'));
-    }
-  }
-}
-
-function handleAutoFindStage(data) {
-  document.getElementById('autoFindStage').textContent = data.message || _t('processing');
-  document.getElementById('autoFindDetail').textContent = _t('stageLabel') + ': ' + (data.stage || _t('unknown'));
-}
-
-function handleAutoFindProgress(data) {
-  const progress = document.getElementById('autoFindProgress');
-  progress.style.display = 'flex';
-  document.getElementById('autoFindCount').textContent = `${data.tested} / ${data.total} (${data.alive} ${_t('aliveLabel')})`;
-  document.getElementById('autoFindBar').style.width = `${(data.tested / data.total) * 100}%`;
-  document.getElementById('autoFindDetail').textContent = `${data.alive} ${_t('aliveSoFar')} - ${data.current ? _t('lastLabel') + ': ' + data.current.host : ''}`;
-}
-
-function handleAutoFindComplete(data) {
-  if (data.error) {
-    toast('err', _t('autoFindFailed', data.error));
-  } else {
-    toast('ok', _t('autoFindCompleteToast', data.found, data.total));
-    addActivity('success', _t('autoFindCompleteActivity'), _t('newProxiesFound', data.found, data.total));
-  }
-  setTimeout(() => {
-    document.getElementById('autoFindProgress').style.display = 'none';
-  }, 3000);
-  loadStableProxies();
-  loadStats();
+function removeProxy(host, port) {
+  if (!confirm('Remove ' + host + ':' + port + '?')) return;
+  fetch('/api/proxy/stable/remove', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({host, port}) }).then(() => {
+    toast('Removed', 'ok');
+    loadProxies();
+  }).catch(() => toast('Failed', 'err'));
 }
 
 async function fetchFreeProxies() {
   try {
-    toast('info', _t('fetchingProxyList'));
-    const data = await apiCall('/api/proxy/fetch-free');
-    allProxies = data.proxies || [];
-    renderProxyTable();
-    toast('ok', _t('fetchedProxies', data.count));
-    addActivity('info', _t('fetchProxiesActivity'), _t('proxiesFetchedActivity', data.count));
-  } catch (e) {}
+    toast('Fetching free proxies...', 'info');
+    const r = await fetch('/api/proxy/fetch-free');
+    const d = await r.json();
+    toast('Fetched ' + (d.count||0) + ' proxies', 'ok');
+    loadProxies();
+  } catch { toast('Failed', 'err'); }
+}
+
+async function autoFind() {
+  try {
+    const wrap = document.getElementById('autoFindProgress');
+    wrap.style.display = 'block';
+    document.getElementById('autoFindBar').style.width = '0%';
+    document.getElementById('autoFindTitle').textContent = 'Auto finding proxies...';
+    document.getElementById('autoFindInfo').textContent = 'Starting...';
+    const r = await fetch('/api/proxy/auto-find', { method:'POST' });
+    const d = await r.json();
+    if (d.error) { toast('Auto find error: ' + d.error, 'err'); wrap.style.display = 'none'; }
+  } catch { toast('Auto find failed', 'err'); document.getElementById('autoFindProgress').style.display = 'none'; }
+}
+
+function updateAutoFindProgress(data) {
+  if (data.tested !== undefined && data.total) {
+    const pct = Math.min(100, (data.tested / data.total) * 100);
+    document.getElementById('autoFindBar').style.width = pct + '%';
+    document.getElementById('autoFindInfo').textContent = (data.tested||0) + ' / ' + (data.total||0) + ' tested, ' + (data.alive||0) + ' alive';
+  }
+  if (data.current) {
+    document.getElementById('autoFindInfo').textContent += ' - Current: ' + data.current.host;
+  }
 }
 
 async function addManualProxy() {
-  const host = document.getElementById('addHost').value.trim();
-  const port = parseInt(document.getElementById('addPort').value);
-  const type = document.getElementById('addType').value;
-  if (!host || !port) {
-    toast('warn', _t('enterHostPort'));
-    return;
-  }
+  const host = prompt('Enter proxy host:');
+  if (!host) return;
+  const port = parseInt(prompt('Enter port:'));
+  if (!port) return;
+  const type = prompt('Type (socks5/socks4/http):', 'socks5') || 'socks5';
   try {
-    const data = await apiCall('/api/proxy/stable/add', 'POST', { host, port, type });
-    if (data.success) {
-      toast('ok', _t('proxyAddedPool'));
-      addActivity('success', _t('addProxyActivity'), `${host}:${port}`);
-      document.getElementById('addHost').value = '';
-      document.getElementById('addPort').value = '';
-      loadStableProxies();
-    } else {
-      toast('err', data.error || _t('failedAddProxy'));
-    }
-  } catch (e) {}
+    const r = await fetch('/api/proxy/stable/add', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({host, port, type}) });
+    const d = await r.json();
+    if (d.success) toast('Proxy added', 'ok');
+    else toast(d.error || 'Failed', 'err');
+    loadProxies();
+  } catch { toast('Failed to add', 'err'); }
 }
 
-async function removeProxy(host, port) {
-  if (!confirm(_t('removeProxyConfirm', host, port))) return;
+async function clearProxies() {
+  if (!confirm('Clear all non-built-in proxies?')) return;
   try {
-    const data = await apiCall('/api/proxy/stable/remove', 'POST', { host, port });
-    if (data.success) {
-      toast('ok', _t('proxyRemoved'));
-      addActivity('info', _t('removeProxyActivity'), `${host}:${port}`);
-      loadStableProxies();
-    } else {
-      toast('err', data.error || _t('failedRemoveProxy'));
-    }
-  } catch (e) {}
+    await fetch('/api/proxy/stable/clear', { method:'POST' });
+    toast('Cleared', 'ok');
+    loadProxies();
+  } catch {}
 }
 
-function launchAppWithProxy(host, port, type) {
-  toast('info', _t('useAppProxyTab'));
-  switchTab('apps');
-}
-
-async function loadStats() {
-  try {
-    const data = await apiCall('/api/stats');
-    document.getElementById('statTotalTests').textContent = data.totalTests || 0;
-    document.getElementById('statSuccessRate').textContent = data.totalTests > 0
-      ? Math.round((data.aliveCount / data.totalTests) * 100) + '%'
-      : '0%';
-    document.getElementById('statAvgLatency').textContent = (data.avgLatency || 0) + 'ms';
-    document.getElementById('statBestLatency').textContent = (data.bestLatency || 0) + 'ms';
-  } catch (e) {}
-}
-
-async function loadHistory() {
-  try {
-    const data = await apiCall('/api/history');
-    const tbody = document.getElementById('historyTableBody');
-    const tests = data.tests || [];
-    if (tests.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted" data-i18n="noTestHistory">No test history yet</td></tr>';
-      return;
-    }
-    tbody.innerHTML = tests.slice(0, 50).map(t => {
-      const time = t.time ? new Date(t.time).toLocaleString() : '-';
-      const status = t.alive
-        ? '<span class="badge badge-ok" style="font-size:10px;">' + _t('aliveLabel') + '</span>'
-        : '<span class="badge badge-err" style="font-size:10px;">' + _t('failedText') + '</span>';
-      return `
-        <tr>
-          <td class="text-sm mono">${time}</td>
-          <td class="mono">${t.host}</td>
-          <td>${t.port}</td>
-          <td><span class="text-muted text-sm">${(t.type || 'socks5').toUpperCase()}</span></td>
-          <td>${status}</td>
-          <td style="font-weight:600; color:${t.alive ? 'var(--success)' : 'var(--danger)'}">${t.latency > 0 ? t.latency + 'ms' : '-'}</td>
-        </tr>
-      `;
-    }).join('');
-  } catch (e) {}
-}
-
-async function clearStats() {
-  if (!confirm(_t('clearStatsConfirm'))) return;
-  try {
-    await apiCall('/api/stats/clear', 'POST');
-    toast('ok', _t('statsCleared'));
-    loadStats();
-    loadHistory();
-  } catch (e) {}
-}
-
-function drawCharts() {
-  drawLatencyChart();
-  drawTypeChart();
-}
-
-function drawLatencyChart() {
-  const canvas = document.getElementById('latencyChart');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height;
-  const w = canvas.width;
-  const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  const latencies = stableProxies.filter(p => p.latency > 0).map(p => p.latency).sort((a, b) => a - b);
-  if (latencies.length === 0) {
-    ctx.fillStyle = 'var(--text2)';
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(_t('noLatencyData'), w / 2, h / 2);
-    return;
-  }
-
-  const buckets = [
-    { label: '<200ms', min: 0, max: 200, count: 0, color: '#107C10' },
-    { label: '200-400', min: 200, max: 400, count: 0, color: '#0078D7' },
-    { label: '400-600', min: 400, max: 600, count: 0, color: '#FF8C00' },
-    { label: '600-800', min: 600, max: 800, count: 0, color: '#FF8C00' },
-    { label: '>800ms', min: 800, max: Infinity, count: 0, color: '#D13438' },
-  ];
-
-  latencies.forEach(l => {
-    for (const b of buckets) {
-      if (l >= b.min && l < b.max) { b.count++; break; }
-    }
-  });
-
-  const maxCount = Math.max(...buckets.map(b => b.count), 1);
-  const chartW = w - 40;
-  const chartH = h - 40;
-  const barW = chartW / buckets.length * 0.6;
-  const gap = chartW / buckets.length * 0.4;
-
-  buckets.forEach((b, i) => {
-    const x = 30 + i * (barW + gap) + gap / 2;
-    const barH = (b.count / maxCount) * chartH;
-    const y = h - 20 - barH;
-    ctx.fillStyle = b.color;
-    ctx.fillRect(x, y, barW, barH);
-    ctx.fillStyle = 'var(--text2)';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(b.label, x + barW / 2, h - 5);
-    ctx.fillStyle = 'var(--text)';
-    ctx.fillText(b.count, x + barW / 2, y - 4);
-  });
-}
-
-function drawTypeChart() {
-  const canvas = document.getElementById('typeChart');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height;
-  const w = canvas.width;
-  const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  const types = {};
-  stableProxies.forEach(p => {
-    const t = (p.type || 'socks5').toLowerCase();
-    types[t] = (types[t] || 0) + 1;
-  });
-
-  const entries = Object.entries(types);
-  if (entries.length === 0) {
-    ctx.fillStyle = 'var(--text2)';
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(_t('noTypeData'), w / 2, h / 2);
-    return;
-  }
-
-  const colors = { socks5: '#0078D7', http: '#107C10', socks4: '#FF8C00' };
-  const total = entries.reduce((s, [, c]) => s + c, 0);
-  const centerX = w / 2;
-  const centerY = h / 2;
-  const radius = Math.min(w, h) / 2 - 30;
-  let startAngle = -Math.PI / 2;
-
-  entries.forEach(([type, count]) => {
-    const slice = (count / total) * Math.PI * 2;
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.arc(centerX, centerY, radius, startAngle, startAngle + slice);
-    ctx.closePath();
-    ctx.fillStyle = colors[type] || '#5C2D91';
-    ctx.fill();
-    startAngle += slice;
-  });
-
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius * 0.5, 0, Math.PI * 2);
-  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim() || '#2d2d2d';
-  ctx.fill();
-
-  let legendY = 20;
-  entries.forEach(([type, count]) => {
-    const pct = Math.round((count / total) * 100);
-    ctx.fillStyle = colors[type] || '#5C2D91';
-    ctx.fillRect(w - 100, legendY, 12, 12);
-    ctx.fillStyle = 'var(--text)';
-    ctx.font = '11px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(`${type.toUpperCase()} (${pct}%)`, w - 82, legendY + 10);
-    legendY += 20;
-  });
-}
-
+// ========== Apps ==========
 async function loadApps() {
   try {
-    const data = await apiCall('/api/proxy/apps');
-    const apps = data.apps || [];
-    const grid = document.getElementById('appGrid');
-    if (apps.length === 0) {
-      grid.innerHTML = `
-        <div class="empty-state" style="grid-column: 1 / -1;">
-          <div class="empty-state-icon">📱</div>
-          <div class="empty-state-text" data-i18n="noAppsConfigured">No apps configured. Click "Add App" to get started.</div>
-        </div>
-      `;
-      return;
-    }
-    grid.innerHTML = apps.map(app => `
-      <div class="app-card">
-        <div class="app-icon">📱</div>
-        <div class="app-name">${app.name}</div>
-        <div class="app-path" title="${app.path}">${app.path}</div>
-        <div class="text-sm text-muted">${_t('modeLabel')}: ${app.mode || 'http'}</div>
-        <div class="app-actions">
-          <button class="btn btn-primary btn-sm" onclick="launchApp('${app.name}')">🚀 ${_t('launchBtn')}</button>
-          <button class="btn btn-outline btn-sm" onclick="editApp('${app.name}')" title="${_t('editApp')}">✏️</button>
-          <button class="btn btn-danger btn-sm" onclick="removeApp('${app.name}')">🗑</button>
-        </div>
-      </div>
-    `).join('');
-  } catch (e) {}
+    const r = await fetch('/api/proxy/apps');
+    const d = await r.json();
+    appsList = d.apps || [];
+    renderApps();
+  } catch {}
 }
 
-function showAddAppModal() {
-  editingApp = null;
-  document.getElementById('appModalTitle').textContent = _t('addApp');
-  document.getElementById('appNameInput').value = '';
-  document.getElementById('appPathInput').value = '';
-  document.getElementById('appModeSelect').value = 'http';
-  document.getElementById('appProcessInput').value = '';
-  document.getElementById('appModal').classList.add('show');
-}
-
-function closeAppModal() {
-  document.getElementById('appModal').classList.remove('show');
-}
-
-async function editApp(name) {
-  try {
-    const data = await apiCall('/api/proxy/apps');
-    const app = (data.apps || []).find(a => a.name === name);
-    if (!app) return;
-    editingApp = name;
-    document.getElementById('appModalTitle').textContent = _t('editApp');
-    document.getElementById('appNameInput').value = app.name;
-    document.getElementById('appPathInput').value = app.path;
-    document.getElementById('appModeSelect').value = app.mode || 'http';
-    document.getElementById('appProcessInput').value = app.process || '';
-    document.getElementById('appModal').classList.add('show');
-  } catch (e) {}
-}
-
-async function saveApp() {
-  const name = document.getElementById('appNameInput').value.trim();
-  const path = document.getElementById('appPathInput').value.trim();
-  const mode = document.getElementById('appModeSelect').value;
-  const process = document.getElementById('appProcessInput').value.trim();
-  if (!name || !path) {
-    toast('warn', _t('enterAppNamePath'));
+function renderApps() {
+  const grid = document.getElementById('appsGrid');
+  if (appsList.length === 0) {
+    grid.innerHTML = '<div class="empty"><div class="icon">&#128187;</div>No apps configured. Click "Add App" to add one.</div>';
     return;
   }
-  try {
-    let data;
-    if (editingApp) {
-      data = await apiCall('/api/proxy/apps/edit', 'POST', { oldName: editingApp, name, path, mode, process });
-    } else {
-      data = await apiCall('/api/proxy/apps', 'POST', { name, path, mode, process });
-    }
-    if (data.success) {
-      toast('ok', _t('appUpdatedAdded', editingApp ? _t('edit') : _t('add'), name));
-      addActivity('success', editingApp ? _t('editApp') : _t('addApp'), name);
-      closeAppModal();
-      loadApps();
-    } else {
-      toast('err', data.error || _t('failedSaveApp'));
-    }
-  } catch (e) {}
+  grid.innerHTML = appsList.map((a, i) => `<div class="app-card" data-app-idx="${i}" onclick="launchApp(this.dataset.appIdx)">
+    <div class="icon">&#128187;</div>
+    <div class="name">${escapeHtml(a.name)}</div>
+    <div class="path">${escapeHtml(a.path || '')}</div>
+  </div>`).join('');
 }
 
-async function removeApp(name) {
-  if (!confirm(_t('removeAppConfirm', name))) return;
-  try {
-    const data = await apiCall('/api/proxy/apps/remove', 'POST', { name });
-    if (data.success) {
-      toast('ok', _t('appRemoved'));
-      addActivity('info', _t('removeAppActivity'), name);
-      loadApps();
-    } else {
-      toast('err', data.error || _t('failedRemoveProxy'));
-    }
-  } catch (e) {}
+async function showAddAppModal() {
+  await fetchPresetsData();
+  const container = document.getElementById('appPresets');
+  container.innerHTML = _appPresets.map((p, i) => `<button class="btn btn-sm" data-preset-idx="${i}" onclick="fillPreset(this.dataset.presetIdx)">${escapeHtml(p.name)}</button>`).join('');
+  document.getElementById('addAppModal').classList.add('show');
 }
 
-async function launchApp(name) {
+const _appPresets = [];
+async function fetchPresetsData() {
   try {
-    toast('info', _t('launchingApp', name));
-    const data = await apiCall('/api/proxy/apps/launch', 'POST', { name });
-    if (data.success) {
-      toast('ok', data.message || _t('appLaunchedMsg'));
-      addActivity('success', _t('launchAppActivity'), name);
-    } else {
-      toast('err', data.error || _t('failedLaunchApp'));
-    }
-  } catch (e) {}
+    const r = await fetch('/api/proxy/apps/presets');
+    const d = await r.json();
+    _appPresets.length = 0;
+    _appPresets.push(...(d.presets||[]));
+  } catch {}
+}
+function fillPreset(idx) {
+  const p = _appPresets[parseInt(idx)];
+  if (!p) return;
+  document.getElementById('appExe').value = p.path || '';
+  document.getElementById('appName').value = p.name || '';
 }
 
-async function browseApp() {
-  try {
-    const data = await apiCall('/api/proxy/apps/browse', 'POST');
-    if (data.path) {
-      document.getElementById('appPathInput').value = data.path;
-    }
-  } catch (e) {}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
 }
 
-async function loadAppPresets() {
+async function addApp() {
+  const name = document.getElementById('appName').value.trim();
+  const exe = document.getElementById('appExe').value.trim();
+  const args = document.getElementById('appArgs').value.trim();
+  if (!name || !exe) { toast('Name and path required', 'warn'); return; }
   try {
-    const data = await apiCall('/api/proxy/apps/presets');
-    const presets = data.presets || [];
-    const container = document.getElementById('presetList');
-    const presetsDiv = document.getElementById('appPresets');
-    presetsDiv.style.display = 'block';
-    if (presets.length === 0) {
-      container.innerHTML = '<span class="text-muted text-sm" data-i18n="noPresetsDetected">No presets detected</span>';
-      return;
-    }
-    container.innerHTML = presets.map(p => `
-      <button class="preset-chip" onclick="addPresetApp('${p.name.replace(/'/g, "\\'")}', '${p.path.replace(/'/g, "\\'")}')">
-        ${p.icon || '📱'} ${p.name}
-      </button>
-    `).join('');
-  } catch (e) {}
+    await fetch('/api/proxy/apps', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, path: exe, args}) });
+    toast('App added', 'ok');
+    closeModal('addAppModal');
+    document.getElementById('appName').value = '';
+    document.getElementById('appExe').value = '';
+    document.getElementById('appArgs').value = '';
+    loadApps();
+  } catch {}
 }
 
-async function addPresetApp(name, path) {
-  try {
-    const data = await apiCall('/api/proxy/apps', 'POST', { name, path, mode: 'http' });
-    if (data.success) {
-      toast('ok', _t('addedPreset', name));
-      loadApps();
-    } else if (data.error && data.error.includes('already exists')) {
-      toast('warn', _t('alreadyExists', name));
-    } else {
-      toast('err', data.error || _t('failedAddPreset'));
-    }
-  } catch (e) {}
+function launchApp(idxOrName) {
+  const app = typeof idxOrName === 'string' && !isNaN(idxOrName) ? appsList[parseInt(idxOrName)] : null;
+  if (!app) return;
+  fetch('/api/proxy/apps/launch', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name: app.name}) }).then(() => {
+    toast('Launched ' + app.name, 'ok');
+  }).catch(() => toast('Launch failed', 'err'));
 }
 
+// ========== Logs ==========
 async function loadLogs() {
   try {
-    const data = await apiCall('/api/logs?limit=200');
-    const logs = data.logs || [];
-    const box = document.getElementById('logBox');
-    if (logs.length === 0) {
-      box.innerHTML = '<div class="text-muted" data-i18n="noLogsAvailable">No logs available</div>';
-      return;
-    }
-    box.innerHTML = logs.map(l => {
-      const time = l.time ? new Date(l.time).toLocaleTimeString() : '';
-      let cls = 'log-info';
-      if (l.level === 'error' || l.level === 'err') cls = 'log-err';
-      else if (l.level === 'warn' || l.level === 'warning') cls = 'log-warn';
-      else if (l.level === 'success' || l.level === 'ok') cls = 'log-ok';
-      else if (l.level === 'info') cls = 'log-info';
-      return `<div class="${cls}"><span class="text-muted">[${time}]</span> ${l.message || l.msg || ''}</div>`;
-    }).join('');
-    box.scrollTop = box.scrollHeight;
-  } catch (e) {}
-}
-
-function filterLogs() {
-  loadLogs();
+    const r = await fetch('/api/logs');
+    const d = await r.json();
+    document.getElementById('logsArea').textContent = (d.logs||[]).join('\n') || 'No logs yet.';
+  } catch { document.getElementById('logsArea').textContent = 'Failed to load logs.'; }
 }
 
 async function clearLogs() {
-  if (!confirm(_t('clearLogsConfirm'))) return;
   try {
-    await apiCall('/api/logs/clear', 'POST');
-    toast('ok', _t('logsCleared'));
+    await fetch('/api/logs/clear', { method:'POST' });
+    toast('Logs cleared', 'ok');
     loadLogs();
-  } catch (e) {}
+  } catch {}
 }
+
+// ========== Settings ==========
+let currentConfig = {};
 
 async function loadConfig() {
   try {
-    const data = await apiCall('/api/config');
-    const cfg = data.config || {};
-    if (cfg.defaultMode) document.getElementById('defaultMode').value = cfg.defaultMode;
-    if (cfg.defaultPort) {
-      document.getElementById('defaultPort').value = cfg.defaultPort;
-      document.getElementById('serverPortInput').value = cfg.defaultPort;
-    }
-    if (cfg.proxyTestCount) document.getElementById('proxyTestCount').value = cfg.proxyTestCount;
-    if (cfg.logLevel) document.getElementById('logLevel').value = cfg.logLevel;
-    if (cfg.logToFile !== undefined) document.getElementById('logToFile').checked = cfg.logToFile;
-  } catch (e) {}
+    const r = await fetch('/api/config');
+    const d = await r.json();
+    currentConfig = d.config || {};
+    document.getElementById('cfgPort').value = currentConfig.defaultPort || 1080;
+    document.getElementById('cfgGuiPort').value = currentConfig.guiPort || 3000;
+    document.getElementById('cfgTestCount').value = currentConfig.proxyTestCount || 30;
+  } catch {}
 }
 
-async function saveConfig(key, value) {
+async function saveConfig() {
+  const cfg = {
+    defaultPort: parseInt(document.getElementById('cfgPort').value) || 1080,
+    guiPort: parseInt(document.getElementById('cfgGuiPort').value) || 3000,
+    proxyTestCount: parseInt(document.getElementById('cfgTestCount').value) || 30
+  };
   try {
-    await apiCall('/api/config', 'POST', { key, value });
-    toast('ok', _t('settingSaved'));
-  } catch (e) {}
+    await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(cfg) });
+    toast('Config saved', 'ok');
+  } catch { toast('Failed', 'err'); }
 }
 
 async function resetConfig() {
-  if (!confirm(_t('resetSettingsConfirm'))) return;
+  if (!confirm('Reset config to defaults?')) return;
   try {
-    await apiCall('/api/config/reset', 'POST');
-    toast('ok', _t('settingsReset'));
+    await fetch('/api/config/reset', { method:'POST' });
+    toast('Config reset', 'ok');
     loadConfig();
-  } catch (e) {}
+  } catch {}
 }
 
-async function loadDiagnostics() {
-  try {
-    const data = await apiCall('/api/diagnostics');
-    document.getElementById('sysPlatform').textContent = data.system?.platform || '-';
-    document.getElementById('sysNodeVersion').textContent = data.system?.nodeVersion || '-';
-    const uptime = data.system?.uptime || 0;
-    const hours = Math.floor(uptime / 3600);
-    const mins = Math.floor((uptime % 3600) / 60);
-    document.getElementById('sysUptime').textContent = `${hours}h ${mins}m`;
-    const mem = data.system?.memory || 0;
-    document.getElementById('sysMemory').textContent = Math.round(mem / 1024 / 1024) + ' MB';
-    document.getElementById('sysPid').textContent = data.system?.pid || '-';
-    const cache = data.proxyCache || {};
-    document.getElementById('sysProxyCache').textContent = `${cache.total || 0} proxies, ${Object.keys(cache.sources || {}).length} sources`;
-  } catch (e) {}
+// ========== Utils ==========
+function escapeHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-async function loadQuote() {
-  try {
-    const data = await apiCall('/api/quote');
-    if (data.data && data.data.content) {
-      document.getElementById('quoteContainer').innerHTML = `
-        "${data.data.content}"
-        <br><br>
-        <span style="font-size: 11px; color: var(--text2);">— ${data.data.author || _t('unknown')}</span>
-      `;
-    }
-  } catch (e) {}
-}
-
-function addActivity(type, title, desc) {
-  const now = new Date();
-  const time = now.toLocaleTimeString();
-  activityLog.unshift({ type, title, desc, time });
-  if (activityLog.length > 20) activityLog = activityLog.slice(0, 20);
-  renderActivity();
-}
-
-function renderActivity() {
-  const timeline = document.getElementById('activityTimeline');
-  if (activityLog.length === 0) return;
-  timeline.innerHTML = activityLog.map(a => `
-    <div class="activity-item">
-      <div class="activity-dot ${a.type}"></div>
-      <div class="activity-content">
-        <div class="activity-title">${a.title}</div>
-        <div class="activity-desc">${a.desc}</div>
-        <div class="activity-time">${a.time}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function toast(type, message) {
-  const container = document.getElementById('toastContainer');
-  if (!container) return;
-  const el = document.createElement('div');
-  el.className = 'toast toast-' + type + ' show';
-  el.textContent = message;
-  el.style.opacity = '1';
-  el.style.transform = 'translateY(0)';
-  container.appendChild(el);
-  setTimeout(() => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    setTimeout(() => { if (el.parentNode) el.remove(); }, 400);
-  }, 4000);
-}
-
-function updateFooterTime() {
-  const now = new Date();
-  document.getElementById('footerTime').textContent = now.toLocaleString();
-}
-
-window.addEventListener('load', () => {
-  setTimeout(updateOrbitAnimation, 500);
-  loadPacUrl();
+// ========== Init ==========
+initTheme();
+loadLang().then(() => {
+  loadStatus();
+  loadProxies();
 });
-</script>
-
-
-<script>
-(function() {
-  let currentLang = localStorage.getItem('fpt-lang') || 'en';
-  let translations = {};
-
-  function fetchTranslations() {
-    return fetch('/api/lang?lang=' + currentLang)
-      .then(r => r.json())
-      .then(data => {
-        if (data.translations) translations = data.translations;
-        if (data.lang) currentLang = data.lang;
-        localStorage.setItem('fpt-lang', currentLang);
-        document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
-        updateLangLabel();
-      })
-      .catch(() => { translations = {}; });
-  }
-
-  window._t = function(key) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    var text = translations[key];
-    if (text === undefined) return key;
-    args.forEach(function(arg, i) {
-      text = text.replace(new RegExp('\\{' + i + '\\}', 'g'), arg);
-    });
-    return text;
-  };
-
-  function applyI18n() {
-    document.querySelectorAll('[data-i18n]').forEach(function(el) {
-      var key = el.getAttribute('data-i18n');
-      if (translations[key]) el.textContent = translations[key];
-    });
-    document.querySelectorAll('[data-i18n-title]').forEach(function(el) {
-      var key = el.getAttribute('data-i18n-title');
-      if (translations[key]) el.setAttribute('title', translations[key]);
-    });
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
-      var key = el.getAttribute('data-i18n-placeholder');
-      if (translations[key]) el.setAttribute('placeholder', translations[key]);
-    });
-  }
-
-  function updateLangLabel() {
-    var label = document.getElementById('langLabel');
-    if (label) label.textContent = currentLang === 'zh' ? '中' : 'EN';
-  }
-
-  window.toggleLanguage = function() {
-    currentLang = currentLang === 'zh' ? 'en' : 'zh';
-    localStorage.setItem('fpt-lang', currentLang);
-    document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
-    updateLangLabel();
-    fetch('/api/lang', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lang: currentLang })
-    })
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (data.translations) translations = data.translations;
-        if (data.lang) { currentLang = data.lang; localStorage.setItem('fpt-lang', currentLang); }
-        applyI18n();
-        updateLangLabel();
-        if (window.toast) window.toast('info', currentLang === 'zh' ? window._t('languageSwitchedZh') : window._t('languageSwitchedEn'));
-      })
-      .catch(function() {
-        if (window.toast) window.toast('err', window._t('languageSwitchFailed'));
-      });
-  };
-
-  window.refreshI18n = function() {
-    return fetchTranslations().then(applyI18n);
-  };
-
-  document.addEventListener('DOMContentLoaded', function() {
-    fetchTranslations().then(applyI18n);
-  });
-})();
+initWS();
 </script>
 </body>
 </html>
