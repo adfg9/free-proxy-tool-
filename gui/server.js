@@ -1144,7 +1144,7 @@ function killPort(port) {
   } catch {}
 }
 
-function start(port = 1001) {
+function start(port = 1002) {
   killPort(port);
   const server = http.createServer(handleRequest);
   wss = new WebSocketServer({ server });

@@ -284,7 +284,7 @@ input:focus,select:focus { border-color:var(--primary); box-shadow:0 0 0 2px var
         </div>
         <div class="setting-row">
           <div><div style="font-weight:500">GUI Port</div><div class="desc">Web interface port</div></div>
-          <input type="number" id="cfgGuiPort" value="1001" style="width:80px">
+          <input type="number" id="cfgGuiPort" value="1002" style="width:80px">
         </div>
         <div class="setting-row">
           <div><div style="font-weight:500">Proxy Test Count</div><div class="desc">Number of proxies to test</div></div>
@@ -750,7 +750,7 @@ async function loadConfig() {
 async function saveConfig() {
   const cfg = {
     defaultPort: parseInt(document.getElementById('cfgPort').value) || 1080,
-    guiPort: parseInt(document.getElementById('cfgGuiPort').value) || 1001,
+    guiPort: parseInt(document.getElementById('cfgGuiPort').value) || 1002,
     proxyTestCount: parseInt(document.getElementById('cfgTestCount').value) || 30
   };
   try {
