@@ -1,0 +1,139 @@
+[
+  {
+    "host": "172.67.176.18",
+    "port": 80,
+    "type": "http",
+    "latency": 450,
+    "ip": "104.28.158.205",
+    "source": "hw630590-HTTP",
+    "tests": 1,
+    "builtin": false,
+    "added": 1784888972642
+  },
+  {
+    "host": "91.193.59.112",
+    "port": 80,
+    "type": "http",
+    "latency": 450,
+    "ip": "104.28.158.205",
+    "source": "hw630590-HTTP",
+    "tests": 1,
+    "builtin": false,
+    "added": 1784888972642
+  },
+  {
+    "host": "172.67.203.242",
+    "port": 80,
+    "type": "http",
+    "latency": 451,
+    "ip": "104.28.158.205",
+    "source": "hw630590-HTTP",
+    "tests": 1,
+    "builtin": false,
+    "added": 1784888972642
+  },
+  {
+    "host": "104.19.35.149",
+    "port": 80,
+    "type": "http",
+    "latency": 452,
+    "ip": "104.28.158.205",
+    "source": "hw630590-HTTP",
+    "tests": 1,
+    "builtin": false,
+    "added": 1784888972642
+  },
+  {
+    "host": "142.111.48.189",
+    "port": 6966,
+    "type": "http",
+    "latency": 610,
+    "ip": "Not authenticated or invalid authentication credentials. Make sure to update your proxy address, proxy username and port.",
+    "source": "hw630590-HTTP",
+    "tests": 1,
+    "builtin": false,
+    "added": 1784888972642
+  },
+  {
+    "host": "104.26.3.70",
+    "port": 80,
+    "type": "http",
+    "latency": 662,
+    "ip": "104.28.158.205",
+    "source": "hw630590-HTTP",
+    "tests": 1,
+    "builtin": false,
+    "added": 1784888972642
+  },
+  {
+    "host": "38.154.227.142",
+    "port": 5843,
+    "type": "http",
+    "latency": 737,
+    "ip": "Not authenticated or invalid authentication credentials. Make sure to update your proxy address, proxy username and port.",
+    "source": "hw630590-HTTP",
+    "tests": 1,
+    "builtin": false,
+    "added": 1784888972642
+  },
+  {
+    "host": "24.249.199.4",
+    "port": 4145,
+    "type": "socks5",
+    "latency": 0,
+    "ip": "",
+    "source": "Built-in",
+    "tests": 2,
+    "builtin": true,
+    "added": 1784888772715,
+    "lastChecked": 1784888972642
+  },
+  {
+    "host": "174.75.211.222",
+    "port": 4145,
+    "type": "socks5",
+    "latency": 0,
+    "ip": "",
+    "source": "Built-in",
+    "tests": 2,
+    "builtin": true,
+    "added": 1784888772715,
+    "lastChecked": 1784888972642
+  },
+  {
+    "host": "72.195.34.58",
+    "port": 4145,
+    "type": "socks5",
+    "latency": 0,
+    "ip": "",
+    "source": "Built-in",
+    "tests": 2,
+    "builtin": true,
+    "added": 1784888772715,
+    "lastChecked": 1784888972642
+  },
+  {
+    "host": "72.195.114.169",
+    "port": 4145,
+    "type": "socks5",
+    "latency": 0,
+    "ip": "",
+    "source": "Built-in",
+    "tests": 2,
+    "builtin": true,
+    "added": 1784888772715,
+    "lastChecked": 1784888972642
+  },
+  {
+    "host": "174.64.199.79",
+    "port": 4145,
+    "type": "socks5",
+    "latency": 0,
+    "ip": "",
+    "source": "Built-in",
+    "tests": 2,
+    "builtin": true,
+    "added": 1784888772715,
+    "lastChecked": 1784888972642
+  }
+]
