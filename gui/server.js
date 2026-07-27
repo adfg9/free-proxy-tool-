@@ -233,7 +233,7 @@ async function fetchProxies() {
     const proxies = await proxyCore.fetchProxies();
     return proxies.map(p => ({ ...p, source: p.source || 'Unknown' }));
   } catch (e) {
-    console.error(t('apiError', 'Failed to fetch proxies via proxy-core'));
+    logger.error(t('apiError', 'Failed to fetch proxies via proxy-core'));
     return BUILTIN_PROXIES.map(p => ({ ...p, source: 'Built-in' }));
   }
 }
@@ -267,7 +267,7 @@ async function getFreeProxies(force = false) {
 }
 
 // Auto-refresh cache every 5 min
-let refreshTimer = setInterval(() => getFreeProxies(true), PROXY_CACHE_TTL);
+let refreshTimer = setInterval(() => getFreeProxies(), PROXY_CACHE_TTL);
 refreshTimer.unref?.();
 
 async function testProxy(proxy, timeout = 6000) {
@@ -1124,7 +1124,7 @@ async function handleRequest(req, res) {
 
   res.writeHead(404); res.end('Not Found');
   } catch (err) {
-    console.error('  [!] Request error:', err.message);
+    logger.error('Request error: ' + err.message, { url: pathname });
     try { res.writeHead(500); res.end(JSON.stringify({ error: err.message })); } catch {}
   }
 }
@@ -1166,7 +1166,7 @@ function start(port = 3000) {
   });
 
   server.listen(port, '127.0.0.1', () => {
-    console.log(t('serverRunningOn', port));
+    logger.info(t('serverRunningOn', port));
     // Auto-open browser
     const cmd = os.platform() === 'win32'
       ? `start "" "http://127.0.0.1:${port}"`
@@ -1178,10 +1178,10 @@ function start(port = 3000) {
 
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
-      console.log(t('portInUse', port));
+      logger.warn(t('portInUse', port));
       start(port + 1);
     } else {
-      console.error('  [✗] Server error:', err.message);
+      logger.error('Server error: ' + err.message);
     }
   });
 
