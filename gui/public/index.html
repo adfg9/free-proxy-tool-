@@ -742,7 +742,7 @@ body::after {
   position: absolute;
   width: 100%;
   height: 100%;
-  border-radius: 0;
+  border-radius: 50%;
   border: 3px solid #d0d0d0;
   transition: border-color 1s var(--ease-in-out);
 }
@@ -759,7 +759,7 @@ body::after {
 .orbit-center {
   width: 70px;
   height: 70px;
-  border-radius: 0;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -784,44 +784,29 @@ body::after {
   background: var(--danger);
   box-shadow: 0 0 8px var(--danger);
   z-index: 3;
-  transform: translateX(78px) translateY(-78px);
-  transition: background 0.8s var(--ease-in-out);
+  transition: background 0.8s var(--ease-in-out), box-shadow 0.8s var(--ease-in-out);
 }
 .orbit-ball.success {
   background: var(--success);
-  box-shadow: none;
+  box-shadow: 0 0 12px var(--success);
 }
 .orbit-ball.warning {
   background: var(--warning);
-  box-shadow: none;
+  box-shadow: 0 0 12px var(--warning);
 }
 .orbit-ball.spinning {
-  animation: orbit-spin 1.5s ease-in-out forwards;
+  animation: orbit-spin 3s linear infinite;
 }
 .orbit-ball.spinning-reverse {
-  animation: orbit-spin-reverse 1.5s ease-in-out forwards;
+  animation: orbit-spin-reverse 3s linear infinite;
 }
 @keyframes orbit-spin {
-  0% { transform: translateX(78px) translateY(-78px); }
-  12.5% { transform: translateX(78px) translateY(0); }
-  25% { transform: translateX(78px) translateY(78px); }
-  37.5% { transform: translateX(0) translateY(78px); }
-  50% { transform: translateX(-78px) translateY(78px); }
-  62.5% { transform: translateX(-78px) translateY(0); }
-  75% { transform: translateX(-78px) translateY(-78px); }
-  87.5% { transform: translateX(0) translateY(-78px); }
-  100% { transform: translateX(78px) translateY(-78px); }
+  0%   { transform: rotate(0deg) translateY(-78px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateY(-78px) rotate(-360deg); }
 }
 @keyframes orbit-spin-reverse {
-  0% { transform: translateX(78px) translateY(-78px); }
-  12.5% { transform: translateX(0) translateY(-78px); }
-  25% { transform: translateX(-78px) translateY(-78px); }
-  37.5% { transform: translateX(-78px) translateY(0); }
-  50% { transform: translateX(-78px) translateY(78px); }
-  62.5% { transform: translateX(0) translateY(78px); }
-  75% { transform: translateX(78px) translateY(78px); }
-  87.5% { transform: translateX(78px) translateY(0); }
-  100% { transform: translateX(78px) translateY(-78px); }
+  0%   { transform: rotate(0deg) translateY(-78px) rotate(0deg); }
+  100% { transform: rotate(-360deg) translateY(-78px) rotate(360deg); }
 }
 .orbit-icon {
   transition: all 0.6s var(--physics-bounce);
@@ -2349,7 +2334,7 @@ input:checked + .toggle-slider:before {
 
       <div class="card full">
         <div class="card-header">
-          <h2>System Information</h2>
+          <h2 data-i18n="systemInfo">System Information</h2>
         </div>
         <div class="card-body">
           <div class="form-group">
@@ -2443,6 +2428,7 @@ let currentFilter = 'all';
 let currentSort = 'latency';
 let editingApp = null;
 let activityLog = [];
+let cachedStatus = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
@@ -2511,6 +2497,7 @@ function switchTab(tabName) {
   if (tabName === 'logs') loadLogs();
   if (tabName === 'settings') loadDiagnostics();
   if (tabName === 'warp') refreshWarpStatus();
+  if (tabName === 'proxies') renderProxyTable();
 }
 
 function initWebSocket() {
@@ -2584,6 +2571,7 @@ async function apiCall(path, method = 'GET', body = null) {
 async function loadStatus() {
   try {
     const data = await apiCall('/api/status');
+    cachedStatus = data;
     updateServerStatus(data.server.running, data.server.port);
     updateWarpStatusUI(data.warp.installed, data.warp.connected);
     updateSystemProxyUI(data.systemProxy);
@@ -2617,7 +2605,7 @@ function updateServerStatus(running, port) {
     dashPort.textContent = port;
     ring.className = 'orbit-ring active';
     center.className = 'orbit-center success';
-    ball.className = 'orbit-ball success';
+    ball.className = 'orbit-ball success spinning';
   } else {
     badge.className = 'badge badge-err';
     badge.textContent = _t('serverOff');
@@ -2633,7 +2621,6 @@ function updateServerStatus(running, port) {
     center.className = 'orbit-center error';
     ball.className = 'orbit-ball';
   }
-  updateOrbitAnimation();
 }
 
 function updateWarpStatusUI(installed, connected) {
@@ -2665,7 +2652,7 @@ function updateWarpStatusUI(installed, connected) {
     dashStatus.textContent = _t('on');
     ring.className = 'orbit-ring active';
     center.className = 'orbit-center success';
-    ball.className = 'orbit-ball success';
+    ball.className = 'orbit-ball success spinning-reverse';
   } else {
     badge.className = 'badge badge-err';
     badge.textContent = _t('warpOff');
@@ -2706,15 +2693,6 @@ function updateDashboardStats(stats) {
   const diagBadge = document.getElementById('diagBadge');
   diagBadge.className = 'badge badge-ok';
   diagBadge.textContent = _t('systemOk');
-}
-
-function updateOrbitAnimation() {
-  const balls = document.querySelectorAll('.orbit-ball');
-  balls.forEach((ball, i) => {
-    ball.classList.remove('spinning', 'spinning-reverse');
-    void ball.offsetWidth;
-    ball.classList.add(i % 2 === 0 ? 'spinning' : 'spinning-reverse');
-  });
 }
 
 async function startServer() {
@@ -3229,6 +3207,7 @@ function drawLatencyChart() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const rect = canvas.getBoundingClientRect();
+  if (rect.width < 10 || rect.height < 10) return;
   canvas.width = rect.width;
   canvas.height = rect.height;
   const w = canvas.width;
@@ -3284,6 +3263,7 @@ function drawTypeChart() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const rect = canvas.getBoundingClientRect();
+  if (rect.width < 10 || rect.height < 10) return;
   canvas.width = rect.width;
   canvas.height = rect.height;
   const w = canvas.width;
@@ -3637,7 +3617,6 @@ function updateFooterTime() {
 }
 
 window.addEventListener('load', () => {
-  setTimeout(updateOrbitAnimation, 500);
   loadPacUrl();
 });
 </script>
@@ -3691,6 +3670,56 @@ window.addEventListener('load', () => {
     if (label) label.textContent = currentLang === 'zh' ? '中' : 'EN';
   }
 
+  // Re-render dynamic content that uses _t() for translations
+  function refreshDynamicContent() {
+    // Re-render status UI from cached data (no API call needed)
+    if (cachedStatus) {
+      if (typeof updateServerStatus === 'function') {
+        updateServerStatus(cachedStatus.server.running, cachedStatus.server.port);
+      }
+      if (typeof updateWarpStatusUI === 'function') {
+        updateWarpStatusUI(cachedStatus.warp.installed, cachedStatus.warp.connected);
+      }
+      if (typeof updateSystemProxyUI === 'function') {
+        updateSystemProxyUI(cachedStatus.systemProxy);
+      }
+      if (typeof updateDashboardStats === 'function') {
+        updateDashboardStats(cachedStatus.stats);
+      }
+    }
+
+    // Re-render cached content after a short delay to skip debounce timers
+    setTimeout(function() {
+      if (typeof _doRenderProxyTable === 'function') _doRenderProxyTable();
+      if (typeof _doRenderTopProxies === 'function') _doRenderTopProxies();
+      if (typeof drawCharts === 'function') drawCharts();
+    }, 80);
+
+    // Refresh active tab's dynamic content
+    var activeTab = document.querySelector('.tab.active');
+    if (activeTab) {
+      var tabName = activeTab.dataset.tab;
+      if (tabName === 'stats') {
+        if (typeof loadStats === 'function') loadStats();
+        if (typeof loadHistory === 'function') loadHistory();
+      } else if (tabName === 'logs') {
+        if (typeof loadLogs === 'function') loadLogs();
+      } else if (tabName === 'apps') {
+        if (typeof loadApps === 'function') loadApps();
+      } else if (tabName === 'settings') {
+        if (typeof loadDiagnostics === 'function') loadDiagnostics();
+        if (typeof loadConfig === 'function') loadConfig();
+      } else if (tabName === 'warp') {
+        if (typeof refreshWarpStatus === 'function') refreshWarpStatus();
+      } else if (tabName === 'proxies') {
+        if (typeof loadStableProxies === 'function') loadStableProxies();
+      }
+    }
+
+    // Re-apply i18n to catch any new data-i18n elements from re-rendered content
+    setTimeout(applyI18n, 250);
+  }
+
   window.toggleLanguage = function() {
     currentLang = currentLang === 'zh' ? 'en' : 'zh';
     localStorage.setItem('fpt-lang', currentLang);
@@ -3707,6 +3736,7 @@ window.addEventListener('load', () => {
         if (data.lang) { currentLang = data.lang; localStorage.setItem('fpt-lang', currentLang); }
         applyI18n();
         updateLangLabel();
+        refreshDynamicContent();
         if (window.toast) window.toast('info', currentLang === 'zh' ? window._t('languageSwitchedZh') : window._t('languageSwitchedEn'));
       })
       .catch(function() {
@@ -3715,11 +3745,19 @@ window.addEventListener('load', () => {
   };
 
   window.refreshI18n = function() {
-    return fetchTranslations().then(applyI18n);
+    return fetchTranslations().then(function() {
+      applyI18n();
+      refreshDynamicContent();
+    });
   };
 
   document.addEventListener('DOMContentLoaded', function() {
-    fetchTranslations().then(applyI18n);
+    fetchTranslations().then(function() {
+      applyI18n();
+      // Re-render dynamic content after translations are loaded
+      // This fixes the race condition where dynamic content renders before translations
+      setTimeout(refreshDynamicContent, 300);
+    });
   });
 })();
 </script>
