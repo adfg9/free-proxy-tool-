@@ -11,6 +11,7 @@ const stats = require(path.join(PROJECT_ROOT, 'lib', 'stats'));
 const ProxyServer = require(path.join(PROJECT_ROOT, 'lib', 'proxy-server'));
 const proxyCore = require(path.join(PROJECT_ROOT, 'lib', 'proxy-core'));
 const i18n = require(path.join(PROJECT_ROOT, 'lib', 'i18n'));
+const logger = require(path.join(PROJECT_ROOT, 'lib', 'logger'));
 const { t } = i18n;
 
 // Inline core functions to avoid circular deps
@@ -305,8 +306,10 @@ async function testProxy(proxy, timeout = 6000) {
     // Try multiple test URLs, return on first success
     for (const testUrl of testUrls) {
       try {
+        let statusCode = 0;
         const result = await new Promise((resolve, reject) => {
           const req = https.get(testUrl, { agent, timeout, rejectUnauthorized: false }, res => {
+            statusCode = res.statusCode;
             let d = '';
             res.on('data', c => d += c);
             res.on('end', () => resolve(d));
@@ -314,6 +317,10 @@ async function testProxy(proxy, timeout = 6000) {
           req.on('error', reject);
           req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
         });
+        // Only consider alive if HTTP status is 2xx
+        if (statusCode < 200 || statusCode >= 300) {
+          continue;
+        }
         let ip = '';
         try {
           const parsed = JSON.parse(result);
