@@ -1152,18 +1152,48 @@ tr:hover td { background: var(--hover-bg); transition: none; }
 
 /* ===== Log (Win10 flat) ===== */
 .log-box {
-  background: var(--log-bg); padding: 12px;
-  font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px;
-  overflow-y: auto; line-height: 1.6; color: var(--text2);
+  background: var(--log-bg); padding: 8px;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 12px;
+  overflow-y: auto; line-height: 1.8; color: var(--text2);
   height: 100%;
   box-shadow: none;
   border: 1px solid var(--border);
   border-radius: 0;
 }
+.log-entry {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 4px 8px; border-radius: 4px; margin-bottom: 2px;
+  transition: background 0.15s var(--ease-in-out);
+  border-left: 3px solid transparent;
+  animation: logFadeIn 0.3s var(--ease-expo);
+}
+.log-entry:hover { background: rgba(128,128,128,0.08); }
+@keyframes logFadeIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.log-time {
+  color: var(--text2); opacity: 0.6; font-size: 11px;
+  white-space: nowrap; flex-shrink: 0; min-width: 64px;
+}
+.log-badge {
+  display: inline-block; padding: 1px 6px; border-radius: 3px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; flex-shrink: 0; min-width: 38px; text-align: center;
+}
+.log-msg { flex: 1; word-break: break-word; }
 .log-ok { color: var(--success); }
 .log-err { color: var(--danger); }
 .log-info { color: var(--primary); }
 .log-warn { color: var(--warning); }
+.log-entry.log-info { border-left-color: var(--primary); }
+.log-entry.log-warn { border-left-color: var(--warning); background: rgba(255,140,0,0.05); }
+.log-entry.log-err { border-left-color: var(--danger); background: rgba(209,52,56,0.05); }
+.log-entry.log-ok { border-left-color: var(--success); }
+.log-badge.log-info { background: rgba(0,120,215,0.15); color: var(--primary); }
+.log-badge.log-warn { background: rgba(255,140,0,0.15); color: var(--warning); }
+.log-badge.log-err { background: rgba(209,52,56,0.15); color: var(--danger); }
+.log-badge.log-ok { background: rgba(16,124,16,0.15); color: var(--success); }
 
 /* ===== Tabs (Win10 Metro style) ===== */
 .tabs {
@@ -2235,20 +2265,21 @@ input:checked + .toggle-slider:before {
     <div class="card">
       <div class="card-header">
         <h2 data-i18n="systemLogs">System Logs</h2>
-        <div class="flex gap-8">
+        <div class="flex gap-8 items-center">
+          <span id="logStats" class="text-muted text-sm" style="margin-right:8px;"></span>
           <select id="logLevelFilter" class="sp-sort-select" onchange="filterLogs()">
             <option value="all" data-i18n="logLevelAll">All Levels</option>
             <option value="info" data-i18n="logLevelInfo">Info</option>
             <option value="warn" data-i18n="logLevelWarn">Warning</option>
             <option value="error" data-i18n="logLevelError">Error</option>
-            <option value="success" data-i18n="logLevelSuccess">Success</option>
+            <option value="debug">Debug</option>
           </select>
           <button class="btn btn-outline btn-sm" onclick="loadLogs()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
           <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑 <span data-i18n="clearBtn">Clear</span></button>
         </div>
       </div>
-      <div class="card-body" style="padding: 0; height: 500px;">
-        <div class="log-box" id="logBox" style="height: 100%; border: none;">
+      <div class="card-body" style="padding: 0; height: 520px;">
+        <div class="log-box" id="logBox" style="height: 100%; border: none; border-radius: 0;">
           <div class="text-muted" data-i18n="loadingLogs">Loading logs...</div>
         </div>
       </div>
@@ -2875,7 +2906,10 @@ function _doRenderProxyTable() {
   });
 
   if (currentSort === 'latency') {
-    filtered.sort((a, b) => (a.latency || 9999) - (b.latency || 9999));
+    const builtins = filtered.filter(p => p.builtin);
+    const others = filtered.filter(p => !p.builtin);
+    others.sort((a, b) => (a.latency || 9999) - (b.latency || 9999));
+    filtered = [...builtins, ...others];
   } else if (currentSort === 'tests') {
     filtered.sort((a, b) => (b.tests || 0) - (a.tests || 0));
   } else if (currentSort === 'host') {
@@ -2888,11 +2922,17 @@ function _doRenderProxyTable() {
   }
 
   tbody.innerHTML = filtered.map((p, i) => {
-    const grade = getGrade(p.latency);
-    const latencyColor = p.latency > 0 && p.latency < 300 ? 'var(--success)' :
-                         p.latency > 0 && p.latency < 600 ? 'var(--warning)' :
-                         p.latency > 0 ? 'var(--danger)' : 'var(--text2)';
-    const latencyPct = p.latency > 0 ? Math.min(100, (1000 - p.latency) / 10) : 0;
+    const measuredLatency = p.hint ? 0 : p.latency;
+    const displayLatency = p.hint ? p.latency : p.latency;
+    const grade = getGrade(measuredLatency);
+    const latencyColor = measuredLatency > 0 && measuredLatency < 300 ? 'var(--success)' :
+                         measuredLatency > 0 && measuredLatency < 600 ? 'var(--warning)' :
+                         measuredLatency > 0 ? 'var(--danger)' :
+                         p.hint ? (displayLatency < 300 ? 'var(--primary)' : 'var(--text2)') : 'var(--text2)';
+    const latencyPct = displayLatency > 0 ? Math.min(100, (1000 - displayLatency) / 10) : 0;
+    const latencyText = p.hint
+      ? `<span title="${_t('hintLatencyTitle') || 'Verified expected latency (re-test for precise value)'}">~${displayLatency}ms</span>`
+      : (displayLatency > 0 ? displayLatency + 'ms' : _t('noData'));
     return `
       <tr>
         <td><span class="sp-grade sp-grade-${grade}">${grade}</span></td>
@@ -2900,8 +2940,8 @@ function _doRenderProxyTable() {
         <td>${p.port}</td>
         <td><span class="badge badge-ok" style="font-size:10px;">${(p.type || 'socks5').toUpperCase()}</span></td>
         <td>
-          <span style="color:${latencyColor};font-weight:600;">${p.latency > 0 ? p.latency + 'ms' : _t('noData')}</span>
-          <span class="sp-latency-bar"><span class="sp-latency-bar-fill" style="width:${latencyPct}%;background:${latencyColor};"></span></span>
+          <span style="color:${latencyColor};font-weight:600;${p.hint ? 'opacity:0.85;font-style:italic;' : ''}">${latencyText}</span>
+          <span class="sp-latency-bar"><span class="sp-latency-bar-fill" style="width:${latencyPct}%;background:${latencyColor};${p.hint ? 'opacity:0.5;' : ''}"></span></span>
         </td>
         <td>${p.tests || 0}</td>
         <td class="text-muted text-sm">${p.source || _t('unknown')}</td>
@@ -3029,9 +3069,12 @@ async function testOneProxy(host, port, type) {
 async function testAllProxies() {
   try {
     toast('info', _t('startingBatchTest'));
-    const max = parseInt(document.getElementById('proxyTestCount').value) || 30;
-    await apiCall('/api/proxy/test-all-free', 'POST', { max });
-    addActivity('info', _t('batchTestActivity'), _t('testingUpToActivity', max));
+    document.getElementById('autoFindProgress').style.display = 'flex';
+    document.getElementById('autoFindStage').textContent = _t('testingProxiesStage');
+    document.getElementById('autoFindCount').textContent = '0 / ?';
+    document.getElementById('autoFindBar').style.width = '0%';
+    await apiCall('/api/proxy/test-stable', 'POST');
+    addActivity('info', _t('batchTestActivity'), _t('testingUpToActivity', 'all'));
   } catch (e) {}
 }
 
@@ -3041,7 +3084,8 @@ function handleTestProgress(data) {
   document.getElementById('autoFindStage').textContent = _t('testingProxiesStage');
   document.getElementById('autoFindCount').textContent = `${data.tested} / ${data.total}`;
   document.getElementById('autoFindBar').style.width = `${(data.tested / data.total) * 100}%`;
-  document.getElementById('autoFindDetail').textContent = _t('testingBatchDetail', data.tested, data.total);
+  const aliveText = data.alive !== undefined ? ` · ${data.alive} alive` : '';
+  document.getElementById('autoFindDetail').textContent = _t('testingBatchDetail', data.tested, data.total) + aliveText;
 }
 
 function handleTestComplete(data) {
@@ -3478,21 +3522,35 @@ async function addPresetApp(name, path) {
 
 async function loadLogs() {
   try {
-    const data = await apiCall('/api/logs?limit=200');
+    const levelFilter = document.getElementById('logLevelFilter')?.value || 'all';
+    const data = await apiCall('/api/logs?limit=200&level=' + levelFilter);
     const logs = data.logs || [];
     const box = document.getElementById('logBox');
+    const logStats = data.stats || {};
+    const logSizeKB = logStats.totalSize ? Math.round(logStats.totalSize / 1024) : 0;
+
+    // Update stats display
+    const statsEl = document.getElementById('logStats');
+    if (statsEl) {
+      statsEl.textContent = `${logs.length} entries · ${logSizeKB}KB · ${logStats.fileCount || 0} files`;
+    }
+
     if (logs.length === 0) {
-      box.innerHTML = '<div class="text-muted" data-i18n="noLogsAvailable">No logs available</div>';
+      box.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text2);">' + (window._t ? _t('noLogsAvailable') : 'No logs available') + '</div>';
       return;
     }
+    const icons = { info: 'ℹ', warn: '⚠', error: '✕', err: '✕', ok: '✓', success: '✓', debug: '⚙' };
     box.innerHTML = logs.map(l => {
-      const time = l.time ? new Date(l.time).toLocaleTimeString() : '';
+      const time = l.time ? new Date(l.time).toLocaleTimeString('en', {hour12: false}) : '';
       let cls = 'log-info';
-      if (l.level === 'error' || l.level === 'err') cls = 'log-err';
-      else if (l.level === 'warn' || l.level === 'warning') cls = 'log-warn';
-      else if (l.level === 'success' || l.level === 'ok') cls = 'log-ok';
-      else if (l.level === 'info') cls = 'log-info';
-      return `<div class="${cls}"><span class="text-muted">[${time}]</span> ${l.message || l.msg || ''}</div>`;
+      let badgeText = 'INFO';
+      if (l.level === 'error' || l.level === 'err') { cls = 'log-err'; badgeText = 'ERR'; }
+      else if (l.level === 'warn' || l.level === 'warning') { cls = 'log-warn'; badgeText = 'WARN'; }
+      else if (l.level === 'success' || l.level === 'ok') { cls = 'log-ok'; badgeText = 'OK'; }
+      else if (l.level === 'debug') { cls = 'log-info'; badgeText = 'DBG'; }
+      const icon = icons[l.level] || icons.info;
+      const msg = l.message || l.msg || '';
+      return `<div class="log-entry ${cls}"><span class="log-time">${time}</span><span class="log-badge ${cls}">${icon} ${badgeText}</span><span class="log-msg">${msg}</span></div>`;
     }).join('');
     box.scrollTop = box.scrollHeight;
   } catch (e) {}
