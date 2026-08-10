@@ -1905,7 +1905,8 @@ function killPort(port) {
   } catch {}
 }
 
-function start(port = 3000) {
+function start(port = 3000, opts = {}) {
+  const { openBrowser = true, onPort } = opts;
   killPort(port);
   const server = http.createServer(handleRequest);
   wss = new WebSocketServer({ server });
@@ -1928,19 +1929,22 @@ function start(port = 3000) {
 
   server.listen(port, '127.0.0.1', () => {
     logger.info(t('serverRunningOn', port));
-    // Auto-open browser
-    const cmd = os.platform() === 'win32'
-      ? `start "" "http://127.0.0.1:${port}"`
-      : os.platform() === 'darwin'
-        ? `open "http://127.0.0.1:${port}"`
-        : `xdg-open "http://127.0.0.1:${port}"`;
-    try { execSync(cmd, { stdio: 'ignore' }); } catch {}
+    if (typeof onPort === 'function') onPort(port);
+    if (openBrowser) {
+      // Auto-open browser
+      const cmd = os.platform() === 'win32'
+        ? `start "" "http://127.0.0.1:${port}"`
+        : os.platform() === 'darwin'
+          ? `open "http://127.0.0.1:${port}"`
+          : `xdg-open "http://127.0.0.1:${port}"`;
+      try { execSync(cmd, { stdio: 'ignore' }); } catch {}
+    }
   });
 
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
       logger.warn(t('portInUse', port));
-      start(port + 1);
+      start(port + 1, opts);
     } else {
       logger.error('Server error: ' + err.message);
     }

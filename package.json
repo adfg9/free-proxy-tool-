@@ -35,7 +35,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/adfg9/free-proxy-tool-.git"
   },
   "homepage": "",
   "engines": {
@@ -66,6 +66,8 @@
     "directories": {
       "output": "dist"
     },
+    "electronDist": "node_modules/electron/dist",
+    "publish": null,
     "files": [
       "electron/**/*",
       "gui/**/*",
@@ -75,8 +77,18 @@
       "node_modules/**/*"
     ],
     "win": {
-      "target": "portable",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
       "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "FreeProxyTool"
     }
   }
 }
