@@ -958,6 +958,84 @@ body::after {
 .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 .btn-sm { padding: 6px 14px; font-size: 11px; }
 
+/* ===== Google OAuth UI ===== */
+.google-auth-area { display: flex; align-items: center; }
+.btn-google {
+  background: #fff; color: #3c4043; border: 1px solid #dadce0;
+  display: inline-flex; align-items: center; gap: 6px; font-weight: 500;
+}
+.btn-google:hover { background: #f8f9fa; border-color: #c6c6c6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.google-icon { flex-shrink: 0; }
+html[data-theme="dark"] .btn-google { background: #2d2d2d; color: #e8eaed; border-color: #5f6368; }
+html[data-theme="dark"] .btn-google:hover { background: #353535; border-color: #8b8e92; }
+html[data-theme="pixel"] .btn-google { background: var(--tile-surface2); color: var(--text); border-color: var(--border); }
+
+.google-user-chip {
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  padding: 3px 8px 3px 4px; border-radius: 999px;
+  background: var(--card-bg); border: 1px solid var(--border);
+  position: relative; transition: background var(--dur-fast) linear, border-color var(--dur-fast) linear;
+}
+.google-user-chip:hover { background: var(--hover-bg); border-color: var(--primary); }
+.google-user-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.google-user-name { font-size: 11px; font-weight: 500; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.google-user-caret { font-size: 9px; opacity: 0.6; }
+
+.google-user-dropdown {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0;
+  min-width: 240px; padding: 12px; border-radius: 10px;
+  background: var(--card-bg); border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18); z-index: 1000;
+  animation: gDropdownIn 0.16s ease-out;
+}
+@keyframes gDropdownIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.google-user-dropdown-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.google-user-dropdown-info .google-user-avatar { width: 36px; height: 36px; }
+.google-user-dropdown-name { font-size: 13px; font-weight: 600; }
+.google-user-dropdown-email { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.google-logout-btn { width: 100%; justify-content: center; }
+
+.google-oauth-status { margin-bottom: 12px; padding: 8px 12px; border-radius: 8px; background: var(--hover-bg); }
+.google-oauth-status .setting-label { font-size: 13px; font-weight: 600; }
+
+/* ===== Google Signup Assistant (GSU) ===== */
+.gsu-hero { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  background: linear-gradient(135deg, var(--card-bg) 0%, #4285F412 35%, #EA433518 70%, var(--card-bg) 100%);
+  border: 1px solid var(--border); }
+.gsu-hero-left { display: flex; align-items: center; gap: 16px; }
+.gsu-title { display: flex; align-items: center; gap: 12px; }
+.gsu-hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.gsu-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.gsu-step { display: flex; align-items: flex-start; gap: 10px; padding: 10px; border-radius: 10px; background: var(--hover-bg); }
+.gsu-step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #4285F4, #34A853); color: #fff; font-weight: 700; font-size: 13px; box-shadow: 0 2px 6px #4285F440; }
+@media (max-width: 720px) { .gsu-steps { grid-template-columns: 1fr; } }
+
+.gsu-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 40px; color: var(--text-muted); }
+.gsu-empty { padding: 32px 16px; text-align: center; color: var(--text-muted); }
+.gsu-proxy { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px; border-bottom: 1px solid var(--border); transition: background var(--dur-fast) linear; }
+.gsu-proxy:hover { background: var(--hover-bg); }
+.gsu-proxy-sel { background: #4285F412; border-left: 3px solid #4285F4; }
+.gsu-proxy-main { min-width: 0; flex: 1; }
+.gsu-proxy-host { font-size: 14px; margin-bottom: 4px; }
+.gsu-proxy-type { font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--hover-bg); color: var(--text-muted); font-weight: 600; margin-left: 4px; }
+.gsu-proxy-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--text-muted); }
+.gsu-ping { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--success); }
+.gsu-note { opacity: 0.85; }
+.gsu-launch-btn { flex-shrink: 0; white-space: nowrap; background: linear-gradient(135deg, #4285F4, #1a73e8); border-color: #4285F4; color: #fff; }
+.gsu-launch-btn:hover { background: linear-gradient(135deg, #1a73e8, #0a57c9); }
+
+.gsu-status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.gsu-status-item { padding: 12px; border-radius: 10px; background: var(--hover-bg); }
+.gsu-status-item .text-lg { font-size: 15px; font-weight: 600; margin-top: 4px; word-break: break-all; }
+@media (max-width: 720px) { .gsu-status-grid { grid-template-columns: repeat(2, 1fr); } }
+.gsu-warn { padding: 10px 12px; border-radius: 8px; background: #fbbc0415; border: 1px dashed #fbbc0466; color: var(--text); font-size: 12px; }
+
+.gsu-tips { margin: 0; padding-left: 18px; line-height: 1.8; font-size: 13px; }
+.gsu-tips li { margin-bottom: 4px; }
+.gsu-tips li b { color: var(--primary); }
+
 /* ===== Table (Win10 flat style) ===== */
 /* ===== Stable Pool Cool UI ===== */
 .stable-pool-card { position: relative; overflow: hidden; }
@@ -1729,6 +1807,31 @@ input:checked + .toggle-slider:before {
     <button id="langToggle" class="btn btn-outline btn-sm lang-toggle-btn" title="" data-i18n-title="languageTooltip" onclick="toggleLanguage()">🌐 <span id="langLabel">EN</span></button>
     <button id="themeToggle" class="btn btn-outline btn-sm" title="" data-i18n-title="themeTooltip">🌙</button>
     <button id="disconnectAllBtn" class="btn btn-danger btn-sm" title="" data-i18n-title="disconnectAllTooltip">✕ <span data-i18n="disconnectAllBtn">Disconnect All</span></button>
+    <div id="googleAuthArea" class="google-auth-area">
+      <!-- Logged out: show login button -->
+      <button id="googleLoginBtn" class="btn btn-google btn-sm" onclick="window.location.href='/api/auth/google'" style="display:none;">
+        <svg class="google-icon" viewBox="0 0 48 48" width="14" height="14"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+        <span data-i18n="loginWithGoogle">Login with Google</span>
+      </button>
+      <!-- Logged in: show user chip -->
+      <div id="googleUserChip" class="google-user-chip" style="display:none;" onclick="googleUserMenuToggle(event)">
+        <img id="googleUserAvatar" class="google-user-avatar" alt="avatar">
+        <span id="googleUserName" class="google-user-name"></span>
+        <span class="google-user-caret">▾</span>
+        <div id="googleUserDropdown" class="google-user-dropdown">
+          <div class="google-user-dropdown-info">
+            <img id="googleUserDropdownAvatar" class="google-user-avatar" alt="">
+            <div>
+              <div id="googleUserDropdownName" class="google-user-dropdown-name"></div>
+              <div id="googleUserDropdownEmail" class="google-user-dropdown-email"></div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm google-logout-btn" onclick="googleLogout(event)">
+            <span data-i18n="logout">Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1742,6 +1845,9 @@ input:checked + .toggle-slider:before {
     <button class="tab" data-tab="apps"><span class="tab-idx">06</span> <span data-i18n="appProxy">App Proxy</span></button>
     <button class="tab" data-tab="logs"><span class="tab-idx">07</span> <span data-i18n="tabLogs">Logs</span></button>
     <button class="tab" data-tab="settings"><span class="tab-idx">08</span> <span data-i18n="tabSettings">Settings</span></button>
+    <button class="tab" data-tab="googlesignup" style="background: linear-gradient(135deg, #4285F422, #EA433522); color: var(--accent-orange, #fbbc04); border-color: #EA433566;">
+      <span class="tab-idx">09</span> <span data-i18n="tabGoogleSignup">Google 注册</span>
+    </button>
   </div>
 
   <!-- Dashboard Tab -->
@@ -2363,6 +2469,43 @@ input:checked + .toggle-slider:before {
         </div>
       </div>
 
+      <div class="card">
+        <div class="card-header">
+          <h2><svg viewBox="0 0 48 48" width="18" height="18" style="vertical-align:middle;margin-right:6px;"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg><span data-i18n="googleOAuthSettings">Google OAuth Configuration</span></h2>
+        </div>
+        <div class="card-body">
+          <div id="googleOAuthStatus" class="google-oauth-status">
+            <div class="setting-label" data-i18n="googleOAuthNotConfigured">Not configured</div>
+            <div class="setting-desc" data-i18n="googleOAuthConfigDesc">Configure Google OAuth to enable login with Google account</div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Client ID</div>
+              <div class="setting-desc" data-i18n="googleClientIdDesc">Google OAuth Client ID</div>
+            </div>
+            <input type="text" class="input" style="flex:1;min-width:200px;" id="googleClientId" placeholder="xxxxx.apps.googleusercontent.com" data-i18n-placeholder="googleClientIdPlaceholder">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Client Secret</div>
+              <div class="setting-desc" data-i18n="googleClientSecretDesc">Google OAuth Client Secret</div>
+            </div>
+            <input type="password" class="input" style="flex:1;min-width:200px;" id="googleClientSecret" placeholder="GOCSPX-xxxxx" data-i18n-placeholder="googleClientSecretPlaceholder">
+          </div>
+          <div class="mt-16 flex gap-8">
+            <button class="btn btn-primary btn-sm" onclick="saveGoogleOAuthConfig()"><span data-i18n="save">Save</span></button>
+            <button class="btn btn-outline btn-sm" onclick="loadGoogleOAuthStatus()"><span data-i18n="refreshBtn">Refresh</span></button>
+          </div>
+          <div class="setting-desc mt-8" style="margin-top:12px;font-size:11px;line-height:1.5;">
+            <span data-i18n="googleOAuthHelpTitle">Setup guide:</span><br>
+            <span data-i18n="googleOAuthHelp1">1. Visit Google Cloud Console → APIs & Services → Credentials</span><br>
+            <span data-i18n="googleOAuthHelp2">2. Create OAuth 2.0 Client ID (Web application)</span><br>
+            <span data-i18n="googleOAuthHelp3">3. Add authorized redirect URI:</span> <code id="googleRedirectUri"></code><br>
+            <span data-i18n="googleOAuthHelp4">4. Copy Client ID and Secret here, then Save</span>
+          </div>
+        </div>
+      </div>
+
       <div class="card full">
         <div class="card-header">
           <h2 data-i18n="systemInfo">System Information</h2>
@@ -2398,6 +2541,110 @@ input:checked + .toggle-slider:before {
             <button class="btn btn-outline btn-sm" onclick="loadDiagnostics()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
             <button class="btn btn-outline btn-sm" onclick="resetConfig()">🔄 <span data-i18n="resetToDefaults">Reset to Defaults</span></button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Signup Assistant Tab -->
+  <div class="tab-content" id="tab-googlesignup" style="display:none;">
+    <div class="grid">
+      <!-- Hero / 说明卡片 -->
+      <div class="card full gsu-hero">
+        <div class="gsu-hero-left">
+          <div class="gsu-title">
+            <svg viewBox="0 0 48 48" width="36" height="36"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+            <div>
+              <h2 style="margin:0;font-size:18px;" data-i18n="gsuHeroTitle">Google 账号注册助手</h2>
+              <div class="setting-desc" data-i18n="gsuHeroSubtitle">筛选干净代理 · 一键启动 · 自动打开注册页</div>
+            </div>
+          </div>
+        </div>
+        <div class="gsu-hero-actions">
+          <button class="btn btn-outline btn-sm" onclick="loadGsuProxies()">🔄 <span data-i18n="gsuRefreshList">刷新代理列表</span></button>
+          <button id="gsuScanBtn" class="btn btn-primary btn-sm" onclick="runGsuScan()">🔍 <span data-i18n="gsuScanBtn">搜索干净代理</span></button>
+        </div>
+      </div>
+
+      <!-- Steps -->
+      <div class="card full gsu-steps">
+        <div class="gsu-step">
+          <div class="gsu-step-num">1</div>
+          <div><strong data-i18n="gsuStep1Title">选择一个干净代理</strong><br><span class="setting-desc" data-i18n="gsuStep1Desc">优先选择 ⭐ 延迟低、评分高（5/6）的代理</span></div>
+        </div>
+        <div class="gsu-step">
+          <div class="gsu-step-num">2</div>
+          <div><strong data-i18n="gsuStep2Title">点击「一键启动并注册」</strong><br><span class="setting-desc" data-i18n="gsuStep2Desc">本地代理启动 → 设系统代理 → 浏览器打开注册页</span></div>
+        </div>
+        <div class="gsu-step">
+          <div class="gsu-step-num">3</div>
+          <div><strong data-i18n="gsuStep3Title">在浏览器中手动完成注册</strong><br><span class="setting-desc" data-i18n="gsuStep3Desc">所有流量通过干净代理，降低风控概率</span></div>
+        </div>
+      </div>
+
+      <!-- 代理列表卡片 -->
+      <div class="card full">
+        <div class="card-header">
+          <h2>🌐 <span data-i18n="gsuListTitle">干净代理列表</span></h2>
+          <div class="text-sm" id="gsuListMeta"></div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div id="gsuListContainer" style="min-height:200px;">
+            <div class="gsu-loading" id="gsuLoading"><div class="spinner"></div> <span data-i18n="gsuLoading">加载中...</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 启动中 / 状态卡片 -->
+      <div class="card full" id="gsuStatusCard" style="display:none;">
+        <div class="card-header">
+          <h2>🚀 <span data-i18n="gsuStatusTitle">注册会话状态</span></h2>
+          <button class="btn btn-danger btn-sm" onclick="gsuCleanup()">🛑 <span data-i18n="gsuStopBtn">停止并清理</span></button>
+        </div>
+        <div class="card-body">
+          <div class="gsu-status-grid">
+            <div class="gsu-status-item">
+              <div class="text-sm text-muted" data-i18n="gsuStCleanProxy">干净代理</div>
+              <div class="text-lg" id="gsuStProxy">-</div>
+            </div>
+            <div class="gsu-status-item">
+              <div class="text-sm text-muted" data-i18n="gsuStLocalPort">本地端口</div>
+              <div class="text-lg" id="gsuStPort">-</div>
+            </div>
+            <div class="gsu-status-item">
+              <div class="text-sm text-muted" data-i18n="gsuStSystemProxy">系统代理</div>
+              <div class="text-lg" id="gsuStSystem">-</div>
+            </div>
+            <div class="gsu-status-item">
+              <div class="text-sm text-muted" data-i18n="gsuStBrowser">浏览器</div>
+              <div class="text-lg" id="gsuStBrowser">-</div>
+            </div>
+          </div>
+          <div class="mt-16 flex gap-8">
+            <button class="btn btn-outline btn-sm" onclick="gsuReopenSignup()">🌐 <span data-i18n="gsuReopenBtn">重新打开注册页</span></button>
+            <a class="btn btn-google btn-sm" id="gsuDirectLink" target="_blank" href="https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp">
+              <span data-i18n="gsuDirectLink">直接打开注册页</span> ↗
+            </a>
+          </div>
+          <div class="gsu-warn mt-16" data-i18n="gsuCleanupWarning">
+            ⚠️ 注册完成后请点击「停止并清理」按钮，还原系统代理设置。
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="card full gsu-tips-card">
+        <div class="card-header">
+          <h2>💡 <span data-i18n="gsuTipsTitle">注册注意事项（降低封号/风控风险）</span></h2>
+        </div>
+        <div class="card-body">
+          <ul class="gsu-tips">
+            <li data-i18n="gsuTip1"><b>慢慢来</b>：每步停顿几秒，不要自动填表过快。</li>
+            <li data-i18n="gsuTip2"><b>真实信息</b>：名字/生日尽量贴近现实，不要用完全随机字符串。</li>
+            <li data-i18n="gsuTip3"><b>手机号</b>：准备能接收短信的真实号码（Google 强制验证）。</li>
+            <li data-i18n="gsuTip4"><b>设备干净</b>：浏览器尽量无痕模式，清空 cookies，避免多账号同环境。</li>
+            <li data-i18n="gsuTip5"><b>换 IP</b>：如果注册页面提示异常，换一个代理重试（本页换代理+清理后重试）。</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -2475,7 +2722,296 @@ document.addEventListener('DOMContentLoaded', () => {
   updateFooterTime();
   setInterval(updateFooterTime, 1000);
   setInterval(loadStatus, 10000);
+  loadGoogleAuthStatus();
+  checkAuthErrorInUrl();
 });
+
+// ===== Google Signup Assistant =====
+let gsuSelectedProxy = null;
+let gsuLaunching = false;
+let gsuProxiesCache = [];
+
+async function loadGsuProxies() {
+  const ctr = document.getElementById('gsuListContainer');
+  const meta = document.getElementById('gsuListMeta');
+  if (!ctr) return;
+  ctr.innerHTML = `<div class="gsu-loading"><div class="spinner"></div> ${_t('gsuLoading')}</div>`;
+  try {
+    const res = await fetch('/api/google-signup/proxies');
+    const data = await res.json();
+    gsuProxiesCache = data.proxies || [];
+    meta.textContent = `${gsuProxiesCache.length} ${_t('gsuCountSuffix')}`;
+    if (gsuProxiesCache.length === 0) {
+      ctr.innerHTML = `<div class="gsu-empty">${_t('gsuEmpty')}</div>`;
+      return;
+    }
+    renderGsuList();
+  } catch (e) {
+    ctr.innerHTML = `<div class="gsu-empty" style="color:var(--danger)">${_t('gsuLoadFailed')}</div>`;
+  }
+}
+
+function renderGsuList() {
+  const ctr = document.getElementById('gsuListContainer');
+  if (!ctr) return;
+  ctr.innerHTML = '';
+  gsuProxiesCache.forEach((p, idx) => {
+    const row = document.createElement('div');
+    row.className = 'gsu-proxy' + (gsuSelectedProxy && gsuSelectedProxy.host === p.host && gsuSelectedProxy.port === p.port ? ' gsu-proxy-sel' : '');
+    const score = p.googleSignupScore || 0;
+    const stars = Math.max(1, Math.min(5, Math.round(score / 6 * 5)));
+    const starStr = '⭐'.repeat(stars) + '·'.repeat(5 - stars);
+    const note = p.note || p.source || '';
+    const fromSaved = p.source && !p.source.startsWith('builtin') ? '🟢' : '🔵';
+    const latencyRaw = p.avgLatency ?? p.latency;
+    const latencyStr = (latencyRaw == null || latencyRaw === '') ? '-' : `${latencyRaw}ms`;
+    row.innerHTML = `
+      <div class="gsu-proxy-main">
+        <div class="gsu-proxy-host">${fromSaved} <b>${p.host}:${p.port}</b> <span class="gsu-proxy-type">${(p.type||'').toUpperCase()}</span></div>
+        <div class="gsu-proxy-meta">
+          <span class="gsu-ping" title="${_t('gsuLatencyTitle') || ''}">${latencyStr}</span>
+          <span class="gsu-score" title="${score}/6 ${_t('gsuScoreTitle') || ''}">${starStr}</span>
+          ${note ? `<span class="gsu-note">${note}</span>` : ''}
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm gsu-launch-btn" onclick="gsuLaunch(${idx})">
+        🚀 <span data-i18n="gsuLaunchBtn">一键启动并注册</span>
+      </button>
+    `;
+    ctr.appendChild(row);
+  });
+  applyI18n();
+}
+
+async function gsuLaunch(idx) {
+  if (gsuLaunching) return;
+  const p = gsuProxiesCache[idx];
+  if (!p) return;
+  gsuSelectedProxy = p;
+  gsuLaunching = true;
+  renderGsuList();
+  showToast(`${_t('gsuLaunching')} ${p.host}:${p.port}...`, 'info');
+
+  try {
+    const res = await fetch('/api/google-signup/launch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ host: p.host, port: p.port, type: p.type, localPort: 1080 }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'launch failed');
+
+    // Fill status card
+    document.getElementById('gsuStatusCard').style.display = 'block';
+    document.getElementById('gsuStProxy').textContent = `${data.upstream.host}:${data.upstream.port}`;
+    document.getElementById('gsuStPort').textContent = `127.0.0.1:${data.port}`;
+    const sysEl = document.getElementById('gsuStSystem');
+    sysEl.textContent = data.systemProxy ? _t('gsuEnabled') : _t('gsuSkipped');
+    sysEl.style.color = data.systemProxy ? 'var(--success)' : 'var(--warning)';
+    const brEl = document.getElementById('gsuStBrowser');
+    brEl.textContent = data.browserOpened ? _t('gsuBrowserYes') : _t('gsuBrowserNo');
+    brEl.style.color = data.browserOpened ? 'var(--success)' : 'var(--warning)';
+    showToast(_t('gsuLaunchSuccess'), 'success');
+    if (!data.browserOpened) {
+      // Fallback: open via link click
+      setTimeout(() => { document.getElementById('gsuDirectLink')?.click(); }, 500);
+    }
+    // Scroll status into view
+    document.getElementById('gsuStatusCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    showToast(_t('gsuLaunchFailed') + ': ' + e.message, 'error');
+  } finally {
+    gsuLaunching = false;
+    renderGsuList();
+  }
+}
+
+async function gsuCleanup() {
+  try {
+    await fetch('/api/google-signup/cleanup', { method: 'POST' });
+    document.getElementById('gsuStatusCard').style.display = 'none';
+    showToast(_t('gsuCleanedUp'), 'success');
+  } catch (e) {
+    showToast(_t('gsuCleanupFailed'), 'error');
+  }
+}
+
+function gsuReopenSignup() {
+  window.open('https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp', '_blank');
+}
+
+// Expose inline-onclick targets to the global scope (required because these are defined inside <script> blocks
+// where top-level declarations aren't auto-exposed to the `window` object — HTML onclick="" resolves on window only).
+window.gsuLaunch = gsuLaunch;
+window.gsuCleanup = gsuCleanup;
+window.gsuReopenSignup = gsuReopenSignup;
+
+async function runGsuScan() {
+  const btn = document.getElementById('gsuScanBtn');
+  if (!btn) return;
+  if (window._gsuScanRunning) { showToast(_t('gsuScanHint'), 'info'); return; }
+  btn.disabled = true;
+  // Save original button content (with i18n spans) so we can restore it exactly
+  if (!window._gsuScanBtnOrig) window._gsuScanBtnOrig = btn.innerHTML;
+  const origHTML = window._gsuScanBtnOrig;
+  btn.innerHTML = `⏳ ${_t('gsuScanning') || 'Scanning'} (${_t('gsuStartingShort') || 'starting'})...`;
+  showToast(_t('gsuScanHint'), 'info');
+  try {
+    const res = await fetch('/api/google-signup/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // Tuned defaults for speed: 120 candidates split into 12 parallel batches × 5s timeout
+      body: JSON.stringify({ sample: 120, batch: 12, timeout: 5000 }),
+    });
+    if (res.status === 409) {
+      showToast(_t('gsuScanAlreadyRunning') || 'Already running, wait...', 'warn');
+      return;
+    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const info = await res.json();
+    // 202 = immediate return; real progress comes via WS gsu-scan-* messages handled above
+    if (res.status === 202) {
+      btn.innerHTML = `⏳ 1% · ${_t('gsuPhaseFetching') || 'Fetching sources...'}`;
+    }
+  } catch (e) {
+    showToast(_t('gsuScanFailed') + (e.message ? ' · ' + e.message : ''), 'error');
+    runGsuScanCleanup();
+  }
+
+  function noop(){}
+}
+// Restore button state + meta base text after scan finishes (success or error)
+// Called from both gsu-scan-complete and gsu-scan-error WS handlers + local catch path
+window.runGsuScanCleanup = function () {
+  const btn = document.getElementById('gsuScanBtn');
+  if (btn) {
+    btn.disabled = false;
+    if (window._gsuScanBtnOrig) btn.innerHTML = window._gsuScanBtnOrig;
+  }
+  const meta = document.getElementById('gsuListMeta');
+  if (meta && meta._originalBaseText) {
+    meta.textContent = meta._originalBaseText;
+    meta._originalBaseText = null;
+  }
+  if (typeof applyI18n === 'function') applyI18n();
+};
+window._gsuScanRunning = false;
+
+// ===== Google OAuth Authentication =====
+async function loadGoogleAuthStatus() {
+  try {
+    const res = await fetch('/api/auth/status');
+    const data = await res.json();
+    const loginBtn = document.getElementById('googleLoginBtn');
+    const userChip = document.getElementById('googleUserChip');
+    if (data.loggedIn && data.user) {
+      loginBtn.style.display = 'none';
+      userChip.style.display = 'flex';
+      const avatar = document.getElementById('googleUserAvatar');
+      const dropdownAvatar = document.getElementById('googleUserDropdownAvatar');
+      avatar.src = data.user.picture || '';
+      dropdownAvatar.src = data.user.picture || '';
+      document.getElementById('googleUserName').textContent = data.user.name || data.user.email;
+      document.getElementById('googleUserDropdownName').textContent = data.user.name || '';
+      document.getElementById('googleUserDropdownEmail').textContent = data.user.email || '';
+    } else {
+      loginBtn.style.display = data.googleConfigured ? 'inline-flex' : 'none';
+      userChip.style.display = 'none';
+    }
+    // Also update settings page status
+    const statusEl = document.getElementById('googleOAuthStatus');
+    if (statusEl) {
+      const labelEl = statusEl.querySelector('.setting-label');
+      if (data.googleConfigured) {
+        labelEl.textContent = data.loggedIn ? '✓ ' + (data.user.name || _t('authLoggedIn')) : '✓ ' + _t('authConfigured');
+        labelEl.style.color = 'var(--success, #22c55e)';
+      } else {
+        labelEl.textContent = _t('googleOAuthNotConfigured');
+        labelEl.style.color = 'var(--text-muted, #888)';
+      }
+    }
+  } catch (e) { console.warn('loadGoogleAuthStatus failed', e); }
+}
+
+function checkAuthErrorInUrl() {
+  const params = new URLSearchParams(location.search);
+  const err = params.get('auth_error');
+  const ok = params.get('auth_success');
+  if (err || ok) {
+    history.replaceState(null, '', location.pathname);
+    if (err) {
+      const msgs = {
+        no_config: _t('authErrorNoConfig'),
+        denied: _t('authErrorDenied'),
+        token_failed: _t('authErrorTokenFailed'),
+        exception: _t('authErrorException'),
+      };
+      showToast(msgs[err] || _t('authErrorDefault'), 'error');
+    } else if (ok) {
+      showToast(_t('authLoginSuccess'), 'success');
+    }
+    loadGoogleAuthStatus();
+  }
+}
+
+function googleUserMenuToggle(e) {
+  e.stopPropagation();
+  const dropdown = document.getElementById('googleUserDropdown');
+  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+}
+
+document.addEventListener('click', (e) => {
+  const chip = document.getElementById('googleUserChip');
+  const dropdown = document.getElementById('googleUserDropdown');
+  if (chip && dropdown && !chip.contains(e.target)) {
+    dropdown.style.display = 'none';
+  }
+});
+
+async function googleLogout(e) {
+  e.stopPropagation();
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    document.getElementById('googleUserDropdown').style.display = 'none';
+    showToast(_t('authLoggedOut'), 'success');
+    loadGoogleAuthStatus();
+  } catch (e) { showToast(_t('authLogoutFailed'), 'error'); }
+}
+
+async function saveGoogleOAuthConfig() {
+  const clientId = document.getElementById('googleClientId').value.trim();
+  const clientSecret = document.getElementById('googleClientSecret').value.trim();
+  if (!clientId || !clientSecret) {
+    showToast(_t('authConfigRequired'), 'error');
+    return;
+  }
+  try {
+    const res = await fetch('/api/auth/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId, clientSecret }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(_t('authConfigSaved'), 'success');
+      document.getElementById('googleClientSecret').value = '';
+      loadGoogleAuthStatus();
+    } else {
+      showToast(data.error || _t('authConfigSaveFailed'), 'error');
+    }
+  } catch (e) {
+    showToast(_t('authConfigSaveFailed'), 'error');
+  }
+}
+
+async function loadGoogleOAuthStatus() {
+  // Display the redirect URI for setup guide
+  const redirectUriEl = document.getElementById('googleRedirectUri');
+  if (redirectUriEl) {
+    redirectUriEl.textContent = location.origin + '/api/auth/google/callback';
+  }
+  loadGoogleAuthStatus();
+}
 
 function initTheme() {
   const saved = localStorage.getItem('theme') || 'dark';
@@ -2526,9 +3062,10 @@ function switchTab(tabName) {
     setTimeout(drawCharts, 100);
   }
   if (tabName === 'logs') loadLogs();
-  if (tabName === 'settings') loadDiagnostics();
+  if (tabName === 'settings') { loadDiagnostics(); loadGoogleOAuthStatus(); }
   if (tabName === 'warp') refreshWarpStatus();
   if (tabName === 'proxies') renderProxyTable();
+  if (tabName === 'googlesignup') { loadGsuProxies(); }
 }
 
 function initWebSocket() {
@@ -2580,9 +3117,62 @@ function handleWebSocketMessage(event) {
         toast('warn', _t('allDisconnected'));
         loadStatus();
         break;
+      // Google Signup fast scan progress — broadcast per-batch from /api/google-signup/scan
+      case 'gsu-scan-started':
+        window._gsuScanRunning = true;
+        gsuUpdateScanStatus(0, 0, 0, `⏳ ${_t('gsuScanStarting') || 'Starting...'}`);
+        break;
+      case 'gsu-scan-phase':
+        if (data.phase === 1 && data.done) {
+          gsuUpdateScanStatus(0, data.count || 0, 0,
+            `🌐 ${_t('gsuPhaseFetch') || 'Fetched'} ${data.count} ${_t('gsuPhaseCandidates') || 'candidates'}`);
+        } else if (data.phase === 1) {
+          gsuUpdateScanStatus(0, 0, 0, `🌐 ${_t('gsuPhaseFetching') || 'Fetching sources...'}`);
+        } else if (data.phase === 2) {
+          gsuUpdateScanStatus(0, data.total || 0, 0,
+            `🔬 ${_t('gsuPhaseValidating') || 'Validating Google capability...'} (${data.total || '?'})`);
+        } else if (data.phase === 3) {
+          gsuUpdateScanStatus(1, 1, data.count || 0,
+            `💾 ${_t('gsuPhaseSaving') || 'Saving'} ${data.count}...`);
+        }
+        break;
+      case 'gsu-scan-progress':
+        window._gsuScanRunning = true;
+        gsuUpdateScanStatus(data.done || 0, data.total || 1, data.found || 0,
+          `🔎 ${data.done || 0}/${data.total || '?'} · ${_t('gsuFoundSoFar') || 'Found'} ${data.found || 0}`);
+        break;
+      case 'gsu-scan-complete':
+        window._gsuScanRunning = false;
+        gsuUpdateScanStatus(data.total || 1, data.total || 1, data.found || 0,
+          `✅ ${_t('gsuScanDone') || 'Done'}: ${data.found || 0}/${data.total || 0}${data.savedTotal ? ' · ' + _t('gsuSaved') + ' ' + data.savedTotal : ''} · ${((data.elapsedMs||0)/1000).toFixed(1)}s`);
+        toast('info', _t('gsuScanDone') + `${data.found ? ' · ' + _t('gsuFoundN', data.found) : ''}`);
+        // Refresh the list so users see newly saved Google-capable proxies immediately
+        if (typeof loadGsuProxies === 'function') loadGsuProxies();
+        if (typeof runGsuScanCleanup === 'function') runGsuScanCleanup();
+        break;
+      case 'gsu-scan-error':
+        window._gsuScanRunning = false;
+        toast('error', _t('gsuScanFailed') + (data.error ? ` · ${data.error}` : ''));
+        if (typeof runGsuScanCleanup === 'function') runGsuScanCleanup();
+        break;
     }
   } catch (e) {
     console.error('WS parse error', e);
+  }
+}
+
+// Render realtime GSU scan progress into: scan button + gsuListMeta header
+function gsuUpdateScanStatus(done, total, found, textExtra) {
+  const btn = document.getElementById('gsuScanBtn');
+  const meta = document.getElementById('gsuListMeta');
+  const pct = total > 0 ? Math.min(100, Math.round(done / total * 100)) : 0;
+  const label = `⏳ ${pct}%${textExtra ? ' · ' + textExtra : ''}`;
+  if (btn) { btn.disabled = true; btn.innerHTML = label; }
+  if (meta) {
+    // Strip any previously appended progress tag (so we don't pile up)
+    const baseText = meta._originalBaseText
+      || (meta._originalBaseText = meta.textContent.replace(/\s*\[.*?\]\s*$/, ''));
+    meta.textContent = baseText + `   [${pct}% ${_t('gsuScanning') || 'Scanning'} · ${found} ${_t('gsuFoundSuffix') || 'found'}]`;
   }
 }
 
@@ -3657,7 +4247,9 @@ function toast(type, message) {
   const container = document.getElementById('toastContainer');
   if (!container) return;
   const el = document.createElement('div');
-  el.className = 'toast toast-' + type + ' show';
+  // Map convenience aliases to real CSS class names
+  const clsType = ({ info: 'info', success: 'success', warn: 'warn', warning: 'warn', error: 'err', err: 'err' }[type] || type || 'info');
+  el.className = 'toast toast-' + clsType + ' show';
   el.textContent = message;
   el.style.opacity = '1';
   el.style.transform = 'translateY(0)';
@@ -3668,6 +4260,12 @@ function toast(type, message) {
     setTimeout(() => { if (el.parentNode) el.remove(); }, 400);
   }, 4000);
 }
+
+// Compatibility shim: multiple modules (GSU scan / auth flow) call showToast(...)
+// while the project's canonical helper is toast(type, message). Alias here so
+// existing callers keep working without a bulk rename, and future callers can use either.
+function showToast(message, type) { toast(type || 'info', message); }
+window.showToast = showToast;
 
 function updateFooterTime() {
   const now = new Date();
@@ -3709,9 +4307,19 @@ window.addEventListener('load', () => {
   };
 
   function applyI18n() {
+    var SAFE_HTML_TAGS = /<(b|i|u|strong|em|br|span|code|kbd)\b[^>]*>/i;
     document.querySelectorAll('[data-i18n]').forEach(function(el) {
       var key = el.getAttribute('data-i18n');
-      if (translations[key]) el.textContent = translations[key];
+      var value = translations[key];
+      if (value === undefined || value === null) return;
+      value = String(value);
+      // Use innerHTML only when the translation explicitly contains known-safe inline HTML tags,
+      // otherwise default to textContent to avoid accidental HTML injection.
+      if (SAFE_HTML_TAGS.test(value)) {
+        el.innerHTML = value;
+      } else {
+        el.textContent = value;
+      }
     });
     document.querySelectorAll('[data-i18n-title]').forEach(function(el) {
       var key = el.getAttribute('data-i18n-title');
@@ -3722,6 +4330,7 @@ window.addEventListener('load', () => {
       if (translations[key]) el.setAttribute('placeholder', translations[key]);
     });
   }
+  window.applyI18n = applyI18n;
 
   function updateLangLabel() {
     var label = document.getElementById('langLabel');
@@ -3751,6 +4360,11 @@ window.addEventListener('load', () => {
       if (typeof _doRenderProxyTable === 'function') _doRenderProxyTable();
       if (typeof _doRenderTopProxies === 'function') _doRenderTopProxies();
       if (typeof drawCharts === 'function') drawCharts();
+      if (typeof renderGsuList === 'function' && (gsuProxiesCache && gsuProxiesCache.length)) {
+        renderGsuList();
+        const meta = document.getElementById('gsuListMeta');
+        if (meta) meta.textContent = `${gsuProxiesCache.length} ${_t('gsuCountSuffix')}`;
+      }
     }, 80);
 
     // Refresh active tab's dynamic content

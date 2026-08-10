@@ -4,6 +4,21 @@ const fs = require('fs');
 const path = require('path');
 const { WebSocketServer } = require('ws');
 
+// ===== Process safety net =====
+// Prevent background-IIFE crashes (auto-find, test-all-free) from taking the whole process down.
+// Without these, a single unhandled rejection kills the GUI server and user has to restart manually.
+process.on('unhandledRejection', (reason, promise) => {
+  const msg = reason?.message || String(reason);
+  logger?.error?.('UNHANDLED_REJECTION: ' + msg, { stack: reason?.stack?.slice(0, 400) });
+  console.error('[UnhandledRejection]', msg);
+});
+process.on('uncaughtException', (err) => {
+  try { logger?.error?.('UNCAUGHT_EXCEPTION: ' + err.message, { stack: err.stack?.slice(0, 400) }); } catch {}
+  console.error('[UncaughtException]', err.message);
+  // Only for truly unrecoverable memory corruption; generally keep serving.
+  // Explicit comment: exit only on very specific signals; here we let the process continue.
+});
+
 // Reuse project modules
 const HOME = require('os').homedir();
 const PROJECT_ROOT = path.join(__dirname, '..');
@@ -351,6 +366,7 @@ async function fetchProxies() {
 let freeProxyCache = { proxies: [], time: 0, fetching: false };
 const PROXY_CACHE_TTL = 300000; // 5 min
 let autoFinding = false; // auto-find task lock
+let gsuScanLock = false; // google-signup fast scan task lock (module-level so it works across requests)
 
 async function getFreeProxies(force = false) {
   const now = Date.now();
@@ -507,15 +523,23 @@ function parseBody(req) {
     let body = '';
     req.on('data', c => body += c);
     req.on('end', () => {
-      try { resolve(JSON.parse(body)); } catch { resolve({}); }
+      try {
+        const parsed = JSON.parse(body);
+        // Defensive: ensure downstream destructuring never sees null / primitives
+        resolve(parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {});
+      } catch { resolve({}); }
     });
   });
 }
 
 async function handleRequest(req, res) {
+  // Declared OUTSIDE try so the catch block can always safely log them
+  // (otherwise a crash inside `new URL(...)` → catch references const-in-try → ReferenceError → no response at all)
+  let pathname = '/';
+  let reqUrl = req.url || '/';
   try {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const pathname = url.pathname;
+  const url = new URL(reqUrl, `http://${req.headers.host}`);
+  pathname = url.pathname;
 
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -711,12 +735,362 @@ async function handleRequest(req, res) {
     }
   }
 
+  // ===== Google Signup Assistant =====
+  const GOOGLE_SIGNUP_PROXIES_FILE = path.join(APPS_DIR, 'google-signup-proxies.json');
+
+  if (pathname === '/api/google-signup/proxies' && req.method === 'GET') {
+    let saved = [];
+    try {
+      if (fs.existsSync(GOOGLE_SIGNUP_PROXIES_FILE)) {
+        saved = JSON.parse(fs.readFileSync(GOOGLE_SIGNUP_PROXIES_FILE, 'utf8'));
+      }
+    } catch {}
+    // Fallback: built-in proxies that are known to be good for general Google access
+    const builtinCandidates = [
+      { host: '115.239.234.43', port: 7302, type: 'http', avgLatency: 108, note: '⭐ Fastest · Google verified', source: 'builtin-top', googleSignupScore: 5 },
+      { host: '59.110.63.234', port: 80, type: 'http', avgLatency: 188, note: 'Sub-200ms stable', source: 'builtin-top', googleSignupScore: 4 },
+      { host: '39.109.113.97', port: 4090, type: 'http', avgLatency: 434, note: 'Asia-focused', source: 'builtin-asia', googleSignupScore: 4 },
+    ];
+    // Combine: saved first (they passed the strict test), then builtin candidates as fallback
+    const builtinKeys = new Set(saved.map(p => p.host + ':' + p.port));
+    const fallback = builtinCandidates.filter(p => !builtinKeys.has(p.host + ':' + p.port));
+    return sendJSON(res, { proxies: [...saved, ...fallback] });
+  }
+
+  if (pathname === '/api/google-signup/launch' && req.method === 'POST') {
+    const body = await parseBody(req);
+    const hostRaw = body.host;
+    const portRaw = body.port;
+    const typeRaw = body.type;
+    const localPortRaw = body.localPort ?? 1080;
+
+    // Strict contract validation
+    if (typeof hostRaw !== 'string' || !hostRaw.trim()) return sendJSON(res, { success: false, error: 'invalid host' }, 400);
+    if (!/^[a-zA-Z0-9.\-:_]+$/.test(hostRaw)) return sendJSON(res, { success: false, error: 'invalid host format' }, 400);
+    if (typeof portRaw === 'string' ? !/^\d+$/.test(portRaw) : (typeof portRaw !== 'number' || !Number.isInteger(portRaw))) {
+      return sendJSON(res, { success: false, error: 'invalid port' }, 400);
+    }
+    const portNum = parseInt(portRaw, 10);
+    if (portNum < 1 || portNum > 65535) return sendJSON(res, { success: false, error: 'port out of range (1-65535)' }, 400);
+    if (typeof typeRaw !== 'string' || !/^(http|https|socks4|socks5)$/i.test(typeRaw)) {
+      return sendJSON(res, { success: false, error: 'invalid type (must be http/https/socks4/socks5)' }, 400);
+    }
+    const host = hostRaw.trim();
+    const type = typeRaw.toLowerCase();
+    const proto = type.startsWith('socks') ? type : 'http';
+    let localPort = 1080;
+    if (typeof localPortRaw === 'number' && Number.isInteger(localPortRaw) && localPortRaw >= 1 && localPortRaw <= 65535) {
+      localPort = localPortRaw;
+    } else if (typeof localPortRaw === 'string' && /^\d+$/.test(localPortRaw) && parseInt(localPortRaw) >= 1 && parseInt(localPortRaw) <= 65535) {
+      localPort = parseInt(localPortRaw, 10);
+    }
+
+    const upstreamUrl = `${proto}://${host}:${portNum}`;
+    const steps = [];
+    // Track side effects that need rollback on error
+    let systemProxySet = false;
+    let startedInstance = null;
+    const previousRunning = !!proxyServerInstance;
+    try {
+      // Step 1: Stop existing if running
+      if (previousRunning) {
+        try { proxyServerInstance.stop(); } catch {}
+        proxyServerInstance = null;
+      }
+      steps.push({ step: 'stop_old', ok: true });
+
+      // Step 2: Start proxy server with specified upstream
+      startedInstance = new ProxyServer(localPort, { host, port: portNum, type: proto });
+      proxyServerInstance = startedInstance;
+      const ok = await startedInstance.start();
+      serverRunning = !!ok;
+      serverPort = startedInstance.port;
+      if (!ok) throw new Error(`Proxy server failed to start on port ${localPort}`);
+      steps.push({ step: 'start_proxy', ok: true, port: serverPort, upstream: upstreamUrl });
+
+      // Step 3: Set Windows system proxy (only on Windows)
+      let systemProxyOk = false;
+      if (IS_WIN) {
+        systemProxyOk = !!setSystemProxy(true, serverPort);
+        systemProxySet = systemProxyOk;
+      }
+      steps.push({ step: 'system_proxy', ok: systemProxyOk, platform: os.platform() });
+
+      // Step 4: Open browser to Google signup page
+      const signupUrl = 'https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp';
+      let opened = false;
+      try {
+        const cmd = IS_WIN
+          ? `start "" "${signupUrl}"`
+          : os.platform() === 'darwin'
+            ? `open "${signupUrl}"`
+            : `xdg-open "${signupUrl}"`;
+        require('child_process').execSync(cmd, { stdio: 'ignore', timeout: 8000 });
+        opened = true;
+      } catch {}
+      steps.push({ step: 'open_browser', ok: opened, url: signupUrl });
+
+      logger.info(`Google Signup: launched via ${host}:${portNum} → local :${serverPort}`);
+      return sendJSON(res, {
+        success: true,
+        port: serverPort,
+        upstream: { host, port: portNum, type: proto },
+        systemProxy: systemProxyOk,
+        browserOpened: opened,
+        signupUrl,
+        steps,
+        cleanup: { disableSystemProxy: IS_WIN ? 'Click "Stop & Cleanup" or use Settings → System Proxy' : null, stopServerUrl: '/api/google-signup/cleanup' }
+      });
+    } catch (e) {
+      // ========== COMPENSATION ROLLBACK ==========
+      // If we partially applied state, undo it now so user isn't left with broken system proxy
+      let rollback = { proxyStopped: false, systemProxyCleared: false };
+      if (systemProxySet && IS_WIN) {
+        try { setSystemProxy(false); rollback.systemProxyCleared = true; } catch {}
+      }
+      if (startedInstance && proxyServerInstance === startedInstance) {
+        try { startedInstance.stop(); rollback.proxyStopped = true; } catch {}
+        proxyServerInstance = previousRunning ? null : null; // ensure cleared either way
+        serverRunning = false;
+      }
+      logger.error('Google Signup launch failed: ' + e.message + ' (rolled back: ' + JSON.stringify(rollback) + ')');
+      return sendJSON(res, { success: false, error: e.message, steps, rollback }, 500);
+    }
+  }
+
+  if (pathname === '/api/google-signup/cleanup' && req.method === 'POST') {
+    // Stop proxy and clear system proxy
+    try {
+      if (proxyServerInstance) {
+        try { proxyServerInstance.stop(); } catch {}
+        proxyServerInstance = null;
+      }
+      serverRunning = false;
+    } catch {}
+    if (IS_WIN) setSystemProxy(false);
+    return sendJSON(res, { success: true });
+  }
+
+  // ========== Fast Google Signup Proxy Scanning (non-blocking + progress via WS) ==========
+  // Previously the "search clean proxies" button called /api/proxy/fetch-free synchronously,
+  // which blocked the HTTP request for 30-60 seconds and made the UI look frozen.
+  // This new API:
+  //   • Returns 202 Accepted in <100ms
+  //   • Runs scan in background with progressive stages (fetch → light validate → save)
+  //   • Broadcasts 'gsu-scan-progress' via WebSocket so UI can show N/M, ETA, and found-so-far
+  //   • Lightweight 4-layer validation (not the full 7-layer of find-google-signup-proxies.js)
+  //     so you see results in ~10-25s instead of minutes.
+  if (pathname === '/api/google-signup/scan' && req.method === 'POST') {
+    if (gsuScanLock) {
+      return sendJSON(res, { success: false, error: 'already running' }, 409);
+    }
+    gsuScanLock = true;
+    const params = await parseBody(req);
+    const SAMPLE = Math.max(20, Math.min(300, parseInt(params.sample) || 120));
+    const BATCH = Math.max(4, Math.min(25, parseInt(params.batch) || 12));
+    const TIMEOUT = Math.max(1500, Math.min(12000, parseInt(params.timeout) || 5000));
+
+    // Kick off background
+    (async () => {
+      const t0 = Date.now();
+      try {
+        broadcast({ type: 'gsu-scan-started', sample: SAMPLE, batch: BATCH, timeout: TIMEOUT });
+
+        // --- Phase 1: Fetch raw sources (already parallel in proxy-core, max 8s per source) ---
+        broadcast({ type: 'gsu-scan-phase', phase: 1, label: 'fetch_sources', detail: 'Fetching proxy sources...' });
+        let pool;
+        try {
+          const cache = await getFreeProxies(true);
+          pool = cache.proxies;
+        } catch (e) {
+          pool = [];
+        }
+        broadcast({ type: 'gsu-scan-phase', phase: 1, done: true, count: pool.length, elapsedMs: Date.now() - t0 });
+        if (!pool.length) {
+          broadcast({ type: 'gsu-scan-complete', found: 0, total: 0, elapsedMs: Date.now() - t0 });
+          return;
+        }
+
+        // --- Phase 1b: Dedupe, prefer HTTP proxies (most Google-capable ones are HTTP), sample top ---
+        const seen = new Set();
+        const deduped = [];
+        for (const p of pool) {
+          const k = p.host + ':' + p.port;
+          if (seen.has(k)) continue;
+          seen.add(k);
+          deduped.push(p);
+        }
+        // Prioritize HTTP proxies and shuffle a bit so we don't always test same source-order top-biased IPs
+        const httpFirst = deduped.filter(p => !p.type || p.type.toLowerCase().startsWith('http'));
+        const socks = deduped.filter(p => p.type && p.type.toLowerCase().startsWith('socks'));
+        const prioritized = [...httpFirst, ...socks].slice(0, SAMPLE);
+
+        // --- Phase 2: Lightweight 4-layer Google capability check (batched, parallel per batch) ---
+        broadcast({ type: 'gsu-scan-phase', phase: 2, done: false, total: prioritized.length, label: 'validate_google', detail: 'Testing Google access...' });
+
+        // Reusable agent creator (mirrors testProxy logic but avoids duplication)
+        const _agentCache = new Map();
+        function makeAgent(p) {
+          const key = (p.host||'') + ':' + (p.port||'') + '/' + (p.type||'http');
+          if (_agentCache.has(key)) return _agentCache.get(key);
+          const pt = (p.type || 'http').toLowerCase();
+          let agent = null;
+          try {
+            if (pt.startsWith('socks')) {
+              const { SocksProxyAgent } = require('socks-proxy-agent');
+              const proto = pt === 'socks4' ? 'socks4' : 'socks5';
+              agent = new SocksProxyAgent(`${proto}://${p.host}:${p.port}`);
+            } else {
+              const { HttpProxyAgent } = require('http-proxy-agent');
+              agent = new HttpProxyAgent(`http://${p.host}:${p.port}`);
+            }
+          } catch {}
+          if (agent) _agentCache.set(key, agent);
+          return agent;
+        }
+        function checkThrough(p, url, checkStatus = true) {
+          const agent = makeAgent(p);
+          if (!agent) return Promise.resolve({ ok: false, status: 0, ms: 0 });
+          return new Promise((resolve) => {
+            const s = Date.now();
+            let done = false;
+            // Declare first so the timeout callback never hits TDZ even if timer fires before https.get returns.
+            let req = null;
+            let to = setTimeout(() => {
+              if (done) return;
+              done = true;
+              if (req) try { req.destroy(); } catch {}
+              resolve({ ok: false, status: 0, ms: TIMEOUT });
+            }, TIMEOUT);
+            req = https.get(url, {
+              agent, timeout: TIMEOUT, rejectUnauthorized: false,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+                'Accept-Language': 'en-US,en;q=0.9',
+              }
+            }, (res) => {
+              res.on('data', () => {}); // drain so sockets free up
+              res.on('end', () => {
+                if (done) return;
+                done = true;
+                clearTimeout(to);
+                const ok = checkStatus ? (res.statusCode >= 200 && res.statusCode < 400) : true;
+                resolve({ ok, status: res.statusCode, ms: Date.now() - s });
+              });
+            });
+            req.on('error', () => {
+              if (done) return;
+              done = true;
+              clearTimeout(to);
+              resolve({ ok: false, status: 0, ms: Date.now() - s });
+            });
+            req.on('timeout', () => { try { req.destroy(); } catch {} });
+          });
+        }
+
+        const GOOGLE_CHECKS = [
+          { name: 'L1_ipify',    url: 'https://api.ipify.org?format=json',                          weight: 2 },
+          { name: 'L2_google',   url: 'https://accounts.google.com/.well-known/openid-configuration', weight: 2 },
+          { name: 'L3_gstatic',  url: 'https://www.gstatic.com/generate_204',                         weight: 1 },
+          { name: 'L4_myacct',   url: 'https://myaccount.google.com/',                                 weight: 1 },
+        ];
+
+        const passed = [];
+        let processed = 0;
+        for (let i = 0; i < prioritized.length; i += BATCH) {
+          const batch = prioritized.slice(i, i + BATCH);
+          const batchResults = await Promise.all(batch.map(async (p) => {
+            let score = 0;
+            let latencySum = 0, latencyCnt = 0;
+            // L1 first (fastest): if IP check fails > 3s, skip heavier Google checks to speed up
+            const l1 = await checkThrough(p, GOOGLE_CHECKS[0].url);
+            if (l1.ok) { score += GOOGLE_CHECKS[0].weight; latencySum += l1.ms; latencyCnt++; }
+            // Early exit: if L1 > 3000ms, proxy is too slow, assume no Google capability
+            if (!l1.ok || l1.ms > 3000) return null;
+
+            // L2-L4 parallel (the expensive ones) — parallel saves ~2/3 time
+            const rest = await Promise.all(GOOGLE_CHECKS.slice(1).map(c => checkThrough(p, c.url)));
+            for (let k = 0; k < rest.length; k++) {
+              const r = rest[k];
+              if (r.ok) {
+                score += GOOGLE_CHECKS[k+1].weight;
+                latencySum += r.ms;
+                latencyCnt++;
+              }
+            }
+            if (score < 4) return null;
+            const avg = latencyCnt > 0 ? Math.round(latencySum / latencyCnt) : Math.round(TIMEOUT/2);
+            return {
+              host: p.host, port: p.port, type: (p.type||'http').toLowerCase() === 'socks5' ? 'socks5'
+                  : (p.type||'http').toLowerCase() === 'socks4' ? 'socks4' : 'http',
+              avgLatency: avg,
+              source: p.source || 'gsu-scan',
+              googleSignupScore: score,
+              note: score >= 6 ? '⭐⭐⭐⭐⭐ Google-ready' : score >= 5 ? '⭐⭐⭐⭐ Good' : '⭐⭐⭐ Passed',
+              foundAt: Date.now(),
+            };
+          }));
+          for (const r of batchResults) if (r) passed.push(r);
+          processed += batch.length;
+          // Limit memory + speed: once we have 8+ solid (score>=4) candidates, finish early
+          broadcast({
+            type: 'gsu-scan-progress',
+            done: processed,
+            total: prioritized.length,
+            found: passed.length,
+            top: passed.slice(0, 5).map(p => ({ host: p.host, port: p.port, avg: p.avgLatency, score: p.googleSignupScore })),
+            elapsedMs: Date.now() - t0,
+          });
+          if (passed.length >= 8) break;
+        }
+
+        // --- Phase 3: Merge into saved list (top scores first, dedupe by host:port) ---
+        broadcast({ type: 'gsu-scan-phase', phase: 3, label: 'saving', count: passed.length });
+        let saved = [];
+        try { if (fs.existsSync(GOOGLE_SIGNUP_PROXIES_FILE)) saved = JSON.parse(fs.readFileSync(GOOGLE_SIGNUP_PROXIES_FILE, 'utf8')); } catch {}
+        if (!Array.isArray(saved)) saved = [];
+        const byKey = new Map();
+        for (const p of saved) byKey.set(p.host + ':' + p.port, p);
+        for (const p of passed) byKey.set(p.host + ':' + p.port, p);
+        const merged = Array.from(byKey.values());
+        merged.sort((a, b) => ((b.googleSignupScore||0) - (a.googleSignupScore||0)) || ((a.avgLatency||99999) - (b.avgLatency||99999)));
+        try { fs.writeFileSync(GOOGLE_SIGNUP_PROXIES_FILE, JSON.stringify(merged.slice(0, 40), null, 2)); } catch {}
+        broadcast({
+          type: 'gsu-scan-complete',
+          found: passed.length,
+          total: processed,
+          savedTotal: merged.length,
+          elapsedMs: Date.now() - t0,
+          top: merged.slice(0, 5).map(p => ({ host: p.host, port: p.port, avg: p.avgLatency, score: p.googleSignupScore, note: p.note })),
+        });
+        logger.info(`GSU Scan: ${passed.length} Google-capable / ${processed} tested in ${((Date.now()-t0)/1000).toFixed(1)}s`);
+      } catch (e) {
+        logger.error('GSU Scan crashed: ' + e.message, { stack: e.stack?.slice(0, 400) });
+        try { broadcast({ type: 'gsu-scan-error', error: e.message }); } catch {}
+      } finally {
+        gsuScanLock = false;
+        // Agents are simple objects; sockets are closed via req.destroy(); nothing here to clean up explicitly
+      }
+    })();
+
+    return sendJSON(res, { success: true, status: 'started', lock: false, sample: SAMPLE, batch: BATCH, timeout: TIMEOUT }, 202);
+  }
+
   if (pathname === '/api/history') {
     return sendJSON(res, { tests: stats.getHistory({ limit: 100 }) });
   }
 
   if (pathname === '/api/proxy/fetch-free' && req.method === 'GET') {
-    const cache = await getFreeProxies();
+    const useAsync = url.searchParams.get('async') === '1' || url.searchParams.get('async') === 'true';
+    const force = url.searchParams.get('force') === '1' || url.searchParams.get('force') === 'true';
+    if (useAsync) {
+      // Fire-and-forget refresh; returns immediately. Useful when UI just wants to trigger refresh
+      // without blocking on the full multi-source fetch (~8-30s). Completion is announced via WS
+      // `free-proxy-update` (already emitted by getFreeProxies internally).
+      (async () => { try { await getFreeProxies(force); } catch (e) { logger.debug('fetch-free async: ' + e.message); } })();
+      return sendJSON(res, { status: 'started', note: 'Refresh running in background; listen for WS free-proxy-update or poll this endpoint' }, 202);
+    }
+    const cache = await getFreeProxies(force);
     return sendJSON(res, { count: cache.proxies.length, proxies: cache.proxies.slice(0, 200) });
   }
 
@@ -1313,21 +1687,206 @@ async function handleRequest(req, res) {
     }
   }
 
-  // Static files
+  // ===== Google OAuth Authentication =====
+  const GOOGLE_CONFIG_FILE = path.join(require('os').homedir(), '.free-proxy-tool', 'google-oauth.json');
+  function loadGoogleOAuthConfig() {
+    try { return JSON.parse(fs.readFileSync(GOOGLE_CONFIG_FILE, 'utf8')); } catch { return { clientId: '', clientSecret: '' }; }
+  }
+  function saveGoogleOAuthConfig(cfg) {
+    const dir = path.dirname(GOOGLE_CONFIG_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(GOOGLE_CONFIG_FILE, JSON.stringify(cfg, null, 2));
+  }
+
+  // Simple session store (token → user info, expires in 7 days)
+  const sessions = new Map();
+  const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
+  function createSession(userInfo) {
+    const token = require('crypto').randomBytes(32).toString('hex');
+    sessions.set(token, { ...userInfo, createdAt: Date.now() });
+    return token;
+  }
+  function getSession(token) {
+    if (!token) return null;
+    const s = sessions.get(token);
+    if (!s) return null;
+    if (Date.now() - s.createdAt > SESSION_TTL) { sessions.delete(token); return null; }
+    return s;
+  }
+  function destroySession(token) { sessions.delete(token); }
+
+  function getSessionToken(req) {
+    const cookie = req.headers.cookie || '';
+    const m = cookie.match(/fpt_session=([^;]+)/);
+    return m ? m[1] : null;
+  }
+
+  // GET /api/auth/google — redirect to Google OAuth consent screen
+  if (pathname === '/api/auth/google' && req.method === 'GET') {
+    const cfg = loadGoogleOAuthConfig();
+    if (!cfg.clientId) {
+      res.writeHead(302, { Location: '/?auth_error=no_config' });
+      res.end();
+      return;
+    }
+    const host = req.headers.host || '127.0.0.1:3000';
+    const redirectUri = `http://${host}/api/auth/google/callback`;
+    const state = require('crypto').randomBytes(16).toString('hex');
+    const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({
+      client_id: cfg.clientId,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: 'openid email profile',
+      state,
+      access_type: 'offline',
+      prompt: 'consent',
+    }).toString();
+    res.writeHead(302, { Location: authUrl, 'Set-Cookie': `fpt_oauth_state=${state}; Path=/; HttpOnly; Max-Age=600` });
+    res.end();
+    return;
+  }
+
+  // GET /api/auth/google/callback — handle Google's redirect
+  if (pathname === '/api/auth/google/callback' && req.method === 'GET') {
+    const cfg = loadGoogleOAuthConfig();
+    const code = url.searchParams.get('code');
+    const state = url.searchParams.get('state');
+    const error = url.searchParams.get('error');
+
+    if (error || !code) {
+      res.writeHead(302, { Location: '/?auth_error=denied' });
+      res.end();
+      return;
+    }
+    const host = req.headers.host || '127.0.0.1:3000';
+    const redirectUri = `http://${host}/api/auth/google/callback`;
+
+    // Exchange code for tokens
+    try {
+      const tokenData = await new Promise((resolve, reject) => {
+        const postData = new URLSearchParams({
+          code, client_id: cfg.clientId, client_secret: cfg.clientSecret,
+          redirect_uri: redirectUri, grant_type: 'authorization_code',
+        }).toString();
+        const tokenReq = https.request('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) },
+        }, tRes => {
+          let d = ''; tRes.on('data', c => d += c); tRes.on('end', () => resolve({ status: tRes.statusCode, body: d }));
+        });
+        tokenReq.on('error', reject);
+        tokenReq.write(postData);
+        tokenReq.end();
+      });
+
+      if (tokenData.status !== 200) {
+        res.writeHead(302, { Location: '/?auth_error=token_failed' });
+        res.end();
+        return;
+      }
+
+      const tokens = JSON.parse(tokenData.body);
+
+      // Get user info
+      const userInfoData = await new Promise((resolve, reject) => {
+        https.get('https://www.googleapis.com/oauth2/v2/userinfo', {
+          headers: { Authorization: `Bearer ${tokens.access_token}` },
+        }, uRes => {
+          let d = ''; uRes.on('data', c => d += c); uRes.on('end', () => resolve({ status: uRes.statusCode, body: d }));
+        }).on('error', reject);
+      });
+
+      const googleUser = JSON.parse(userInfoData.body);
+      const sessionToken = createSession({
+        id: googleUser.id,
+        email: googleUser.email,
+        name: googleUser.name,
+        picture: googleUser.picture,
+        provider: 'google',
+      });
+
+      res.writeHead(302, {
+        Location: '/?auth_success=1',
+        'Set-Cookie': `fpt_session=${sessionToken}; Path=/; HttpOnly; Max-Age=604800; SameSite=Lax`,
+      });
+      res.end();
+      logger.info(`Google OAuth: User ${googleUser.email} logged in`);
+    } catch (e) {
+      logger.error('Google OAuth callback error: ' + e.message);
+      res.writeHead(302, { Location: '/?auth_error=exception' });
+      res.end();
+    }
+    return;
+  }
+
+  // GET /api/auth/status — check current login status
+  if (pathname === '/api/auth/status' && req.method === 'GET') {
+    const token = getSessionToken(req);
+    const session = getSession(token);
+    const cfg = loadGoogleOAuthConfig();
+    return sendJSON(res, {
+      loggedIn: !!session,
+      user: session ? { name: session.name, email: session.email, picture: session.picture } : null,
+      googleConfigured: !!cfg.clientId,
+    });
+  }
+
+  // POST /api/auth/logout
+  if (pathname === '/api/auth/logout' && req.method === 'POST') {
+    const token = getSessionToken(req);
+    if (token) destroySession(token);
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Set-Cookie': 'fpt_session=; Path=/; HttpOnly; Max-Age=0',
+    });
+    res.end(JSON.stringify({ success: true }));
+    return;
+  }
+
+  // GET/POST /api/auth/config — manage Google OAuth configuration
+  if (pathname === '/api/auth/config' && req.method === 'GET') {
+    const cfg = loadGoogleOAuthConfig();
+    return sendJSON(res, {
+      clientId: cfg.clientId ? cfg.clientId.slice(0, 8) + '...' : '',
+      configured: !!cfg.clientId,
+    });
+  }
+  if (pathname === '/api/auth/config' && req.method === 'POST') {
+    const body = await parseBody(req);
+    if (!body.clientId || !body.clientSecret) return sendJSON(res, { error: 'clientId and clientSecret required' }, 400);
+    saveGoogleOAuthConfig({ clientId: body.clientId, clientSecret: body.clientSecret });
+    logger.info('Google OAuth config updated');
+    return sendJSON(res, { success: true, configured: true });
+  }
+
+  // Static files — with strict sandboxing (prevent ../../etc/passwd or %2e%2e%2f traversals)
   if (pathname === '/' || pathname === '/index.html') {
     return sendHTML(res, path.join(__dirname, 'public', 'index.html'));
   }
 
-  const safePath = pathname.replace(/\.\./g, '');
-  const filePath = path.join(__dirname, 'public', safePath);
+  const PUBLIC_DIR = path.resolve(path.join(__dirname, 'public'));
+  // Use decodeURIComponent so encoded traversals like %2e%2e/ or ..%2f also get caught after normalization
+  let decoded;
+  try { decoded = decodeURIComponent(pathname); } catch { decoded = pathname; }
+  const normalized = path.normalize(decoded);
+  const filePath = path.resolve(path.join(PUBLIC_DIR, normalized));
+  if (!filePath.startsWith(PUBLIC_DIR + path.sep) && filePath !== PUBLIC_DIR) {
+    // Attempted path traversal → silent 404 (don't echo back the malicious path)
+    res.writeHead(404); res.end('Not Found');
+    return;
+  }
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     return sendHTML(res, filePath);
   }
 
   res.writeHead(404); res.end('Not Found');
   } catch (err) {
-    logger.error('Request error: ' + err.message, { url: pathname });
-    try { res.writeHead(500); res.end(JSON.stringify({ error: err.message })); } catch {}
+    const msg = err?.message ?? String(err);
+    try { logger.error('Request error: ' + msg, { url: pathname, rawUrl: reqUrl, stack: err?.stack?.slice(0, 300) }); } catch {}
+    try {
+      if (!res.headersSent) res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: msg || 'Internal Server Error' }));
+    } catch {}
   }
 }
 
