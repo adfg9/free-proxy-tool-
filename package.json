@@ -1,6 +1,6 @@
 {
   "name": "free-proxy-tool",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Free Internet Access Tool | Cloudflare WARP + Free Proxy Pool + Web GUI + CLI + TUI",
   "main": "electron/main.js",
   "bin": {
