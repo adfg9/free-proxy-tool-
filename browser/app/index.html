@@ -1834,8 +1834,9 @@ body.pixel-theme .modal-btn:active {
 }
 
 </style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" onerror="this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>window.L||(document.write('<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"><\/script>'));</script>
 </head>
 <body>
 
@@ -2397,16 +2398,22 @@ function _te(key) { return _t(key); }
 </script>
 <script>
 // ========== Tab Management ==========
+// file:///D:/free-proxy-tool/browser/app/index.html 就是浏览器"新标签页"本身（New Tab Dashboard）。
+// tab.url === '' 时渲染 placeholder（地址栏+中央搜索框+快捷链接），也就是用户看到的 file:// browser/app/index.html 内容。
+// 管理面板 http://127.0.0.1:3000 是用户可选访问的页面，不再默认跳转。
 let tabs = [{ id: 1, title: _t('newTab'), url: '', favicon: '\u26A1' }];
 let activeTab = 1;
 let nextTabId = 2;
 
 function newTab(url) {
   const id = nextTabId++;
-  tabs.push({ id, title: _t('newTab'), url: url || '', favicon: '\u26A1' });
+  const initialUrl = url || '';
+  let title = _t('newTab');
+  if (initialUrl) { try { title = new URL(initialUrl).hostname; } catch {} }
+  tabs.push({ id, title, url: initialUrl, favicon: '\u26A1' });
   renderTabs();
   selectTab(id);
-  if (url) navigateTo(url);
+  if (initialUrl) navigateTo(initialUrl);
 }
 
 function closeTab(id) {
@@ -2565,7 +2572,24 @@ function reloadPage() {
   if (tab.url) loadUrl(tab.url);
 }
 
-function goHome() { navigateTo(''); }
+function goHome() {
+  const tab = tabs.find(t => t.id === activeTab);
+  if (!tab) return;
+  // 回到 file:// browser/app/index.html 的 New Tab Dashboard：把 tab.url 置空，selectTab 会显示 placeholder
+  tab.url = '';
+  tab.title = _t('newTab');
+  document.getElementById('urlBar').value = '';
+  // 移除当前 iframe（避免保留旧页面继续运行）
+  const content = document.getElementById('contentArea');
+  const iframe = content && content.querySelector('iframe');
+  if (iframe) iframe.remove();
+  // 清空此 tab 的浏览历史
+  navHistory[activeTab] = { stack: [''], index: 0 };
+  renderTabs();
+  updateNavButtons();
+  // selectTab 会把 placeholder / newTabBg 打开
+  selectTab(activeTab);
+}
 
 function updateNavButtons() {
   const h = navHistory[activeTab];
@@ -3073,6 +3097,7 @@ async function fetchJSON(url, timeout) {
   try {
     const r = await fetch(url, { signal: ac.signal });
     clearTimeout(t);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     return await r.json();
   } catch(e) { clearTimeout(t); throw e; }
 }
@@ -3158,6 +3183,7 @@ async function fetchWeather() {
     if (city && city.startsWith('__latlon__')) {
       const parts = city.replace('__latlon__', '').split(',');
       lat = parseFloat(parts[0]); lon = parseFloat(parts[1]);
+      if (isNaN(lat) || isNaN(lon)) throw new Error('Invalid coordinates');
       displayName = lat.toFixed(2) + ', ' + lon.toFixed(2);
     } else if (city) {
       const geo = await geocodeCity(city);
@@ -3195,7 +3221,7 @@ async function fetchWeather() {
     if (!weatherFailed) {
       weatherFailed = true;
       descEl.textContent = 'Weather unavailable';
-      setTimeout(fetchWeather, 300000);
+      setTimeout(fetchWeather, 60000);
     } else {
       descEl.textContent = 'Weather unavailable';
     }
@@ -3493,6 +3519,10 @@ renderRecentVisits();
 updateUptime();
 updateTabCount();
 new ParticleSystem();
+// 初始：New Tab Dashboard（也就是 file:///D:/free-proxy-tool/browser/app/index.html 本身）
+// tab.url === '' 时，selectTab 会渲染 placeholder（地址栏/中央搜索框/快捷链接），而不是跳到管理面板
+renderTabs();
+selectTab(1);
 setInterval(checkProxyStatus, 10000);
 setInterval(updateClock, 1000);
 setInterval(updateUptime, 1000);
@@ -3510,7 +3540,7 @@ function openMap() {
     return;
   }
   setTimeout(() => {
-      if (!mapInstance) {
+    if (!mapInstance) {
       mapInstance = L.map('leafletMap').setView([35, 105], 4);
       // Use Esri World Street Map (completely free, no API key needed, stable and reliable)
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
@@ -3529,7 +3559,9 @@ function openMap() {
       });
     }
     mapInstance.invalidateSize();
-  }, 100);
+    // 确保在 modal 动画完成后再次刷新尺寸
+    setTimeout(() => { if (mapInstance) mapInstance.invalidateSize(); }, 250);
+  }, 200);
 }
 
 function confirmMapLocation() {
