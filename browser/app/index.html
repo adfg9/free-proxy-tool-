@@ -1834,9 +1834,9 @@ body.pixel-theme .modal-btn:active {
 }
 
 </style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" onerror="this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>window.L||(document.write('<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"><\/script>'));</script>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/leaflet/1.9.4/leaflet.css" onerror="this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'" />
+<script src="https://cdn.bootcdn.net/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>window.L||(document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'));</script>
 </head>
 <body>
 
@@ -1864,7 +1864,7 @@ body.pixel-theme .modal-btn:active {
     <button class="nav-btn" onclick="toggleExtractPanel()" title="" data-i18n-title="extractMedia" id="btnExtract">&#128279;</button>
     <button class="nav-btn" onclick="showDiagnostics()" title="" data-i18n-title="diagnostics" id="btnProxy">&#128295;</button>
     <button class="nav-btn" onclick="openControlPanel()" title="" data-i18n-title="controlPanel" id="btnPanel">&#9881;</button>
-    <button class="nav-btn" onclick="toggleLanguage()" title="" data-i18n-title="switchLanguage" id="btnLang" data-lang="en">🌐</button>
+    <button class="nav-btn" onclick="toggleLanguage()" title="" data-i18n-title="switchLanguage" id="btnLang" data-lang="en">馃寪</button>
   </div>
 </div>
 
@@ -1918,7 +1918,7 @@ body.pixel-theme .modal-btn:active {
       <div class="dash-left">
         <div class="dash-card clock-card">
           <div class="clock-time" id="clockTime">13:30</div>
-          <div class="clock-date" id="clockDate">Mon · Jul 13</div>
+          <div class="clock-date" id="clockDate">Mon 路 Jul 13</div>
         </div>
 
         <div class="dash-card proxy-card" onclick="toggleProxyDetail()">
@@ -1947,7 +1947,7 @@ body.pixel-theme .modal-btn:active {
             <div class="today-weather">
               <div class="weather-icon" id="weatherIcon">&#9925;</div>
               <div class="weather-info">
-                <div class="weather-temp" id="weatherTemp">--°</div>
+                <div class="weather-temp" id="weatherTemp">--掳</div>
                 <div class="weather-desc" id="weatherDesc" data-i18n="fetchingWeather">Fetching weather...</div>
                 <div class="weather-city" id="weatherCity">
                   <span class="weather-city-name" id="weatherCityName">--</span>
@@ -1964,7 +1964,7 @@ body.pixel-theme .modal-btn:active {
                     <div data-city="Nanjing">Nanjing</div>
                     <div data-city="Wuhan">Wuhan</div>
                     <div class="weather-city-divider"></div>
-                    <div data-city="__map__" data-i18n="selectCityMap">🗺️ Select City on Map</div>
+                    <div data-city="__map__" data-i18n="selectCityMap">馃椇锔?Select City on Map</div>
                     <div data-city="__custom__" data-i18n="customCity">Custom city...</div>
                   </div>
                 </div>
@@ -2092,7 +2092,7 @@ body.pixel-theme .modal-btn:active {
 <div class="modal-overlay" id="mapModal">
   <div class="modal-panel map">
     <div class="modal-header">
-      <h3 data-i18n="selectCityLocation">🗺️ Select City Location on Map</h3>
+      <h3 data-i18n="selectCityLocation">馃椇锔?Select City Location on Map</h3>
       <button class="modal-close" onclick="closeModal('mapModal')">&#215;</button>
     </div>
     <div class="modal-body nopad">
@@ -2110,7 +2110,7 @@ body.pixel-theme .modal-btn:active {
 <div class="extract-overlay" id="extractOverlay" onclick="if(event.target===this)closeExtractPanel()">
   <div class="extract-panel">
     <div class="extract-header">
-      <h3 data-i18n="mediaExtraction">📷 Media Extraction</h3>
+      <h3 data-i18n="mediaExtraction">馃摲 Media Extraction</h3>
       <button class="extract-close" onclick="closeExtractPanel()">&#215;</button>
     </div>
     <div class="extract-tabs" id="extractTabs">
@@ -2178,7 +2178,7 @@ const browserTranslations = {
     todayOverview: "Today's Overview",
     fetchingWeather: 'Fetching weather...',
     autoDetect: 'Auto Detect',
-    selectCityMap: '🗺️ Select City on Map',
+    selectCityMap: '馃椇锔?Select City on Map',
     customCity: 'Custom city...',
     quickAccess: 'Quick Access',
     addQuickLink: 'Add Quick Link',
@@ -2204,7 +2204,7 @@ const browserTranslations = {
     fromWpApi: 'From wp.upx8.com',
     done: 'Done',
     restoreDefault: 'Restore Default',
-    selectCityLocation: '🗺️ Select City Location on Map',
+    selectCityLocation: '馃椇锔?Select City Location on Map',
     clickMapSelect: 'Click on the map to select a location',
     confirm: 'Confirm',
     cancel: 'Cancel',
@@ -2257,106 +2257,106 @@ const browserTranslations = {
     clearRecentVisits: 'Clear recent visits',
   },
   zh: {
-    newTab: '新标签页',
-    enterAddress: '输入地址或搜索...',
-    searchWeb: '搜索网页或输入地址...',
-    back: '后退',
-    forward: '前进',
-    refresh: '刷新',
-    home: '主页',
-    toggleTheme: '切换主题',
-    extractMedia: '提取媒体',
-    diagnostics: '诊断',
-    controlPanel: '控制面板',
-    switchLanguage: '切换语言',
-    freeProxyBrowser: '免费代理浏览器',
-    lightweightBrowser: '轻量级专用浏览器，内置代理管理',
-    google: '谷歌',
-    bing: '必应',
-    baidu: '百度',
-    proxy: '代理:',
-    uptime: '运行时间:',
-    tabs: '标签:',
-    todayOverview: '今日概览',
-    fetchingWeather: '正在获取天气...',
-    autoDetect: '自动检测',
-    selectCityMap: '🗺️ 在地图上选择城市',
-    customCity: '自定义城市...',
-    quickAccess: '快捷访问',
-    addQuickLink: '添加快捷链接',
-    recentVisits: '最近访问',
-    clear: '清除',
-    controlPanelLabel: '控制面板',
+    newTab: '鏂版爣绛鹃〉',
+    enterAddress: '杈撳叆鍦板潃鎴栨悳绱?..',
+    searchWeb: '鎼滅储缃戦〉鎴栬緭鍏ュ湴鍧€...',
+    back: '鍚庨€€',
+    forward: '鍓嶈繘',
+    refresh: '鍒锋柊',
+    home: '涓婚〉',
+    toggleTheme: '鍒囨崲涓婚',
+    extractMedia: '鎻愬彇濯掍綋',
+    diagnostics: '璇婃柇',
+    controlPanel: '鎺у埗闈㈡澘',
+    switchLanguage: '鍒囨崲璇█',
+    freeProxyBrowser: '鍏嶈垂浠ｇ悊娴忚鍣?,
+    lightweightBrowser: '杞婚噺绾т笓鐢ㄦ祻瑙堝櫒锛屽唴缃唬鐞嗙鐞?,
+    google: '璋锋瓕',
+    bing: '蹇呭簲',
+    baidu: '鐧惧害',
+    proxy: '浠ｇ悊:',
+    uptime: '杩愯鏃堕棿:',
+    tabs: '鏍囩:',
+    todayOverview: '浠婃棩姒傝',
+    fetchingWeather: '姝ｅ湪鑾峰彇澶╂皵...',
+    autoDetect: '鑷姩妫€娴?,
+    selectCityMap: '馃椇锔?鍦ㄥ湴鍥句笂閫夋嫨鍩庡競',
+    customCity: '鑷畾涔夊煄甯?..',
+    quickAccess: '蹇嵎璁块棶',
+    addQuickLink: '娣诲姞蹇嵎閾炬帴',
+    recentVisits: '鏈€杩戣闂?,
+    clear: '娓呴櫎',
+    controlPanelLabel: '鎺у埗闈㈡澘',
     github: 'GitHub',
     youtube: 'YouTube',
     twitter: 'Twitter/X',
-    wikipedia: '维基百科',
-    bilibili: '哔哩哔哩',
-    microsoft: '微软',
+    wikipedia: '缁村熀鐧剧',
+    bilibili: '鍝斿摡鍝斿摡',
+    microsoft: '寰蒋',
     spotify: 'Spotify',
     reddit: 'Reddit',
     stackOverflow: 'Stack Overflow',
-    wallpaper: '壁纸',
-    presetWallpapers: '预设壁纸',
-    localUpload: '本地上传',
-    uploadImage: '上传图片',
-    clickSelectOrDrag: '点击选择或拖拽图片到此处',
-    onlineWallpaper: '在线壁纸',
-    randomWallpaper: '随机壁纸',
-    fromWpApi: '来自 wp.upx8.com',
-    done: '完成',
-    restoreDefault: '恢复默认',
-    selectCityLocation: '🗺️ 在地图上选择城市位置',
-    clickMapSelect: '点击地图选择位置',
-    confirm: '确认',
-    cancel: '取消',
-    mediaExtraction: '媒体提取',
-    videos: '视频',
-    audios: '音频',
-    images: '图片',
-    analyzingPage: '分析页面中...',
-    noUrlNavigate: '当前页面没有URL，请先导航到网页',
-    extractionFailed: '提取失败: {0}',
-    noVideosFound: '未找到视频',
-    noAudioFound: '未找到音频',
-    noImagesFound: '未找到图片',
-    copy: '复制',
-    open: '打开',
-    copiedClipboard: '已复制到剪贴板',
-    ready: '就绪',
-    checking: '检查中...',
-    builtInProxy: '内置代理',
-    running: '运行中',
-    stopped: '已停止',
-    proxyConnected: '代理已连接',
-    proxyNotStarted: '代理未启动',
-    address: '地址',
-    type: '类型',
-    latency: '延迟',
-    refreshPage: '刷新页面',
-    openInNewTab: '在新标签页打开',
-    copyUrl: '复制网址',
-    proxySettings: '代理设置',
-    connectionDiagnostics: '连接诊断',
-    connectionRefused: '连接被拒绝 - 请检查网络连接',
-    clickDiagnostics: '点击"诊断"查看详情',
-    retry: '重试',
-    proxyMode: '代理模式',
-    engine: '引擎',
+    wallpaper: '澹佺焊',
+    presetWallpapers: '棰勮澹佺焊',
+    localUpload: '鏈湴涓婁紶',
+    uploadImage: '涓婁紶鍥剧墖',
+    clickSelectOrDrag: '鐐瑰嚮閫夋嫨鎴栨嫋鎷藉浘鐗囧埌姝ゅ',
+    onlineWallpaper: '鍦ㄧ嚎澹佺焊',
+    randomWallpaper: '闅忔満澹佺焊',
+    fromWpApi: '鏉ヨ嚜 wp.upx8.com',
+    done: '瀹屾垚',
+    restoreDefault: '鎭㈠榛樿',
+    selectCityLocation: '馃椇锔?鍦ㄥ湴鍥句笂閫夋嫨鍩庡競浣嶇疆',
+    clickMapSelect: '鐐瑰嚮鍦板浘閫夋嫨浣嶇疆',
+    confirm: '纭',
+    cancel: '鍙栨秷',
+    mediaExtraction: '濯掍綋鎻愬彇',
+    videos: '瑙嗛',
+    audios: '闊抽',
+    images: '鍥剧墖',
+    analyzingPage: '鍒嗘瀽椤甸潰涓?..',
+    noUrlNavigate: '褰撳墠椤甸潰娌℃湁URL锛岃鍏堝鑸埌缃戦〉',
+    extractionFailed: '鎻愬彇澶辫触: {0}',
+    noVideosFound: '鏈壘鍒拌棰?,
+    noAudioFound: '鏈壘鍒伴煶棰?,
+    noImagesFound: '鏈壘鍒板浘鐗?,
+    copy: '澶嶅埗',
+    open: '鎵撳紑',
+    copiedClipboard: '宸插鍒跺埌鍓创鏉?,
+    ready: '灏辩华',
+    checking: '妫€鏌ヤ腑...',
+    builtInProxy: '鍐呯疆浠ｇ悊',
+    running: '杩愯涓?,
+    stopped: '宸插仠姝?,
+    proxyConnected: '浠ｇ悊宸茶繛鎺?,
+    proxyNotStarted: '浠ｇ悊鏈惎鍔?,
+    address: '鍦板潃',
+    type: '绫诲瀷',
+    latency: '寤惰繜',
+    refreshPage: '鍒锋柊椤甸潰',
+    openInNewTab: '鍦ㄦ柊鏍囩椤垫墦寮€',
+    copyUrl: '澶嶅埗缃戝潃',
+    proxySettings: '浠ｇ悊璁剧疆',
+    connectionDiagnostics: '杩炴帴璇婃柇',
+    connectionRefused: '杩炴帴琚嫆缁?- 璇锋鏌ョ綉缁滆繛鎺?,
+    clickDiagnostics: '鐐瑰嚮"璇婃柇"鏌ョ湅璇︽儏',
+    retry: '閲嶈瘯',
+    proxyMode: '浠ｇ悊妯″紡',
+    engine: '寮曟搸',
     blinkElectron: 'Blink (Electron)',
-    forwardProxy: '转发代理',
-    currentPage: '当前页面',
-    retryCurrentPage: '重试当前页面',
-    close: '关闭',
-    fetchingWallpaper: '获取壁纸中...',
-    wallpaperApplied: '壁纸已应用',
-    onlineWallpaperApplied: '在线壁纸已应用',
-    failedReadImage: '读取图片失败',
-    failedFetchWallpaper: '获取壁纸失败: {0}',
-    networkErrorWallpaper: '网络错误，获取壁纸失败',
-    timeoutWallpaper: '获取壁纸超时',
-    pleaseSelectImage: '请选择图片文件',
-    clearRecentVisits: '清除最近访问',
+    forwardProxy: '杞彂浠ｇ悊',
+    currentPage: '褰撳墠椤甸潰',
+    retryCurrentPage: '閲嶈瘯褰撳墠椤甸潰',
+    close: '鍏抽棴',
+    fetchingWallpaper: '鑾峰彇澹佺焊涓?..',
+    wallpaperApplied: '澹佺焊宸插簲鐢?,
+    onlineWallpaperApplied: '鍦ㄧ嚎澹佺焊宸插簲鐢?,
+    failedReadImage: '璇诲彇鍥剧墖澶辫触',
+    failedFetchWallpaper: '鑾峰彇澹佺焊澶辫触: {0}',
+    networkErrorWallpaper: '缃戠粶閿欒锛岃幏鍙栧绾稿け璐?,
+    timeoutWallpaper: '鑾峰彇澹佺焊瓒呮椂',
+    pleaseSelectImage: '璇烽€夋嫨鍥剧墖鏂囦欢',
+    clearRecentVisits: '娓呴櫎鏈€杩戣闂?,
   }
 };
 
@@ -2398,10 +2398,7 @@ function _te(key) { return _t(key); }
 </script>
 <script>
 // ========== Tab Management ==========
-// file:///D:/free-proxy-tool/browser/app/index.html 就是浏览器"新标签页"本身（New Tab Dashboard）。
-// tab.url === '' 时渲染 placeholder（地址栏+中央搜索框+快捷链接），也就是用户看到的 file:// browser/app/index.html 内容。
-// 管理面板 http://127.0.0.1:3000 是用户可选访问的页面，不再默认跳转。
-let tabs = [{ id: 1, title: _t('newTab'), url: '', favicon: '\u26A1' }];
+// file:///D:/free-proxy-tool/browser/app/index.html 灏辨槸娴忚鍣?鏂版爣绛鹃〉"鏈韩锛圢ew Tab Dashboard锛夈€?// tab.url === '' 鏃舵覆鏌?placeholder锛堝湴鍧€鏍?涓ぎ鎼滅储妗?蹇嵎閾炬帴锛夛紝涔熷氨鏄敤鎴风湅鍒扮殑 file:// browser/app/index.html 鍐呭銆?// 绠＄悊闈㈡澘 http://127.0.0.1:3000 鏄敤鎴峰彲閫夎闂殑椤甸潰锛屼笉鍐嶉粯璁よ烦杞€?let tabs = [{ id: 1, title: _t('newTab'), url: '', favicon: '\u26A1' }];
 let activeTab = 1;
 let nextTabId = 2;
 
@@ -2575,19 +2572,17 @@ function reloadPage() {
 function goHome() {
   const tab = tabs.find(t => t.id === activeTab);
   if (!tab) return;
-  // 回到 file:// browser/app/index.html 的 New Tab Dashboard：把 tab.url 置空，selectTab 会显示 placeholder
+  // 鍥炲埌 file:// browser/app/index.html 鐨?New Tab Dashboard锛氭妸 tab.url 缃┖锛宻electTab 浼氭樉绀?placeholder
   tab.url = '';
   tab.title = _t('newTab');
   document.getElementById('urlBar').value = '';
-  // 移除当前 iframe（避免保留旧页面继续运行）
-  const content = document.getElementById('contentArea');
+  // 绉婚櫎褰撳墠 iframe锛堥伩鍏嶄繚鐣欐棫椤甸潰缁х画杩愯锛?  const content = document.getElementById('contentArea');
   const iframe = content && content.querySelector('iframe');
   if (iframe) iframe.remove();
-  // 清空此 tab 的浏览历史
-  navHistory[activeTab] = { stack: [''], index: 0 };
+  // 娓呯┖姝?tab 鐨勬祻瑙堝巻鍙?  navHistory[activeTab] = { stack: [''], index: 0 };
   renderTabs();
   updateNavButtons();
-  // selectTab 会把 placeholder / newTabBg 打开
+  // selectTab 浼氭妸 placeholder / newTabBg 鎵撳紑
   selectTab(activeTab);
 }
 
@@ -2670,18 +2665,18 @@ async function checkProxyStatus() {
   let running = false;
   let proxyInfo = null;
   try {
-    // Quick TCP probe via fetch — connect to :1080, any response (even error) means port is open
+    // Quick TCP probe via fetch 鈥?connect to :1080, any response (even error) means port is open
     const ac = new AbortController();
     const t = setTimeout(() => ac.abort(), 1500);
     await fetch('http://127.0.0.1:1080/', { signal: ac.signal, mode: 'no-cors' });
     clearTimeout(t);
-    // If fetch didn't throw, port is open → proxy is running
+    // If fetch didn't throw, port is open 鈫?proxy is running
     running = true;
   } catch (err) {
-    // Connection refused → port not open → proxy stopped
+    // Connection refused 鈫?port not open 鈫?proxy stopped
     // Abort error (timeout) could mean port is filtered, not necessarily stopped
     if (err && err.name === 'AbortError') {
-      // Timeout — try backend API as fallback
+      // Timeout 鈥?try backend API as fallback
     }
   }
 
@@ -2782,7 +2777,7 @@ const WP_PRESETS = [
   { name: 'Charcoal', bg: '#141414' },
 ];
 
-// ========== Wallpaper Upload — File Input Overlay ==========
+// ========== Wallpaper Upload 鈥?File Input Overlay ==========
 function applyImageFile(file) {
   if (!file) return;
   // Check if it's an image
@@ -2799,7 +2794,7 @@ function applyImageFile(file) {
   reader.readAsDataURL(file);
 }
 
-// Method A: File input overlay (highest priority — user directly clicks physical input[type=file])
+// Method A: File input overlay (highest priority 鈥?user directly clicks physical input[type=file])
 document.addEventListener('DOMContentLoaded', function() {
   var overlayInput = document.getElementById('wpFileOverlay');
   if (overlayInput) {
@@ -3072,12 +3067,12 @@ function updateClock() {
   const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
   const date = now.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' });
   const el = document.getElementById('statusClock');
-  if (el) el.textContent = time + ' · ' + date + ' ' + days[now.getDay()];
+  if (el) el.textContent = time + ' 路 ' + date + ' ' + days[now.getDay()];
 
   const clockTime = document.getElementById('clockTime');
   if (clockTime) clockTime.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
   const clockDate = document.getElementById('clockDate');
-  if (clockDate) clockDate.textContent = days[now.getDay()] + ' · ' + months[now.getMonth()] + ' ' + now.getDate();
+  if (clockDate) clockDate.textContent = days[now.getDay()] + ' 路 ' + months[now.getMonth()] + ' ' + now.getDate();
 
   const todayDate = document.getElementById('todayDate');
   if (todayDate) todayDate.textContent = months[now.getMonth()] + ' ' + now.getDate() + ', ' + days[now.getDay()];
@@ -3085,11 +3080,17 @@ function updateClock() {
 }
 
 // ========== Weather ==========
-const WMO_EMOJI = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',56:'🌧️',57:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',66:'🌧️',67:'🌧️',71:'❄️',73:'❄️',75:'❄️',77:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',85:'🌨️',86:'🌨️',95:'⛈️',96:'⛈️',99:'⛈️'};
+const WMO_EMOJI = {0:'鈽€锔?,1:'馃尋锔?,2:'鉀?,3:'鈽侊笍',45:'馃尗锔?,48:'馃尗锔?,51:'馃對锔?,53:'馃對锔?,55:'馃導锔?,56:'馃導锔?,57:'馃導锔?,61:'馃導锔?,63:'馃導锔?,65:'馃導锔?,66:'馃導锔?,67:'馃導锔?,71:'鉂勶笍',73:'鉂勶笍',75:'鉂勶笍',77:'鉂勶笍',80:'馃對锔?,81:'馃導锔?,82:'鉀堬笍',85:'馃尐锔?,86:'馃尐锔?,95:'鉀堬笍',96:'鉀堬笍',99:'鉀堬笍'};
 const WMO_TEXT = {0:'Clear',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',45:'Fog',48:'Freezing Fog',51:'Light Drizzle',53:'Drizzle',55:'Heavy Drizzle',56:'Freezing Drizzle',57:'Freezing Drizzle',61:'Light Rain',63:'Moderate Rain',65:'Heavy Rain',66:'Freezing Rain',67:'Freezing Rain',71:'Light Snow',73:'Moderate Snow',75:'Heavy Snow',77:'Snow Grains',80:'Rain Showers',81:'Moderate Rain Showers',82:'Heavy Rain Showers',85:'Snow Showers',86:'Heavy Snow Showers',95:'Thunderstorm',96:'Thunderstorm Hail',99:'Severe Thunderstorm Hail'};
 
-function wmoEmoji(code) { return WMO_EMOJI[code] || '☁️'; }
+// wttr.in 澶╂皵浠ｇ爜鏄犲皠
+const WTTR_EMOJI = {113:'鈽€锔?,116:'鉀?,119:'鈽侊笍',122:'鈽侊笍',143:'馃尗锔?,176:'馃對锔?,179:'馃尐锔?,182:'馃尐锔?,185:'馃尐锔?,200:'鉀堬笍',227:'馃尐锔?,230:'馃尐锔?,248:'馃尗锔?,260:'馃尗锔?,263:'馃對锔?,266:'馃對锔?,281:'馃導锔?,284:'馃導锔?,293:'馃導锔?,296:'馃導锔?,299:'馃導锔?,302:'馃導锔?,305:'馃導锔?,308:'馃導锔?,311:'馃導锔?,314:'馃導锔?,317:'馃導锔?,320:'馃尐锔?,323:'馃尐锔?,326:'馃尐锔?,329:'馃尐锔?,332:'馃尐锔?,335:'馃尐锔?,338:'馃尐锔?,350:'馃導锔?,353:'馃對锔?,356:'馃導锔?,359:'馃導锔?,362:'馃尐锔?,365:'馃尐锔?,368:'馃尐锔?,371:'馃尐锔?,374:'馃尐锔?,377:'馃尐锔?,386:'鉀堬笍',389:'鉀堬笍',392:'鉀堬笍',395:'鉀堬笍'};
+const WTTR_TEXT = {113:'Clear',116:'Partly Cloudy',119:'Cloudy',122:'Overcast',143:'Mist',176:'Patchy Rain',179:'Patchy Snow',182:'Patchy Sleet',185:'Patchy Sleet',200:'Thunder',227:'Blowing Snow',230:'Blizzard',248:'Fog',260:'Freezing Fog',263:'Light Drizzle',266:'Drizzle',281:'Freezing Drizzle',284:'Freezing Drizzle',293:'Light Rain',296:'Light Rain',299:'Moderate Rain',302:'Moderate Rain',305:'Heavy Rain',308:'Heavy Rain',311:'Freezing Rain',314:'Freezing Rain',317:'Freezing Rain',320:'Light Snow',323:'Light Snow',326:'Snow',329:'Snow',332:'Heavy Snow',335:'Heavy Snow',338:'Heavy Snow',350:'Ice Pellets',353:'Light Showers',356:'Showers',359:'Heavy Showers',362:'Light Sleet',365:'Sleet',368:'Snow Showers',371:'Snow Showers',374:'Light Sleet Showers',377:'Sleet Showers',386:'Thunder Showers',389:'Thunder Showers',392:'Light Thunder Snow',395:'Thunder Snow'};
+
+function wmoEmoji(code) { return WMO_EMOJI[code] || '鈽侊笍'; }
 function wmoText(code) { return WMO_TEXT[code] || 'Unknown'; }
+function wttrEmoji(code) { return WTTR_EMOJI[code] || '鈽侊笍'; }
+function wttrText(code) { return WTTR_TEXT[code] || 'Unknown'; }
 
 async function fetchJSON(url, timeout) {
   const ac = new AbortController();
@@ -3110,6 +3111,23 @@ async function geocodeCity(name) {
 }
 
 async function fetchWeatherByCoords(lat, lon) {
+  // 涓绘簮锛歸ttr.in锛堝厤璐广€佷笉闇€瑕並ey銆佹敮鎸佸叏鐞冿級
+  try {
+    const d = await fetchJSON('https://wttr.in/' + lat + ',' + lon + '?format=j1', 8000);
+    if (d && d.current_condition && d.current_condition[0]) {
+      const c = d.current_condition[0];
+      return {
+        temp: parseFloat(c.temp_C),
+        code: parseInt(c.weatherCode),
+        hi: (d.weather && d.weather[0]) ? parseFloat(d.weather[0].maxtempC) : null,
+        lo: (d.weather && d.weather[0]) ? parseFloat(d.weather[0].mintempC) : null,
+        humidity: parseInt(c.humidity),
+        wind: parseInt(c.windspeedKmph),
+        source: 'wttr'
+      };
+    }
+  } catch(e) { /* fallback */ }
+  // 澶囩敤锛歰pen-meteo
   const d = await fetchJSON('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1');
   if (!d || !d.current) throw Error('no data');
   return {
@@ -3118,7 +3136,8 @@ async function fetchWeatherByCoords(lat, lon) {
     hi: d.daily ? d.daily.temperature_2m_max[0] : null,
     lo: d.daily ? d.daily.temperature_2m_min[0] : null,
     humidity: d.current.relative_humidity_2m,
-    wind: d.current.wind_speed_10m
+    wind: d.current.wind_speed_10m,
+    source: 'open-meteo'
   };
 }
 
@@ -3209,14 +3228,16 @@ async function fetchWeather() {
     }
 
     const w = await fetchWeatherByCoords(lat, lon);
-    iconEl.textContent = wmoEmoji(w.code);
-    tempEl.textContent = Math.round(w.temp) + '°';
-    descEl.textContent = wmoText(w.code) + (w.hi != null ? '  H:' + Math.round(w.hi) + '° L:' + Math.round(w.lo) + '°' : '');
+    const emoji = w.source === 'wttr' ? wttrEmoji(w.code) : wmoEmoji(w.code);
+    const text = w.source === 'wttr' ? wttrText(w.code) : wmoText(w.code);
+    iconEl.textContent = emoji;
+    tempEl.textContent = Math.round(w.temp) + '掳';
+    descEl.textContent = text + (w.hi != null ? '  H:' + Math.round(w.hi) + '掳 L:' + Math.round(w.lo) + '掳' : '');
     nameEl.textContent = displayName;
     weatherFailed = false;
   } catch (e) {
-    iconEl.textContent = '☁️';
-    tempEl.textContent = '--°';
+    iconEl.textContent = '鈽侊笍';
+    tempEl.textContent = '--掳';
     nameEl.textContent = '--';
     if (!weatherFailed) {
       weatherFailed = true;
@@ -3519,9 +3540,7 @@ renderRecentVisits();
 updateUptime();
 updateTabCount();
 new ParticleSystem();
-// 初始：New Tab Dashboard（也就是 file:///D:/free-proxy-tool/browser/app/index.html 本身）
-// tab.url === '' 时，selectTab 会渲染 placeholder（地址栏/中央搜索框/快捷链接），而不是跳到管理面板
-renderTabs();
+// 鍒濆锛歂ew Tab Dashboard锛堜篃灏辨槸 file:///D:/free-proxy-tool/browser/app/index.html 鏈韩锛?// tab.url === '' 鏃讹紝selectTab 浼氭覆鏌?placeholder锛堝湴鍧€鏍?涓ぎ鎼滅储妗?蹇嵎閾炬帴锛夛紝鑰屼笉鏄烦鍒扮鐞嗛潰鏉?renderTabs();
 selectTab(1);
 setInterval(checkProxyStatus, 10000);
 setInterval(updateClock, 1000);
@@ -3536,16 +3555,16 @@ function openMap() {
   openModal('mapModal');
   document.getElementById('mapCoords').textContent = 'Loading map...';
   if (typeof L === 'undefined') {
-    document.getElementById('mapCoords').textContent = '⚠️ Leaflet map library failed to load, please check your network';
+    document.getElementById('mapCoords').textContent = '鈿狅笍 Leaflet map library failed to load, please check your network';
     return;
   }
   setTimeout(() => {
     if (!mapInstance) {
       mapInstance = L.map('leafletMap').setView([35, 105], 4);
-      // Use Esri World Street Map (completely free, no API key needed, stable and reliable)
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      // 楂樺痉鍦板浘鐭㈤噺鐡︾墖锛堝厤璐广€佷腑鍥藉湴鍥炬暟鎹噯纭€佷笉闇€瑕丄PI Key锛?      L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+        subdomains: ['1', '2', '3', '4'],
         maxZoom: 19,
-        attribution: '&copy; Esri, HERE, Garmin, FAO, NOAA, EPA'
+        attribution: '&copy; AutoNavi (楂樺痉鍦板浘)'
       }).addTo(mapInstance);
       mapInstance.on('click', function(e) {
         if (mapMarker) mapMarker.setLatLng(e.latlng);
@@ -3559,8 +3578,7 @@ function openMap() {
       });
     }
     mapInstance.invalidateSize();
-    // 确保在 modal 动画完成后再次刷新尺寸
-    setTimeout(() => { if (mapInstance) mapInstance.invalidateSize(); }, 250);
+    // 纭繚鍦?modal 鍔ㄧ敾瀹屾垚鍚庡啀娆″埛鏂板昂瀵?    setTimeout(() => { if (mapInstance) mapInstance.invalidateSize(); }, 250);
   }, 200);
 }
 
