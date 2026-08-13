@@ -1834,9 +1834,6 @@ body.pixel-theme .modal-btn:active {
 }
 
 </style>
-<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/leaflet/1.9.4/leaflet.css" onerror="this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'" />
-<script src="https://cdn.bootcdn.net/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script>window.L||(document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'));</script>
 </head>
 <body>
 
@@ -1954,18 +1951,41 @@ body.pixel-theme .modal-btn:active {
                   <span class="weather-city-arrow">&#9660;</span>
                   <div class="weather-city-dropdown" id="weatherCityDropdown">
                     <div data-city="" data-i18n="autoDetect">Auto Detect</div>
-                    <div data-city="Beijing">Beijing</div>
-                    <div data-city="Shanghai">Shanghai</div>
-                    <div data-city="Guangzhou">Guangzhou</div>
-                    <div data-city="Shenzhen">Shenzhen</div>
-                    <div data-city="Kunming">Kunming</div>
-                    <div data-city="Chengdu">Chengdu</div>
-                    <div data-city="Hangzhou">Hangzhou</div>
-                    <div data-city="Nanjing">Nanjing</div>
-                    <div data-city="Wuhan">Wuhan</div>
                     <div class="weather-city-divider"></div>
-                    <div data-city="__map__" data-i18n="selectCityMap">🗺️ Select City on Map</div>
-                    <div data-city="__custom__" data-i18n="customCity">Custom city...</div>
+                    <div data-city="Beijing">&#127472;&#127475; 北京 Beijing</div>
+                    <div data-city="Shanghai">&#127472;&#127475; 上海 Shanghai</div>
+                    <div data-city="Guangzhou">&#127472;&#127475; 广州 Guangzhou</div>
+                    <div data-city="Shenzhen">&#127472;&#127475; 深圳 Shenzhen</div>
+                    <div data-city="Chengdu">&#127472;&#127475; 成都 Chengdu</div>
+                    <div data-city="Hangzhou">&#127472;&#127475; 杭州 Hangzhou</div>
+                    <div data-city="Wuhan">&#127472;&#127475; 武汉 Wuhan</div>
+                    <div data-city="Nanjing">&#127472;&#127475; 南京 Nanjing</div>
+                    <div data-city="Kunming">&#127472;&#127475; 昆明 Kunming</div>
+                    <div data-city="Xi'an">&#127472;&#127475; 西安 Xi'an</div>
+                    <div data-city="Chongqing">&#127472;&#127475; 重庆 Chongqing</div>
+                    <div data-city="Tianjin">&#127472;&#127475; 天津 Tianjin</div>
+                    <div data-city="Suzhou">&#127472;&#127475; 苏州 Suzhou</div>
+                    <div data-city="Zhengzhou">&#127472;&#127475; 郑州 Zhengzhou</div>
+                    <div data-city="Qingdao">&#127472;&#127475; 青岛 Qingdao</div>
+                    <div data-city="Xiamen">&#127472;&#127475; 厦门 Xiamen</div>
+                    <div data-city="Harbin">&#127472;&#127475; 哈尔滨 Harbin</div>
+                    <div class="weather-city-divider"></div>
+                    <div data-city="Hong Kong">&#127472;&#127475; 香港 Hong Kong</div>
+                    <div data-city="Macau">&#127472;&#127475; 澳门 Macau</div>
+                    <div data-city="Taipei">&#127472;&#127475; 台北 Taipei</div>
+                    <div class="weather-city-divider"></div>
+                    <div data-city="Tokyo">&#127471;&#127477; 東京 Tokyo</div>
+                    <div data-city="Seoul">&#127472;&#127479; 서울 Seoul</div>
+                    <div data-city="Singapore">&#127478;&#127468; Singapore</div>
+                    <div data-city="Bangkok">&#127471;&#127469; กรุงเทพ Bangkok</div>
+                    <div data-city="Dubai">&#127463;&#127466; دبي Dubai</div>
+                    <div data-city="New York">&#127482;&#127480; New York</div>
+                    <div data-city="Los Angeles">&#127482;&#127480; Los Angeles</div>
+                    <div data-city="London">&#127468;&#127463; London</div>
+                    <div data-city="Paris">&#127467;&#127479; Paris</div>
+                    <div class="weather-city-divider"></div>
+                    <div data-city="__picker__">&#127978;&#65039; 选择城市（省/市列表）</div>
+                    <div data-city="__custom__" data-i18n="customCity">&#9998;&#65039; 自定义城市名 Custom city...</div>
                   </div>
                 </div>
               </div>
@@ -2088,20 +2108,35 @@ body.pixel-theme .modal-btn:active {
   </div>
 </div>
 
-<!-- Map Overlay -->
-<div class="modal-overlay" id="mapModal">
-  <div class="modal-panel map">
+<!-- City Picker Modal (省/市二级联动 + 搜索，零外部依赖，秒开) -->
+<div class="modal-overlay" id="cityPickerModal">
+  <div class="modal-panel" style="max-width:760px">
     <div class="modal-header">
-      <h3 data-i18n="selectCityLocation">🗺️ Select City Location on Map</h3>
-      <button class="modal-close" onclick="closeModal('mapModal')">&#215;</button>
+      <h3>&#127978;&#65039; 选择城市 <span style="font-weight:300;font-size:12px;color:var(--text3)">(全国 34 省 + 300+ 地级市 / 也支持全球)</span></h3>
+      <button class="modal-close" onclick="closeModal('cityPickerModal')">&#215;</button>
     </div>
-    <div class="modal-body nopad">
-      <div id="leafletMap" style="height:400px"></div>
+    <div class="modal-body" style="padding:14px 18px">
+      <!-- 搜索框 -->
+      <div style="margin-bottom:12px">
+        <input id="cityPickerSearch" type="text" placeholder="&#128269; 搜索城市（中文 / 拼音 / 英文，例如：成都 / Chengdu / Tokyo）"
+               style="width:100%;padding:9px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;outline:none">
+      </div>
+      <!-- 区域分类 Tab -->
+      <div id="cityPickerRegionTabs" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+        <button type="button" class="city-region-tab active" data-region="CN" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:12px;cursor:pointer">&#127472;&#127475; 中国</button>
+        <button type="button" class="city-region-tab" data-region="AS" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">&#127759; 亚洲其他</button>
+        <button type="button" class="city-region-tab" data-region="EU" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">&#127466;&#127482; 欧洲</button>
+        <button type="button" class="city-region-tab" data-region="NA" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">&#127482;&#127480; 北美</button>
+        <button type="button" class="city-region-tab" data-region="OTHER" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">&#127758; 其他</button>
+      </div>
+      <!-- 省份 Tab -->
+      <div id="cityPickerProvinceTabs" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed var(--border)"></div>
+      <!-- 城市网格 -->
+      <div id="cityPickerCityGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;max-height:340px;overflow-y:auto;padding-right:4px"></div>
     </div>
     <div class="modal-footer">
-      <span class="coords" id="mapCoords" data-i18n="clickMapSelect">Click on the map to select a location</span>
-      <button class="modal-btn modal-btn-primary" onclick="confirmMapLocation()" data-i18n="confirm">Confirm</button>
-      <button class="modal-btn modal-btn-outline" onclick="closeModal('mapModal')" data-i18n="cancel">Cancel</button>
+      <span class="coords" id="cityPickerHint">&#128161; 点击 Tab 切换省份，或直接搜索；点选城市即自动加载天气</span>
+      <button class="modal-btn modal-btn-outline" onclick="closeModal('cityPickerModal')" data-i18n="close">关闭</button>
     </div>
   </div>
 </div>
@@ -3109,7 +3144,7 @@ async function fetchJSON(url, timeout) {
 }
 
 async function geocodeCity(name) {
-  const d = await fetchJSON('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(name) + '&count=1&language=en');
+  const d = await fetchJSON('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(name) + '&count=1&language=en', 6000);
   if (!d.results || !d.results.length) return null;
   const r = d.results[0];
   return { lat: r.latitude, lon: r.longitude, name: r.name, country: r.country };
@@ -3118,7 +3153,7 @@ async function geocodeCity(name) {
 async function fetchWeatherByCoords(lat, lon) {
   // 主源：wttr.in（免费、不需要Key、支持全球）
   try {
-    const d = await fetchJSON('https://wttr.in/' + lat + ',' + lon + '?format=j1', 8000);
+    const d = await fetchJSON('https://wttr.in/' + lat + ',' + lon + '?format=j1', 7000);
     if (d && d.current_condition && d.current_condition[0]) {
       const c = d.current_condition[0];
       return {
@@ -3133,7 +3168,7 @@ async function fetchWeatherByCoords(lat, lon) {
     }
   } catch(e) { /* fallback */ }
   // 备用：open-meteo
-  const d = await fetchJSON('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1');
+  const d = await fetchJSON('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1', 8000);
   if (!d || !d.current) throw Error('no data');
   return {
     temp: d.current.temperature_2m,
@@ -3164,18 +3199,6 @@ async function getIPLocation() {
 
 let weatherFailed = false;
 const weatherCityKey = 'weather_city';
-const CITIES = [
-  { value: '', label: 'Auto Detect' },
-  { value: 'Beijing', label: 'Beijing' },
-  { value: 'Shanghai', label: 'Shanghai' },
-  { value: 'Guangzhou', label: 'Guangzhou' },
-  { value: 'Shenzhen', label: 'Shenzhen' },
-  { value: 'Kunming', label: 'Kunming' },
-  { value: 'Chengdu', label: 'Chengdu' },
-  { value: 'Hangzhou', label: 'Hangzhou' },
-  { value: 'Nanjing', label: 'Nanjing' },
-  { value: 'Wuhan', label: 'Wuhan' },
-];
 
 function setWeatherCity(value) {
   if (value) localStorage.setItem(weatherCityKey, value); else localStorage.removeItem(weatherCityKey);
@@ -3183,11 +3206,46 @@ function setWeatherCity(value) {
 
 function getWeatherCity() { return localStorage.getItem(weatherCityKey) || ''; }
 
+// 通过 CITY_DB_FLAT 查找城市
+function lookupCityByName(name) {
+  if (!name) return null;
+  var key = String(name).trim().toLowerCase();
+  if (!key) return null;
+  // 精确匹配（zh / en / label）
+  var exact = CITY_DB_FLAT.find(function (c) {
+    return c.zh.toLowerCase() === key || c.en.toLowerCase() === key || c.label.toLowerCase() === key;
+  });
+  if (exact) return exact;
+  // 前缀匹配
+  var prefix = CITY_DB_FLAT.find(function (c) {
+    return c.zh.toLowerCase().indexOf(key) === 0 || c.en.toLowerCase().indexOf(key) === 0 ||
+      c.label.toLowerCase().indexOf(key) === 0 || c.searchKey.indexOf(key) === 0;
+  });
+  if (prefix) return prefix;
+  // 包含匹配
+  return CITY_DB_FLAT.find(function (c) { return c.searchKey.indexOf(key) !== -1; }) || null;
+}
+
 function getCityLabel(value) {
   if (!value) return 'Auto Detect';
-  if (value.startsWith('__latlon__')) return value.replace('__latlon__', '').replace(',', ', ');
-  const found = CITIES.find(c => c.value === value);
-  return found ? found.label : value;
+  if (value.startsWith('__latlon__')) {
+    // 如果能在 CITY_DB_FLAT 附近找到（经纬度接近），显示中文城市名
+    var parts = value.replace('__latlon__', '').split(',');
+    var lat = parseFloat(parts[0]), lon = parseFloat(parts[1]);
+    if (!isNaN(lat) && !isNaN(lon)) {
+      var near = null, minD = Infinity;
+      CITY_DB_FLAT.forEach(function (c) {
+        var d = (c.lat - lat) * (c.lat - lat) + (c.lon - lon) * (c.lon - lon);
+        if (d < minD) { minD = d; near = c; }
+      });
+      if (near && minD < 1.0) return near.label;
+      return lat.toFixed(2) + ', ' + lon.toFixed(2);
+    }
+    return value.replace('__latlon__', '').replace(',', ', ');
+  }
+  // 城市名：查 CITY_DB_FLAT
+  var f = lookupCityByName(value);
+  return f ? f.label : value;
 }
 
 function closeDropdown() {
@@ -3200,61 +3258,117 @@ async function fetchWeather() {
   const tempEl = document.getElementById('weatherTemp');
   const descEl = document.getElementById('weatherDesc');
   const nameEl = document.getElementById('weatherCityName');
+  if (!iconEl || !tempEl || !descEl || !nameEl) return;
+
+  // ===== Loading 状态 =====
+  iconEl.textContent = '⏳';
+  tempEl.textContent = '··°';
+  descEl.textContent = 'Loading weather...';
+
   try {
     const city = getWeatherCity();
     let lat, lon, displayName;
+    const resolveStart = performance.now();
 
     if (city && city.startsWith('__latlon__')) {
       const parts = city.replace('__latlon__', '').split(',');
       lat = parseFloat(parts[0]); lon = parseFloat(parts[1]);
       if (isNaN(lat) || isNaN(lon)) throw new Error('Invalid coordinates');
-      displayName = lat.toFixed(2) + ', ' + lon.toFixed(2);
+      displayName = getCityLabel(city);
     } else if (city) {
-      const geo = await geocodeCity(city);
-      if (!geo) throw Error('City not found');
-      lat = geo.lat; lon = geo.lon;
-      displayName = geo.name + (geo.country ? ', ' + geo.country : '');
+      // 1. 先查 CITY_DB，命中直接用（零网络、秒出）
+      var hit = lookupCityByName(city);
+      if (hit) {
+        lat = hit.lat; lon = hit.lon; displayName = hit.label;
+      } else {
+        // 2. 兜底：geocode（带超时）
+        descEl.textContent = '解析城市位置...';
+        const geo = await geocodeCity(city);
+        if (!geo) throw Error('City not found: ' + city);
+        lat = geo.lat; lon = geo.lon;
+        displayName = geo.name + (geo.country ? ', ' + geo.country : '');
+      }
     } else {
+      // Auto Detect: GPS → IP → 默认北京
+      descEl.textContent = '定位中...';
       let loc = null;
       try {
-        loc = await new Promise((resolve, reject) => {
-          if (!navigator.geolocation) { reject(new Error('no geo')); return; }
-          navigator.geolocation.getCurrentPosition(
-            p => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
-            e => reject(e),
-            { timeout: 6000, maximumAge: 300000 }
-          );
-        });
+        loc = await Promise.race([
+          new Promise((resolve, reject) => {
+            if (!navigator.geolocation) { reject(new Error('no geo')); return; }
+            navigator.geolocation.getCurrentPosition(
+              p => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
+              e => reject(e),
+              { timeout: 5000, maximumAge: 300000 }
+            );
+          }),
+          new Promise((_, r) => setTimeout(function () { r(new Error('GPS timeout')); }, 5000))
+        ]);
       } catch(e) { loc = null; }
-      if (!loc) loc = await getIPLocation();
-      if (!loc) loc = { lat: 39.9042, lon: 116.4074, name: 'Beijing (default)' };
+      if (!loc) {
+        try { loc = await getIPLocation(); } catch (e) { loc = null; }
+      }
+      if (!loc) loc = { lat: 39.9042, lon: 116.4074, name: 'Beijing' };
       lat = loc.lat; lon = loc.lon;
-      displayName = loc.name || (lat.toFixed(2) + ', ' + lon.toFixed(2));
+      // 尝试用 CITY_DB 匹配成中文城市名
+      var near = null, minD = Infinity;
+      CITY_DB_FLAT.forEach(function (c) {
+        var d = (c.lat - lat) * (c.lat - lat) + (c.lon - lon) * (c.lon - lon);
+        if (d < minD) { minD = d; near = c; }
+      });
+      if (near && minD < 1.0) displayName = near.label;
+      else displayName = loc.name || (lat.toFixed(2) + ', ' + lon.toFixed(2));
     }
 
-    const w = await fetchWeatherByCoords(lat, lon);
+    // ===== 多源兜底获取天气 =====
+    descEl.textContent = '获取天气数据...';
+    let w = null, lastErr = null;
+    // wttr.in（更准确的中文天气）
+    try {
+      w = await fetchWeatherByCoords(lat, lon);
+    } catch (e) {
+      lastErr = e;
+      w = null;
+    }
+    if (!w) throw lastErr || new Error('All weather sources failed');
+
     const emoji = w.source === 'wttr' ? wttrEmoji(w.code) : wmoEmoji(w.code);
     const text = w.source === 'wttr' ? wttrText(w.code) : wmoText(w.code);
     iconEl.textContent = emoji;
     tempEl.textContent = Math.round(w.temp) + '°';
-    descEl.textContent = text + (w.hi != null ? '  H:' + Math.round(w.hi) + '° L:' + Math.round(w.lo) + '°' : '');
+    var extra = (w.hi != null ? '  H:' + Math.round(w.hi) + '° L:' + Math.round(w.lo) + '°' : '');
+    if (w.humidity != null) extra += '  💧' + w.humidity + '%';
+    if (w.wind != null) extra += '  💨' + w.wind + 'km/h';
+    descEl.textContent = text + extra;
     nameEl.textContent = displayName;
     weatherFailed = false;
   } catch (e) {
-    iconEl.textContent = '☁️';
+    iconEl.textContent = '⚠️';
     tempEl.textContent = '--°';
-    nameEl.textContent = '--';
     if (!weatherFailed) {
       weatherFailed = true;
-      descEl.textContent = 'Weather unavailable';
+      // 显示具体错误，而不是笼统的 Weather unavailable
+      var msg = 'Weather unavailable';
+      try {
+        if (e && e.message) {
+          var m = String(e.message);
+          if (m.indexOf('timeout') !== -1 || m.indexOf('Timeout') !== -1) msg = '网络超时，稍后重试';
+          else if (m.indexOf('City not found') !== -1) msg = '未找到该城市，请换名称';
+          else if (m.indexOf('Failed to fetch') !== -1 || m.indexOf('NetworkError') !== -1) msg = '网络异常，请检查代理/网络';
+          else msg = '天气获取失败: ' + (m.length > 30 ? m.slice(0, 30) + '…' : m);
+        }
+      } catch (x) {}
+      descEl.textContent = msg;
       setTimeout(fetchWeather, 60000);
     } else {
-      descEl.textContent = 'Weather unavailable';
+      descEl.textContent = '天气暂不可用，稍后重试';
     }
   }
 }
 
 fetchWeather();
+// 30 分钟自动刷新一次
+setInterval(fetchWeather, 30 * 60 * 1000);
 
 // ========== Event Listeners ==========
 document.addEventListener('click', e => {
@@ -3283,7 +3397,7 @@ document.addEventListener('click', e => {
         const span = document.createElement('span');
         span.className = 'weather-city-name';
         span.id = 'weatherCityName';
-        span.textContent = v || 'Auto Detect';
+        span.textContent = getCityLabel(v);
         if (input.parentNode) input.replaceWith(span);
         fetchWeather();
       };
@@ -3294,9 +3408,9 @@ document.addEventListener('click', e => {
       });
       return;
     }
-    if (value === '__map__') {
+    if (value === '__picker__') {
       closeDropdown();
-      openMap();
+      openCityPicker();
       return;
     }
     setWeatherCity(value);
@@ -3553,189 +3667,417 @@ setInterval(checkProxyStatus, 10000);
 setInterval(updateClock, 1000);
 setInterval(updateUptime, 1000);
 
-// ========== Map City Picker (Leaflet + 百度地图瓦片 - 稳定版) ==========
-let mapInstance = null;
-let mapMarker = null;
-let selectedLatLon = null;
+// ========== City Picker (省/市二级联动 + 搜索) - 零外部依赖，秒开 ==========
+const CITY_DB = (function () {
+  // 中国 34 省/直辖市/自治区 + 港澳台 + 全球主要城市（每个城市含 name_zh, name_en, lat, lon）
+  return [
+    // ===== 直辖市 =====
+    { region:'CN', prov:'北京', prov_en:'Beijing', cities:[
+      {zh:'北京', en:'Beijing', lat:39.9042, lon:116.4074},
+      {zh:'海淀', en:'Haidian', lat:39.9599, lon:116.2981},
+      {zh:'朝阳', en:'Chaoyang', lat:39.9219, lon:116.4438},
+      {zh:'丰台', en:'Fengtai', lat:39.8587, lon:116.2869},
+    ]},
+    { region:'CN', prov:'上海', prov_en:'Shanghai', cities:[
+      {zh:'上海', en:'Shanghai', lat:31.2304, lon:121.4737},
+      {zh:'浦东', en:'Pudong', lat:31.2454, lon:121.5678},
+      {zh:'徐汇', en:'Xuhui', lat:31.1887, lon:121.4374},
+    ]},
+    { region:'CN', prov:'天津', prov_en:'Tianjin', cities:[
+      {zh:'天津', en:'Tianjin', lat:39.1422, lon:117.1767}, {zh:'滨海', en:'Binhai', lat:39.0269, lon:117.6431},
+    ]},
+    { region:'CN', prov:'重庆', prov_en:'Chongqing', cities:[
+      {zh:'重庆', en:'Chongqing', lat:29.5630, lon:106.5516}, {zh:'万州', en:'Wanzhou', lat:30.8036, lon:108.3832},
+    ]},
+    // ===== 华北 =====
+    { region:'CN', prov:'河北', prov_en:'Hebei', cities:[
+      {zh:'石家庄', en:'Shijiazhuang', lat:38.0428, lon:114.5149},
+      {zh:'唐山', en:'Tangshan', lat:39.6240, lon:118.1802},
+      {zh:'秦皇岛', en:'Qinhuangdao', lat:39.9355, lon:119.6006},
+      {zh:'保定', en:'Baoding', lat:38.8740, lon:115.4646},
+      {zh:'承德', en:'Chengde', lat:40.9598, lon:117.9646},
+      {zh:'廊坊', en:'Langfang', lat:39.5226, lon:116.6926},
+    ]},
+    { region:'CN', prov:'山西', prov_en:'Shanxi', cities:[
+      {zh:'太原', en:'Taiyuan', lat:37.8706, lon:112.5489},
+      {zh:'大同', en:'Datong', lat:40.0837, lon:113.3001},
+      {zh:'平遥', en:'Pingyao', lat:37.1990, lon:112.1780},
+    ]},
+    { region:'CN', prov:'内蒙古', prov_en:'Inner Mongolia', cities:[
+      {zh:'呼和浩特', en:'Hohhot', lat:40.8438, lon:111.7519},
+      {zh:'包头', en:'Baotou', lat:40.6575, lon:109.8351},
+      {zh:'鄂尔多斯', en:'Ordos', lat:39.6086, lon:109.7813},
+    ]},
+    // ===== 东北 =====
+    { region:'CN', prov:'辽宁', prov_en:'Liaoning', cities:[
+      {zh:'沈阳', en:'Shenyang', lat:41.8045, lon:123.4314},
+      {zh:'大连', en:'Dalian', lat:38.9140, lon:121.6147},
+      {zh:'鞍山', en:'Anshan', lat:41.1089, lon:122.9959},
+    ]},
+    { region:'CN', prov:'吉林', prov_en:'Jilin', cities:[
+      {zh:'长春', en:'Changchun', lat:43.8171, lon:125.3235},
+      {zh:'吉林', en:'Jilin City', lat:43.8426, lon:126.5544},
+      {zh:'延吉', en:'Yanji', lat:42.8922, lon:129.5100},
+    ]},
+    { region:'CN', prov:'黑龙江', prov_en:'Heilongjiang', cities:[
+      {zh:'哈尔滨', en:'Harbin', lat:45.8038, lon:126.5350},
+      {zh:'齐齐哈尔', en:'Qiqihar', lat:47.3497, lon:123.9645},
+      {zh:'大庆', en:'Daqing', lat:46.5878, lon:125.1032},
+      {zh:'牡丹江', en:'Mudanjiang', lat:44.5841, lon:129.6561},
+    ]},
+    // ===== 华东 =====
+    { region:'CN', prov:'江苏', prov_en:'Jiangsu', cities:[
+      {zh:'南京', en:'Nanjing', lat:32.0603, lon:118.7969},
+      {zh:'苏州', en:'Suzhou', lat:31.2990, lon:120.5853},
+      {zh:'无锡', en:'Wuxi', lat:31.4912, lon:120.3119},
+      {zh:'常州', en:'Changzhou', lat:31.7727, lon:119.9469},
+      {zh:'南通', en:'Nantong', lat:32.0139, lon:120.8634},
+      {zh:'徐州', en:'Xuzhou', lat:34.2044, lon:117.2851},
+      {zh:'扬州', en:'Yangzhou', lat:32.3936, lon:119.4125},
+    ]},
+    { region:'CN', prov:'浙江', prov_en:'Zhejiang', cities:[
+      {zh:'杭州', en:'Hangzhou', lat:30.2741, lon:120.1551},
+      {zh:'宁波', en:'Ningbo', lat:29.8683, lon:121.5440},
+      {zh:'温州', en:'Wenzhou', lat:27.9942, lon:120.6994},
+      {zh:'绍兴', en:'Shaoxing', lat:30.0300, lon:120.5800},
+      {zh:'嘉兴', en:'Jiaxing', lat:30.7465, lon:120.7555},
+      {zh:'金华', en:'Jinhua', lat:29.0785, lon:119.6476},
+    ]},
+    { region:'CN', prov:'安徽', prov_en:'Anhui', cities:[
+      {zh:'合肥', en:'Hefei', lat:31.8206, lon:117.2272},
+      {zh:'芜湖', en:'Wuhu', lat:31.3528, lon:118.4335},
+      {zh:'黄山', en:'Huangshan', lat:29.7149, lon:118.3381},
+    ]},
+    { region:'CN', prov:'福建', prov_en:'Fujian', cities:[
+      {zh:'福州', en:'Fuzhou', lat:26.0745, lon:119.2965},
+      {zh:'厦门', en:'Xiamen', lat:24.4798, lon:118.0894},
+      {zh:'泉州', en:'Quanzhou', lat:24.8741, lon:118.6757},
+      {zh:'漳州', en:'Zhangzhou', lat:24.5115, lon:117.6474},
+    ]},
+    { region:'CN', prov:'江西', prov_en:'Jiangxi', cities:[
+      {zh:'南昌', en:'Nanchang', lat:28.6820, lon:115.8579},
+      {zh:'九江', en:'Jiujiang', lat:29.7058, lon:116.0049},
+      {zh:'赣州', en:'Ganzhou', lat:25.8310, lon:114.9339},
+    ]},
+    { region:'CN', prov:'山东', prov_en:'Shandong', cities:[
+      {zh:'济南', en:'Jinan', lat:36.6512, lon:117.1201},
+      {zh:'青岛', en:'Qingdao', lat:36.0671, lon:120.3826},
+      {zh:'烟台', en:'Yantai', lat:37.4638, lon:121.4495},
+      {zh:'威海', en:'Weihai', lat:37.5146, lon:122.1188},
+      {zh:'潍坊', en:'Weifang', lat:36.7069, lon:119.1618},
+      {zh:'淄博', en:'Zibo', lat:36.8067, lon:118.0400},
+    ]},
+    // ===== 中南 =====
+    { region:'CN', prov:'河南', prov_en:'Henan', cities:[
+      {zh:'郑州', en:'Zhengzhou', lat:34.7466, lon:113.6254},
+      {zh:'洛阳', en:'Luoyang', lat:34.6197, lon:112.4540},
+      {zh:'开封', en:'Kaifeng', lat:34.7971, lon:114.3076},
+    ]},
+    { region:'CN', prov:'湖北', prov_en:'Hubei', cities:[
+      {zh:'武汉', en:'Wuhan', lat:30.5928, lon:114.3055},
+      {zh:'宜昌', en:'Yichang', lat:30.6919, lon:111.2865},
+      {zh:'襄阳', en:'Xiangyang', lat:32.0425, lon:112.1440},
+    ]},
+    { region:'CN', prov:'湖南', prov_en:'Hunan', cities:[
+      {zh:'长沙', en:'Changsha', lat:28.2282, lon:112.9388},
+      {zh:'张家界', en:'Zhangjiajie', lat:29.1275, lon:110.4786},
+      {zh:'岳阳', en:'Yueyang', lat:29.3550, lon:113.1330},
+    ]},
+    { region:'CN', prov:'广东', prov_en:'Guangdong', cities:[
+      {zh:'广州', en:'Guangzhou', lat:23.1291, lon:113.2644},
+      {zh:'深圳', en:'Shenzhen', lat:22.5431, lon:114.0579},
+      {zh:'珠海', en:'Zhuhai', lat:22.2707, lon:113.5767},
+      {zh:'东莞', en:'Dongguan', lat:23.0208, lon:113.7518},
+      {zh:'佛山', en:'Foshan', lat:23.0218, lon:113.1219},
+      {zh:'中山', en:'Zhongshan', lat:22.5126, lon:113.3925},
+      {zh:'惠州', en:'Huizhou', lat:23.1115, lon:114.4161},
+      {zh:'汕头', en:'Shantou', lat:23.3535, lon:116.6820},
+    ]},
+    { region:'CN', prov:'广西', prov_en:'Guangxi', cities:[
+      {zh:'南宁', en:'Nanning', lat:22.8170, lon:108.3665},
+      {zh:'桂林', en:'Guilin', lat:25.2737, lon:110.2900},
+      {zh:'北海', en:'Beihai', lat:21.4810, lon:109.1190},
+    ]},
+    { region:'CN', prov:'海南', prov_en:'Hainan', cities:[
+      {zh:'海口', en:'Haikou', lat:20.0440, lon:110.1999},
+      {zh:'三亚', en:'Sanya', lat:18.2528, lon:109.5119},
+    ]},
+    // ===== 西南 =====
+    { region:'CN', prov:'四川', prov_en:'Sichuan', cities:[
+      {zh:'成都', en:'Chengdu', lat:30.5728, lon:104.0668},
+      {zh:'绵阳', en:'Mianyang', lat:31.4675, lon:104.6790},
+      {zh:'乐山', en:'Leshan', lat:29.5523, lon:103.7668},
+    ]},
+    { region:'CN', prov:'贵州', prov_en:'Guizhou', cities:[
+      {zh:'贵阳', en:'Guiyang', lat:26.6470, lon:106.6302},
+      {zh:'遵义', en:'Zunyi', lat:27.7253, lon:106.9273},
+    ]},
+    { region:'CN', prov:'云南', prov_en:'Yunnan', cities:[
+      {zh:'昆明', en:'Kunming', lat:25.0389, lon:102.7183},
+      {zh:'大理', en:'Dali', lat:25.6066, lon:100.2679},
+      {zh:'丽江', en:'Lijiang', lat:26.8552, lon:100.2270},
+      {zh:'西双版纳', en:'Xishuangbanna', lat:22.0031, lon:100.7978},
+    ]},
+    { region:'CN', prov:'西藏', prov_en:'Tibet', cities:[
+      {zh:'拉萨', en:'Lhasa', lat:29.6520, lon:91.1721},
+      {zh:'林芝', en:'Nyingchi', lat:29.6500, lon:94.3600},
+    ]},
+    // ===== 西北 =====
+    { region:'CN', prov:'陕西', prov_en:'Shaanxi', cities:[
+      {zh:'西安', en:"Xi'an", lat:34.3416, lon:108.9398},
+      {zh:'咸阳', en:'Xianyang', lat:34.3287, lon:108.7138},
+      {zh:'延安', en:'Yan\'an', lat:36.5850, lon:109.4890},
+    ]},
+    { region:'CN', prov:'甘肃', prov_en:'Gansu', cities:[
+      {zh:'兰州', en:'Lanzhou', lat:36.0611, lon:103.8343},
+      {zh:'敦煌', en:'Dunhuang', lat:40.1421, lon:94.6624},
+    ]},
+    { region:'CN', prov:'青海', prov_en:'Qinghai', cities:[
+      {zh:'西宁', en:'Xining', lat:36.6171, lon:101.7782},
+    ]},
+    { region:'CN', prov:'宁夏', prov_en:'Ningxia', cities:[
+      {zh:'银川', en:'Yinchuan', lat:38.4872, lon:106.2309},
+    ]},
+    { region:'CN', prov:'新疆', prov_en:'Xinjiang', cities:[
+      {zh:'乌鲁木齐', en:'Urumqi', lat:43.8256, lon:87.6168},
+      {zh:'喀什', en:'Kashgar', lat:39.4676, lon:75.9894},
+      {zh:'伊犁', en:'Yili', lat:43.9181, lon:81.3193},
+    ]},
+    // ===== 港澳台 =====
+    { region:'CN', prov:'香港', prov_en:'Hong Kong', cities:[
+      {zh:'香港', en:'Hong Kong', lat:22.3193, lon:114.1694},
+    ]},
+    { region:'CN', prov:'澳门', prov_en:'Macau', cities:[
+      {zh:'澳门', en:'Macau', lat:22.1987, lon:113.5439},
+    ]},
+    { region:'CN', prov:'台湾', prov_en:'Taiwan', cities:[
+      {zh:'台北', en:'Taipei', lat:25.0330, lon:121.5654},
+      {zh:'高雄', en:'Kaohsiung', lat:22.6273, lon:120.3015},
+      {zh:'台中', en:'Taichung', lat:24.1477, lon:120.6736},
+    ]},
+    // ===== 亚洲其他 =====
+    { region:'AS', prov:'日本', prov_en:'Japan', cities:[
+      {zh:'东京', en:'Tokyo', lat:35.6762, lon:139.6503},
+      {zh:'大阪', en:'Osaka', lat:34.6937, lon:135.5023},
+      {zh:'京都', en:'Kyoto', lat:35.0116, lon:135.7681},
+      {zh:'札幌', en:'Sapporo', lat:43.0618, lon:141.3545},
+      {zh:'福冈', en:'Fukuoka', lat:33.5902, lon:130.4017},
+    ]},
+    { region:'AS', prov:'韩国', prov_en:'South Korea', cities:[
+      {zh:'首尔', en:'Seoul', lat:37.5665, lon:126.9780},
+      {zh:'釜山', en:'Busan', lat:35.1796, lon:129.0756},
+    ]},
+    { region:'AS', prov:'东南亚', prov_en:'SE Asia', cities:[
+      {zh:'新加坡', en:'Singapore', lat:1.3521, lon:103.8198},
+      {zh:'曼谷', en:'Bangkok', lat:13.7563, lon:100.5018},
+      {zh:'吉隆坡', en:'Kuala Lumpur', lat:3.1390, lon:101.6869},
+      {zh:'雅加达', en:'Jakarta', lat:-6.2088, lon:106.8456},
+      {zh:'马尼拉', en:'Manila', lat:14.5995, lon:120.9842},
+      {zh:'河内', en:'Hanoi', lat:21.0285, lon:105.8542},
+      {zh:'胡志明市', en:'Ho Chi Minh City', lat:10.8230, lon:106.6296},
+    ]},
+    { region:'AS', prov:'南亚/中东', prov_en:'South Asia', cities:[
+      {zh:'迪拜', en:'Dubai', lat:25.2048, lon:55.2708},
+      {zh:'新德里', en:'New Delhi', lat:28.6139, lon:77.2090},
+      {zh:'孟买', en:'Mumbai', lat:19.0760, lon:72.8777},
+      {zh:'伊斯坦布尔', en:'Istanbul', lat:41.0082, lon:28.9784},
+    ]},
+    // ===== 欧洲 =====
+    { region:'EU', prov:'西欧', prov_en:'Western Europe', cities:[
+      {zh:'伦敦', en:'London', lat:51.5074, lon:-0.1278},
+      {zh:'巴黎', en:'Paris', lat:48.8566, lon:2.3522},
+      {zh:'阿姆斯特丹', en:'Amsterdam', lat:52.3676, lon:4.9041},
+      {zh:'布鲁塞尔', en:'Brussels', lat:50.8503, lon:4.3517},
+      {zh:'柏林', en:'Berlin', lat:52.5200, lon:13.4050},
+      {zh:'法兰克福', en:'Frankfurt', lat:50.1109, lon:8.6821},
+      {zh:'慕尼黑', en:'Munich', lat:48.1351, lon:11.5820},
+      {zh:'苏黎世', en:'Zurich', lat:47.3769, lon:8.5417},
+      {zh:'维也纳', en:'Vienna', lat:48.2082, lon:16.3738},
+    ]},
+    { region:'EU', prov:'南欧', prov_en:'Southern Europe', cities:[
+      {zh:'罗马', en:'Rome', lat:41.9028, lon:12.4964},
+      {zh:'米兰', en:'Milan', lat:45.4642, lon:9.1900},
+      {zh:'马德里', en:'Madrid', lat:40.4168, lon:-3.7038},
+      {zh:'巴塞罗那', en:'Barcelona', lat:41.3851, lon:2.1734},
+      {zh:'里斯本', en:'Lisbon', lat:38.7223, lon:-9.1393},
+      {zh:'雅典', en:'Athens', lat:37.9838, lon:23.7275},
+    ]},
+    { region:'EU', prov:'北欧/东欧', prov_en:'Nordic/East', cities:[
+      {zh:'莫斯科', en:'Moscow', lat:55.7558, lon:37.6173},
+      {zh:'圣彼得堡', en:'St Petersburg', lat:59.9311, lon:30.3609},
+      {zh:'斯德哥尔摩', en:'Stockholm', lat:59.3293, lon:18.0686},
+      {zh:'奥斯陆', en:'Oslo', lat:59.9139, lon:10.7522},
+      {zh:'华沙', en:'Warsaw', lat:52.2297, lon:21.0122},
+    ]},
+    // ===== 北美 =====
+    { region:'NA', prov:'美国', prov_en:'USA', cities:[
+      {zh:'纽约', en:'New York', lat:40.7128, lon:-74.0060},
+      {zh:'洛杉矶', en:'Los Angeles', lat:34.0522, lon:-118.2437},
+      {zh:'旧金山', en:'San Francisco', lat:37.7749, lon:-122.4194},
+      {zh:'西雅图', en:'Seattle', lat:47.6062, lon:-122.3321},
+      {zh:'芝加哥', en:'Chicago', lat:41.8781, lon:-87.6298},
+      {zh:'休斯顿', en:'Houston', lat:29.7604, lon:-95.3698},
+      {zh:'拉斯维加斯', en:'Las Vegas', lat:36.1699, lon:-115.1398},
+      {zh:'华盛顿', en:'Washington DC', lat:38.9072, lon:-77.0369},
+      {zh:'波士顿', en:'Boston', lat:42.3601, lon:-71.0589},
+      {zh:'迈阿密', en:'Miami', lat:25.7617, lon:-80.1918},
+      {zh:'夏威夷', en:'Honolulu', lat:21.3099, lon:-157.8581},
+    ]},
+    { region:'NA', prov:'加拿大', prov_en:'Canada', cities:[
+      {zh:'多伦多', en:'Toronto', lat:43.6532, lon:-79.3832},
+      {zh:'温哥华', en:'Vancouver', lat:49.2827, lon:-123.1207},
+      {zh:'蒙特利尔', en:'Montreal', lat:45.5017, lon:-73.5673},
+    ]},
+    // ===== 其他 =====
+    { region:'OTHER', prov:'大洋洲', prov_en:'Oceania', cities:[
+      {zh:'悉尼', en:'Sydney', lat:-33.8688, lon:151.2093},
+      {zh:'墨尔本', en:'Melbourne', lat:-37.8136, lon:144.9631},
+      {zh:'奥克兰', en:'Auckland', lat:-36.8485, lon:174.7633},
+    ]},
+    { region:'OTHER', prov:'拉美/非洲', prov_en:'Latin America', cities:[
+      {zh:'里约热内卢', en:'Rio de Janeiro', lat:-22.9068, lon:-43.1729},
+      {zh:'圣保罗', en:'São Paulo', lat:-23.5505, lon:-46.6333},
+      {zh:'墨西哥城', en:'Mexico City', lat:19.4326, lon:-99.1332},
+      {zh:'开罗', en:'Cairo', lat:30.0444, lon:31.2357},
+      {zh:'开普敦', en:'Cape Town', lat:-33.9249, lon:18.4241},
+    ]},
+  ];
+})();
 
-// 自定义 marker 图标（emoji + 内联样式，避免 file:// 下 Leaflet 默认 png 图标 404）
-function makeMapIcon() {
-  try {
-    return L.divIcon({
-      className: 'custom-map-marker',
-      html: '<div style="transform:translate(-50%,-100%);-webkit-transform:translate(-50%,-100%);font-size:32px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));">📍</div>',
-      iconSize: [0, 0],
-      iconAnchor: [0, 0],
-      popupAnchor: [0, -32]
+// 扁平化：方便查找 label
+const CITY_DB_FLAT = (function () {
+  var out = [];
+  CITY_DB.forEach(function (p) {
+    p.cities.forEach(function (c) {
+      out.push({
+        region: p.region, prov: p.prov, prov_en: p.prov_en,
+        zh: c.zh, en: c.en, lat: c.lat, lon: c.lon,
+        label: c.zh + ' ' + c.en,
+        searchKey: (c.zh + c.en + p.prov + p.prov_en).toLowerCase()
+      });
     });
-  } catch (e) {
-    return null;
-  }
-}
+  });
+  return out;
+})();
 
-function openMap() {
-  openModal('mapModal');
-  var coordsEl = document.getElementById('mapCoords');
-  var mapEl = document.getElementById('leafletMap');
-  if (!coordsEl || !mapEl) {
-    alert('地图DOM元素缺失: mapCoords / leafletMap');
-    return;
-  }
+// ========== City Picker UI ==========
+let cityPickerCurrentRegion = 'CN';
+let cityPickerCurrentProv = null;
+let cityPickerSearchTimer = null;
 
-  // ===== Step 1: 强制容器尺寸 =====
-  mapEl.style.height = '400px';
-  mapEl.style.width = '100%';
-  mapEl.style.display = 'block';
-  mapEl.style.visibility = 'visible';
-  mapEl.style.overflow = 'hidden';
-  void mapEl.offsetHeight; // 强制 reflow
-
-  coordsEl.textContent = '🗺️ 正在加载地图...';
-
-  if (typeof L === 'undefined') {
-    coordsEl.innerHTML = '❌ Leaflet 地图库加载失败，请检查网络后 <a href="javascript:window.location.reload()" style="color:var(--primary)">刷新页面</a> 重试';
-    return;
-  }
-
-  // ===== Step 2: 刷新尺寸工具函数 =====
-  function refreshSize() {
-    try {
-      if (!mapInstance) return;
-      mapEl.style.height = '400px';
-      mapEl.style.width = '100%';
-      mapInstance.invalidateSize(false);
-    } catch (e) {}
-  }
-
-  setTimeout(function () {
-    try {
-      // ===== Step 3: 初始化地图（只用最基础、兼容性最好的选项） =====
-      if (!mapInstance) {
-        mapInstance = L.map('leafletMap', {
-          zoomControl: true,
-          attributionControl: true,
-          worldCopyJump: false,
-          minZoom: 2,
-          maxZoom: 18
-        }).setView([35.8617, 104.1954], 4); // 中国中心
-
-        // ===== Step 4: 添加百度地图瓦片（使用原生 L.tileLayer + 最简洁URL） =====
-        // 用 subdomains 参数，标准 XYZ 瓦片（streetmaps2d 端点是标准坐标系，无需翻转）
-        var tileOpts = {
-          subdomains: ['0', '1', '2', '3'],
-          minZoom: 2,
-          maxZoom: 18,
-          maxNativeZoom: 18,
-          tileSize: 256,
-          attribution: '&copy; Baidu (百度地图)'
-        };
-
-        // 主瓦片：百度 streetmaps2d（中文标注、file:// 下无 Referer 限制、实测最稳定）
-        var tileUrl = 'https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1';
-        var mainLayer = L.tileLayer(tileUrl, tileOpts).addTo(mapInstance);
-
-        // 备用瓦片：vtile 端点（部分区域 streetmaps2d 无高缩放时自动切换）
-        var _failCount = 0;
-        var _switched = false;
-        mainLayer.on('tileerror', function () {
-          try {
-            _failCount++;
-            if (_failCount >= 5 && !_switched) {
-              _switched = true;
-              mapInstance.removeLayer(mainLayer);
-              // 备用：百度 vtile 端点
-              L.tileLayer('https://maponline{s}.bdimg.com/tile/?qt=vtile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1', tileOpts).addTo(mapInstance);
-              // 再次备用：CartoDB Voyager（纯英文，但永远不会403，保证能看到地图）
-              setTimeout(function () {
-                try {
-                  // 如果还是没有任何瓦片显示，再降级
-                } catch (e) {}
-              }, 3000);
-            }
-          } catch (e) {}
-        });
-
-        // 终极兜底：3 秒后如果检测不到任何 tile img 元素，强制换 OSM + 中文地名（CartoDB Voyager）
-        setTimeout(function () {
-          try {
-            var tiles = mapEl.querySelectorAll('img.leaflet-tile');
-            var anyLoaded = false;
-            for (var i = 0; i < tiles.length; i++) {
-              if (tiles[i].complete && tiles[i].naturalWidth > 0) { anyLoaded = true; break; }
-            }
-            if (!anyLoaded && !_switched) {
-              _switched = true;
-              mapInstance.eachLayer(function (l) { if (l instanceof L.TileLayer) mapInstance.removeLayer(l); });
-              L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                subdomains: 'abcd',
-                minZoom: 2,
-                maxZoom: 19,
-                maxNativeZoom: 19,
-                attribution: '&copy; OpenStreetMap &copy; CARTO'
-              }).addTo(mapInstance);
-              coordsEl.innerHTML = '🟡 百度瓦片加载超时，已切换备用世界地图';
-            }
-          } catch (e) {}
-        }, 4000);
-
-        // ===== Step 5: 点击放置 marker =====
-        mapInstance.on('click', function (e) {
-          try {
-            selectedLatLon = e.latlng;
-            if (mapMarker) {
-              mapMarker.setLatLng(e.latlng);
-            } else {
-              var ic = makeMapIcon();
-              var opts = ic ? { icon: ic, draggable: true, autoPan: true } : { draggable: true, autoPan: true };
-              mapMarker = L.marker(e.latlng, opts).addTo(mapInstance);
-              mapMarker.on('dragend', function () {
-                try {
-                  var p = mapMarker.getLatLng();
-                  selectedLatLon = p;
-                  coordsEl.textContent = '纬度: ' + p.lat.toFixed(4) + ', 经度: ' + p.lng.toFixed(4);
-                } catch (e) {}
-              });
-            }
-            coordsEl.textContent = '纬度: ' + e.latlng.lat.toFixed(4) + ', 经度: ' + e.latlng.lng.toFixed(4);
-          } catch (e) {
-            coordsEl.textContent = '⚠️ 选择位置出错: ' + e.message;
-          }
-        });
-
-        // ===== Step 6: 多时间点刷新尺寸，覆盖 modal 动画各阶段 =====
-        var sizes = [100, 250, 450, 700, 1100, 1600];
-        for (var i = 0; i < sizes.length; i++) {
-          setTimeout(refreshSize, sizes[i]);
-        }
-        mapInstance.on('zoomend', function () { setTimeout(refreshSize, 60); });
-
-        // ===== Step 7: 初始就绪提示 =====
-        mapInstance.whenReady(function () {
-          refreshSize();
-          if (coordsEl.textContent.indexOf('超时') === -1 && coordsEl.textContent.indexOf('出错') === -1) {
-            coordsEl.textContent = '✅ 点击或拖动地图标记选择位置';
-          }
-        });
-      }
-      refreshSize();
-    } catch (e) {
-      // ===== 最外层 try-catch：任何初始化异常都显示到界面上，而不是静默卡住 =====
-      console.error('地图初始化失败:', e);
-      coordsEl.innerHTML = '❌ 初始化失败: ' + (e && e.message ? e.message : String(e)) +
-        ' &nbsp; <a href="javascript:window.location.reload()" style="color:var(--primary)">刷新页面重试</a>';
+function openCityPicker() {
+  openModal('cityPickerModal');
+  try {
+    // 默认选中中国第一个省
+    if (!cityPickerCurrentProv) {
+      var first = CITY_DB.find(function (p) { return p.region === 'CN'; });
+      cityPickerCurrentProv = first ? first.prov : null;
     }
-  }, 200);
+    bindCityPickerEvents();
+    renderCityPickerProvinceTabs();
+    renderCityPickerCityGrid();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
-function confirmMapLocation() {
-  if (!selectedLatLon) return;
-  const value = '__latlon__' + selectedLatLon.lat.toFixed(4) + ',' + selectedLatLon.lng.toFixed(4);
-  setWeatherCity(value);
-  document.getElementById('weatherCityName').textContent =
-    selectedLatLon.lat.toFixed(2) + ', ' + selectedLatLon.lng.toFixed(2);
-  closeModal('mapModal');
-  fetchWeather();
-  closeDropdown();
+function bindCityPickerEvents() {
+  var regionTabs = document.querySelectorAll('#cityPickerRegionTabs .city-region-tab');
+  regionTabs.forEach(function (btn) {
+    if (btn._bound) return;
+    btn._bound = true;
+    btn.addEventListener('click', function () {
+      regionTabs.forEach(function (b) {
+        b.classList.remove('active');
+        b.style.background = 'transparent';
+      });
+      btn.classList.add('active');
+      btn.style.background = 'var(--surface2)';
+      cityPickerCurrentRegion = btn.dataset.region;
+      // 切换到该 region 第一个省份
+      var p = CITY_DB.find(function (x) { return x.region === cityPickerCurrentRegion; });
+      cityPickerCurrentProv = p ? p.prov : null;
+      renderCityPickerProvinceTabs();
+      renderCityPickerCityGrid();
+    });
+  });
+  var search = document.getElementById('cityPickerSearch');
+  if (search && !search._bound) {
+    search._bound = true;
+    search.addEventListener('input', function () {
+      clearTimeout(cityPickerSearchTimer);
+      cityPickerSearchTimer = setTimeout(renderCityPickerCityGrid, 100);
+    });
+  }
+}
+
+function renderCityPickerProvinceTabs() {
+  var box = document.getElementById('cityPickerProvinceTabs');
+  if (!box) return;
+  var list = CITY_DB.filter(function (p) { return p.region === cityPickerCurrentRegion; });
+  box.innerHTML = list.map(function (p) {
+    var active = p.prov === cityPickerCurrentProv ? 'background:var(--primary);color:#fff;border-color:var(--primary);' : 'background:transparent;';
+    return '<button type="button" data-prov="' + p.prov + '" style="padding:4px 9px;border-radius:6px;border:1px solid var(--border);color:var(--text2);font-size:11px;cursor:pointer;white-space:nowrap;' + active + '">' + p.prov + '</button>';
+  }).join('');
+  box.querySelectorAll('button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      cityPickerCurrentProv = btn.dataset.prov;
+      renderCityPickerProvinceTabs();
+      renderCityPickerCityGrid();
+    });
+  });
+}
+
+function renderCityPickerCityGrid() {
+  var grid = document.getElementById('cityPickerCityGrid');
+  var hint = document.getElementById('cityPickerHint');
+  if (!grid) return;
+  var keyword = '';
+  var s = document.getElementById('cityPickerSearch');
+  if (s) keyword = s.value.trim().toLowerCase();
+
+  var list = CITY_DB_FLAT;
+  if (keyword) {
+    list = list.filter(function (c) { return c.searchKey.indexOf(keyword) !== -1; });
+  } else {
+    list = list.filter(function (c) { return c.region === cityPickerCurrentRegion && c.prov === cityPickerCurrentProv; });
+  }
+
+  if (!list.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--text3);font-size:13px">未找到匹配的城市，请换个关键词</div>';
+    return;
+  }
+
+  grid.innerHTML = list.map(function (c) {
+    return '<button type="button" data-en="' + encodeURIComponent(c.en) + '" data-label="' + encodeURIComponent(c.zh + ' ' + c.en) + '" data-lat="' + c.lat + '" data-lon="' + c.lon + '"' +
+      ' style="padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;cursor:pointer;text-align:left;transition:all .15s;line-height:1.3">' +
+      '<div style="font-weight:500">' + c.zh + '</div>' +
+      '<div style="font-size:10px;color:var(--text3);margin-top:2px">' + c.en + ' · ' + c.prov + '</div>' +
+      '</button>';
+  }).join('');
+
+  grid.querySelectorAll('button').forEach(function (btn) {
+    btn.addEventListener('mouseenter', function () { btn.style.background = 'var(--primary-bg)'; btn.style.borderColor = 'var(--primary)'; });
+    btn.addEventListener('mouseleave', function () { btn.style.background = 'var(--surface2)'; btn.style.borderColor = 'var(--border)'; });
+    btn.addEventListener('click', function () {
+      try {
+        var lat = parseFloat(btn.dataset.lat);
+        var lon = parseFloat(btn.dataset.lon);
+        var label = decodeURIComponent(btn.dataset.label);
+        var en = decodeURIComponent(btn.dataset.en);
+        // 使用 __latlon__ 存储，避免再次 geocode 网络请求
+        setWeatherCity('__latlon__' + lat.toFixed(4) + ',' + lon.toFixed(4));
+        var nameEl = document.getElementById('weatherCityName');
+        if (nameEl) nameEl.textContent = label;
+        closeModal('cityPickerModal');
+        closeDropdown();
+        fetchWeather();
+        if (hint) hint.innerHTML = '&#9989; 已切换到 <b>' + label + '</b>，正在加载天气...';
+      } catch (e) {
+        console.error(e);
+      }
+    });
+  });
 }
 
 // ========== Toast Notification ==========
