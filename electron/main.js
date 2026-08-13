@@ -211,10 +211,13 @@ app.whenReady().then(async () => {
     globalShortcut.register('CommandOrControl+T', () => createBrowserWindow(NEW_TAB_HTML));
     globalShortcut.register('CommandOrControl+N', () => createBrowserWindow(NEW_TAB_HTML));
 
-    createPanelWindow(port);
+    // 🔑 启动时第一个窗口：独立浏览器的 New Tab Dashboard（file:///browser/app/index.html）
+    // 用户要的是 file:///D:/free-proxy-tool/browser/app/index.html 作为默认主页/首屏。
+    // 管理面板仍可通过 菜单 File / Ctrl+1 打开。
+    createBrowserWindow(NEW_TAB_HTML);
 
     app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) createPanelWindow(port);
+      if (BrowserWindow.getAllWindows().length === 0) createBrowserWindow(NEW_TAB_HTML);
     });
   } catch (err) {
     console.error('Startup failed:', err);
