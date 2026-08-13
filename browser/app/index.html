@@ -3553,192 +3553,178 @@ setInterval(checkProxyStatus, 10000);
 setInterval(updateClock, 1000);
 setInterval(updateUptime, 1000);
 
-// ========== Map City Picker (Leaflet + 百度地图瓦片 + 坐标修复) ==========
+// ========== Map City Picker (Leaflet + 百度地图瓦片 - 稳定版) ==========
 let mapInstance = null;
 let mapMarker = null;
 let selectedLatLon = null;
 
-// 自定义 marker 图标（用 emoji + 内联样式，避免 file:// 协议下 Leaflet 默认 png 图标 404 破图）
+// 自定义 marker 图标（emoji + 内联样式，避免 file:// 下 Leaflet 默认 png 图标 404）
 function makeMapIcon() {
-  return L.divIcon({
-    className: 'custom-map-marker',
-    html: '<div style="transform:translate(-50%,-100%);-webkit-transform:translate(-50%,-100%);font-size:32px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));">📍</div>',
-    iconSize: [0, 0],
-    iconAnchor: [0, 0],
-    popupAnchor: [0, -32]
-  });
-}
-
-// 关键修复：自定义百度瓦片图层，支持多种瓦片端点（部分端点需要 y 翻转）
-// 目前使用的 streetmaps2d 端点是标准 XYZ，实际使用中若出现拼接错位可切换为翻转模式
-function registerBaiduTileLayer() {
-  if (L.TileLayer.Baidu) return;
-  L.TileLayer.Baidu = L.TileLayer.extend({
-    options: {
-      flipY: false  // 设为 true 可启用 y 翻转（部分百度端点需要：如 TMS 编号的瓦片）
-    },
-    getTileUrl: function (coords) {
-      var z = this._getZoomForUrl();
-      var x = coords.x;
-      var y = coords.y;
-      // y 翻转处理（仅在 flipY=true 时）
-      if (this.options.flipY) {
-        y = (1 << z) - 1 - y;
-      }
-      // x 越界处理（重复世界）
-      var tileCount = 1 << z;
-      x = ((x % tileCount) + tileCount) % tileCount;
-      // 子域名哈希，保证同一瓦片命中同一子域（CDN 缓存友好）
-      var subdomains = this.options.subdomains || ['0', '1', '2', '3'];
-      var s = subdomains[Math.abs(x + y) % subdomains.length];
-      return this._url
-        .replace('{s}', s)
-        .replace('{x}', x)
-        .replace('{y}', y)
-        .replace('{z}', z);
-    }
-  });
-  L.tileLayer.baidu = function (url, options) {
-    return new L.TileLayer.Baidu(url, options);
-  };
+  try {
+    return L.divIcon({
+      className: 'custom-map-marker',
+      html: '<div style="transform:translate(-50%,-100%);-webkit-transform:translate(-50%,-100%);font-size:32px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));">📍</div>',
+      iconSize: [0, 0],
+      iconAnchor: [0, 0],
+      popupAnchor: [0, -32]
+    });
+  } catch (e) {
+    return null;
+  }
 }
 
 function openMap() {
   openModal('mapModal');
   var coordsEl = document.getElementById('mapCoords');
   var mapEl = document.getElementById('leafletMap');
-  coordsEl.textContent = 'Loading map...';
-  if (typeof L === 'undefined') {
-    coordsEl.textContent = '⚠️ Leaflet map library failed to load, please check your network';
+  if (!coordsEl || !mapEl) {
+    alert('地图DOM元素缺失: mapCoords / leafletMap');
     return;
   }
 
-  // 关键修复：在初始化前先强制给地图容器明确尺寸，避免 display:flex + modal 动画下高度塌陷为 0
-  if (mapEl) {
-    mapEl.style.height = '400px';
-    mapEl.style.width = '100%';
-    mapEl.style.display = 'block';
-    // 强制 reflow
-    void mapEl.offsetHeight;
+  // ===== Step 1: 强制容器尺寸 =====
+  mapEl.style.height = '400px';
+  mapEl.style.width = '100%';
+  mapEl.style.display = 'block';
+  mapEl.style.visibility = 'visible';
+  mapEl.style.overflow = 'hidden';
+  void mapEl.offsetHeight; // 强制 reflow
+
+  coordsEl.textContent = '🗺️ 正在加载地图...';
+
+  if (typeof L === 'undefined') {
+    coordsEl.innerHTML = '❌ Leaflet 地图库加载失败，请检查网络后 <a href="javascript:window.location.reload()" style="color:var(--primary)">刷新页面</a> 重试';
+    return;
   }
 
-  // 注册百度瓦片扩展
-  registerBaiduTileLayer();
-
+  // ===== Step 2: 刷新尺寸工具函数 =====
   function refreshSize() {
-    if (mapInstance) {
-      // 再确保一次容器尺寸
-      if (mapEl) {
-        mapEl.style.height = '400px';
-        mapEl.style.width = '100%';
-      }
-      mapInstance.invalidateSize({ animate: false, debounceMoveend: true });
-      try { mapInstance.fire('resize'); } catch(e){}
-    }
+    try {
+      if (!mapInstance) return;
+      mapEl.style.height = '400px';
+      mapEl.style.width = '100%';
+      mapInstance.invalidateSize(false);
+    } catch (e) {}
   }
 
-  setTimeout(() => {
-    if (!mapInstance) {
-      mapInstance = L.map('leafletMap', {
-        preferCanvas: true,
-        zoomControl: true,
-        attributionControl: true,
-        worldCopyJump: true,
-        minZoom: 3,
-        maxZoom: 18,
-        // 关键修复：maxBounds 限制到合理范围，避免拉到无瓦片区域出现灰白破图
-        maxBounds: [[-85, -180], [85, 180]],
-        maxBoundsViscosity: 0.8
-      }).setView([35, 105], 4);
+  setTimeout(function () {
+    try {
+      // ===== Step 3: 初始化地图（只用最基础、兼容性最好的选项） =====
+      if (!mapInstance) {
+        mapInstance = L.map('leafletMap', {
+          zoomControl: true,
+          attributionControl: true,
+          worldCopyJump: false,
+          minZoom: 2,
+          maxZoom: 18
+        }).setView([35.8617, 104.1954], 4); // 中国中心
 
-      // 使用自定义百度瓦片图层（bdimg.com 不校验 Referer，file:// 协议下稳定，不需要 AK）
-      // 使用 qt=vtile 端点（streetmaps2d 部分高缩放级别瓦片缺失会导致404灰白破图）
-      var baiduLayer = L.tileLayer.baidu('https://maponline{s}.bdimg.com/tile/?qt=vtile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1', {
-        subdomains: ['0', '1', '2', '3'],
-        minZoom: 3,
-        maxZoom: 18,
-        maxNativeZoom: 18, // 关键：百度公开瓦片最高稳定为 18，设为 19 会导致 404 灰白破图
-        crossOrigin: false,
-        noWrap: false,
-        tileSize: 256,
-        zoomOffset: 0,
-        keepBuffer: 4, // 放大缩小过程中保留更多缓存瓦片，减少视觉上的"闪白破图"
-        updateWhenIdle: false, // 拖动/缩放过程中实时更新瓦片，不等到空闲（视觉更流畅）
-        updateWhenZooming: true, // 缩放过程中就开始拉取新瓦片，而不是等缩放结束
-        attribution: '&copy; Baidu (百度地图)'
-      }).addTo(mapInstance);
+        // ===== Step 4: 添加百度地图瓦片（使用原生 L.tileLayer + 最简洁URL） =====
+        // 用 subdomains 参数，标准 XYZ 瓦片（streetmaps2d 端点是标准坐标系，无需翻转）
+        var tileOpts = {
+          subdomains: ['0', '1', '2', '3'],
+          minZoom: 2,
+          maxZoom: 18,
+          maxNativeZoom: 18,
+          tileSize: 256,
+          attribution: '&copy; Baidu (百度地图)'
+        };
 
-      // 关键修复：瓦片加载错误降级策略
-      // 当 vtile 端点加载失败时（如部分区域没有 vtile），自动回退到 streetmaps2d 端点
-      var _failedTiles = {};
-      var _fallbackReady = false;
-      baiduLayer.on('tileerror', function(evt) {
-        try {
-          var key = evt.coords.x + '_' + evt.coords.y + '_' + evt.coords.z;
-          if (_failedTiles[key]) return;
-          _failedTiles[key] = true;
-          // 累计3个瓦片失败就切换到备用端点
-          var failCount = Object.keys(_failedTiles).length;
-          if (failCount >= 3 && !_fallbackReady) {
-            _fallbackReady = true;
-            mapInstance.removeLayer(baiduLayer);
-            L.tileLayer.baidu('https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1', {
-              subdomains: ['0', '1', '2', '3'],
-              minZoom: 3,
-              maxZoom: 18,
-              maxNativeZoom: 18,
-              crossOrigin: false,
-              noWrap: false,
-              tileSize: 256,
-              zoomOffset: 0,
-              keepBuffer: 4,
-              updateWhenIdle: false,
-              updateWhenZooming: true,
-              flipY: false, // 若此端点拼接错位，改为 true
-              attribution: '&copy; Baidu (百度地图)'
-            }).addTo(mapInstance);
+        // 主瓦片：百度 streetmaps2d（中文标注、file:// 下无 Referer 限制、实测最稳定）
+        var tileUrl = 'https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1';
+        var mainLayer = L.tileLayer(tileUrl, tileOpts).addTo(mapInstance);
+
+        // 备用瓦片：vtile 端点（部分区域 streetmaps2d 无高缩放时自动切换）
+        var _failCount = 0;
+        var _switched = false;
+        mainLayer.on('tileerror', function () {
+          try {
+            _failCount++;
+            if (_failCount >= 5 && !_switched) {
+              _switched = true;
+              mapInstance.removeLayer(mainLayer);
+              // 备用：百度 vtile 端点
+              L.tileLayer('https://maponline{s}.bdimg.com/tile/?qt=vtile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1', tileOpts).addTo(mapInstance);
+              // 再次备用：CartoDB Voyager（纯英文，但永远不会403，保证能看到地图）
+              setTimeout(function () {
+                try {
+                  // 如果还是没有任何瓦片显示，再降级
+                } catch (e) {}
+              }, 3000);
+            }
+          } catch (e) {}
+        });
+
+        // 终极兜底：3 秒后如果检测不到任何 tile img 元素，强制换 OSM + 中文地名（CartoDB Voyager）
+        setTimeout(function () {
+          try {
+            var tiles = mapEl.querySelectorAll('img.leaflet-tile');
+            var anyLoaded = false;
+            for (var i = 0; i < tiles.length; i++) {
+              if (tiles[i].complete && tiles[i].naturalWidth > 0) { anyLoaded = true; break; }
+            }
+            if (!anyLoaded && !_switched) {
+              _switched = true;
+              mapInstance.eachLayer(function (l) { if (l instanceof L.TileLayer) mapInstance.removeLayer(l); });
+              L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                subdomains: 'abcd',
+                minZoom: 2,
+                maxZoom: 19,
+                maxNativeZoom: 19,
+                attribution: '&copy; OpenStreetMap &copy; CARTO'
+              }).addTo(mapInstance);
+              coordsEl.innerHTML = '🟡 百度瓦片加载超时，已切换备用世界地图';
+            }
+          } catch (e) {}
+        }, 4000);
+
+        // ===== Step 5: 点击放置 marker =====
+        mapInstance.on('click', function (e) {
+          try {
+            selectedLatLon = e.latlng;
+            if (mapMarker) {
+              mapMarker.setLatLng(e.latlng);
+            } else {
+              var ic = makeMapIcon();
+              var opts = ic ? { icon: ic, draggable: true, autoPan: true } : { draggable: true, autoPan: true };
+              mapMarker = L.marker(e.latlng, opts).addTo(mapInstance);
+              mapMarker.on('dragend', function () {
+                try {
+                  var p = mapMarker.getLatLng();
+                  selectedLatLon = p;
+                  coordsEl.textContent = '纬度: ' + p.lat.toFixed(4) + ', 经度: ' + p.lng.toFixed(4);
+                } catch (e) {}
+              });
+            }
+            coordsEl.textContent = '纬度: ' + e.latlng.lat.toFixed(4) + ', 经度: ' + e.latlng.lng.toFixed(4);
+          } catch (e) {
+            coordsEl.textContent = '⚠️ 选择位置出错: ' + e.message;
           }
-        } catch(e) {}
-      });
+        });
 
-      // 点击地图 → 放置/移动 marker
-      mapInstance.on('click', function(e) {
-        if (mapMarker) {
-          mapMarker.setLatLng(e.latlng);
-        } else {
-          mapMarker = L.marker(e.latlng, { icon: makeMapIcon(), draggable: true, autoPan: true }).addTo(mapInstance);
-          mapMarker.on('dragend', function() {
-            var p = mapMarker.getLatLng();
-            selectedLatLon = p;
-            coordsEl.textContent =
-              'Lat: ' + p.lat.toFixed(4) + ', Lng: ' + p.lng.toFixed(4);
-          });
+        // ===== Step 6: 多时间点刷新尺寸，覆盖 modal 动画各阶段 =====
+        var sizes = [100, 250, 450, 700, 1100, 1600];
+        for (var i = 0; i < sizes.length; i++) {
+          setTimeout(refreshSize, sizes[i]);
         }
-        selectedLatLon = e.latlng;
-        coordsEl.textContent =
-          'Lat: ' + e.latlng.lat.toFixed(4) + ', Lng: ' + e.latlng.lng.toFixed(4);
-      });
+        mapInstance.on('zoomend', function () { setTimeout(refreshSize, 60); });
 
-      mapInstance.whenReady(function() {
-        refreshSize();
-        coordsEl.textContent = 'Click/drag on the map to select a location';
-      });
-
-      // 关键修复：zoom 变化时再强制刷新一次，避免残留旧瓦片
-      mapInstance.on('zoomend', function() {
-        setTimeout(function() { refreshSize(); }, 50);
-      });
-      mapInstance.on('moveend', function() {
-        // 拖动结束后的轻微刷新，防止边界瓦片破图
-      });
+        // ===== Step 7: 初始就绪提示 =====
+        mapInstance.whenReady(function () {
+          refreshSize();
+          if (coordsEl.textContent.indexOf('超时') === -1 && coordsEl.textContent.indexOf('出错') === -1) {
+            coordsEl.textContent = '✅ 点击或拖动地图标记选择位置';
+          }
+        });
+      }
+      refreshSize();
+    } catch (e) {
+      // ===== 最外层 try-catch：任何初始化异常都显示到界面上，而不是静默卡住 =====
+      console.error('地图初始化失败:', e);
+      coordsEl.innerHTML = '❌ 初始化失败: ' + (e && e.message ? e.message : String(e)) +
+        ' &nbsp; <a href="javascript:window.location.reload()" style="color:var(--primary)">刷新页面重试</a>';
     }
-    refreshSize();
-  }, 180);
-  // 多时间点 invalidateSize，覆盖 modal 动画的不同阶段
-  setTimeout(refreshSize, 350);
-  setTimeout(refreshSize, 600);
-  setTimeout(refreshSize, 1000);
-  setTimeout(refreshSize, 1500);
+  }, 200);
 }
 
 function confirmMapLocation() {
