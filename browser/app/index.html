@@ -4012,6 +4012,7 @@ function openMap() {
         }).setView([35.8617, 104.1954], 4);
 
         // 瓦片多源降级：OSM → CartoDB → 高德 → 百度
+        // 仅在完全加载不出任何瓦片时才切换，避免加载中途误判
         var tileSources = [
           { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', sub: 'abc', attr: '&copy; OpenStreetMap' },
           { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO' },
@@ -4019,15 +4020,16 @@ function openMap() {
           { url: 'https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1', sub: '0123', attr: '&copy; 百度地图' }
         ];
         var currentTileIdx = 0;
-        var tileFailCount = 0;
         var tileLayer = null;
+        var tileHasSuccess = false;
 
         function tryTileSource(idx) {
           if (idx >= tileSources.length) {
-            coordsEl.textContent = '\u274C 所有地图瓦片源均加载失败，请检查网络或代理设置';
+            coordsEl.innerHTML = '\u274C 所有地图瓦片源均加载失败。<br>请检查网络，或点击搜索框用地名搜索后再确认位置。';
             return;
           }
           currentTileIdx = idx;
+          tileHasSuccess = false;
           var src = tileSources[idx];
           if (tileLayer) { try { mapInstance.removeLayer(tileLayer); } catch(e){} }
           tileLayer = L.tileLayer(src.url, {
@@ -4036,30 +4038,29 @@ function openMap() {
             maxZoom: 19,
             attribution: src.attr
           }).addTo(mapInstance);
-          tileFailCount = 0;
+
+          // 关键：只要有一个瓦片成功加载，就锁定当前源，不再自动降级
+          tileLayer.on('load', function () {
+            tileHasSuccess = true;
+          });
+          // 错误计数，但不轻易切换
+          var errCount = 0;
           tileLayer.on('tileerror', function () {
-            tileFailCount++;
-            if (tileFailCount >= 3) {
-              tileFailCount = 0;
+            errCount++;
+            // 只有累计 20 个错误且从未成功加载过任何瓦片，才切换
+            if (errCount >= 20 && !tileHasSuccess) {
               tryTileSource(idx + 1);
             }
           });
         }
         tryTileSource(0);
 
-        // 5秒后检测：如果仍无瓦片加载成功，自动切换下一源
+        // 8 秒后检测：只在从未成功加载过任何瓦片时才切换
         setTimeout(function () {
-          try {
-            var tiles = mapEl.querySelectorAll('img.leaflet-tile');
-            var anyLoaded = false;
-            for (var i = 0; i < tiles.length; i++) {
-              if (tiles[i].complete && tiles[i].naturalWidth > 0) { anyLoaded = true; break; }
-            }
-            if (!anyLoaded && currentTileIdx < tileSources.length - 1) {
-              tryTileSource(currentTileIdx + 1);
-            }
-          } catch (e) {}
-        }, 5000);
+          if (!tileHasSuccess && currentTileIdx < tileSources.length - 1) {
+            tryTileSource(currentTileIdx + 1);
+          }
+        }, 8000);
 
         // 点击放置 marker
         mapInstance.on('click', function (e) {
