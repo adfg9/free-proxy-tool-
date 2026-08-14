@@ -4011,13 +4011,55 @@ function openMap() {
           maxZoom: 18
         }).setView([35.8617, 104.1954], 4);
 
-        // OSM 瓦片（file:// 下无 Referer 限制，全球覆盖，最稳定）
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          subdomains: 'abc',
-          minZoom: 2,
-          maxZoom: 19,
-          attribution: '&copy; OpenStreetMap'
-        }).addTo(mapInstance);
+        // 瓦片多源降级：OSM → CartoDB → 高德 → 百度
+        var tileSources = [
+          { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', sub: 'abc', attr: '&copy; OpenStreetMap' },
+          { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO' },
+          { url: 'https://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', sub: '1234', attr: '&copy; 高德地图' },
+          { url: 'https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1', sub: '0123', attr: '&copy; 百度地图' }
+        ];
+        var currentTileIdx = 0;
+        var tileFailCount = 0;
+        var tileLayer = null;
+
+        function tryTileSource(idx) {
+          if (idx >= tileSources.length) {
+            coordsEl.textContent = '\u274C 所有地图瓦片源均加载失败，请检查网络或代理设置';
+            return;
+          }
+          currentTileIdx = idx;
+          var src = tileSources[idx];
+          if (tileLayer) { try { mapInstance.removeLayer(tileLayer); } catch(e){} }
+          tileLayer = L.tileLayer(src.url, {
+            subdomains: src.sub,
+            minZoom: 2,
+            maxZoom: 19,
+            attribution: src.attr
+          }).addTo(mapInstance);
+          tileFailCount = 0;
+          tileLayer.on('tileerror', function () {
+            tileFailCount++;
+            if (tileFailCount >= 3) {
+              tileFailCount = 0;
+              tryTileSource(idx + 1);
+            }
+          });
+        }
+        tryTileSource(0);
+
+        // 5秒后检测：如果仍无瓦片加载成功，自动切换下一源
+        setTimeout(function () {
+          try {
+            var tiles = mapEl.querySelectorAll('img.leaflet-tile');
+            var anyLoaded = false;
+            for (var i = 0; i < tiles.length; i++) {
+              if (tiles[i].complete && tiles[i].naturalWidth > 0) { anyLoaded = true; break; }
+            }
+            if (!anyLoaded && currentTileIdx < tileSources.length - 1) {
+              tryTileSource(currentTileIdx + 1);
+            }
+          } catch (e) {}
+        }, 5000);
 
         // 点击放置 marker
         mapInstance.on('click', function (e) {
