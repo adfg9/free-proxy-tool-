@@ -1834,6 +1834,10 @@ body.pixel-theme .modal-btn:active {
 }
 
 </style>
+<!-- Leaflet 1.9.4 本地文件（不依赖CDN，file://下秒开） -->
+<link rel="stylesheet" href="lib/leaflet/leaflet.css">
+<script src="lib/leaflet/leaflet.js"></script>
+<script>window.L || document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');</script>
 </head>
 <body>
 
@@ -1984,7 +1988,7 @@ body.pixel-theme .modal-btn:active {
                     <div data-city="London">&#127468;&#127463; London</div>
                     <div data-city="Paris">&#127467;&#127479; Paris</div>
                     <div class="weather-city-divider"></div>
-                    <div data-city="__picker__">&#127978;&#65039; 选择城市（省/市列表）</div>
+                    <div data-city="__map__">&#128205; 地图选城市（全球任意地点）</div>
                     <div data-city="__custom__" data-i18n="customCity">&#9998;&#65039; 自定义城市名 Custom city...</div>
                   </div>
                 </div>
@@ -2108,35 +2112,28 @@ body.pixel-theme .modal-btn:active {
   </div>
 </div>
 
-<!-- City Picker Modal (省/市二级联动 + 搜索，零外部依赖，秒开) -->
-<div class="modal-overlay" id="cityPickerModal">
-  <div class="modal-panel" style="max-width:760px">
+<!-- Map Modal (Leaflet + OSM 瓦片 + 地名搜索，覆盖全球) -->
+<div class="modal-overlay" id="mapModal">
+  <div class="modal-panel" style="max-width:680px">
     <div class="modal-header">
-      <h3>&#127978;&#65039; 选择城市 <span style="font-weight:300;font-size:12px;color:var(--text3)">(全国 34 省 + 300+ 地级市 / 也支持全球)</span></h3>
-      <button class="modal-close" onclick="closeModal('cityPickerModal')">&#215;</button>
+      <h3>&#128205; 地图选城市 <span style="font-weight:300;font-size:12px;color:var(--text3)">(搜索全球任意地点 / 点击地图选位置)</span></h3>
+      <button class="modal-close" onclick="closeModal('mapModal')">&#215;</button>
     </div>
-    <div class="modal-body" style="padding:14px 18px">
+    <div class="modal-body" style="padding:12px 16px">
       <!-- 搜索框 -->
-      <div style="margin-bottom:12px">
-        <input id="cityPickerSearch" type="text" placeholder="&#128269; 搜索城市（中文 / 拼音 / 英文，例如：成都 / Chengdu / Tokyo）"
-               style="width:100%;padding:9px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;outline:none">
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="mapSearchInput" type="text" placeholder="&#128269; 搜索地点（中文/英文，如：成都 / Paris / 東京）"
+               style="flex:1;padding:9px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;outline:none"
+               onkeydown="if(event.key==='Enter'){mapSearch()}" />
+        <button onclick="mapSearch()" style="padding:9px 16px;border-radius:8px;background:var(--primary);color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:500">搜索</button>
       </div>
-      <!-- 区域分类 Tab -->
-      <div id="cityPickerRegionTabs" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
-        <button type="button" class="city-region-tab active" data-region="CN" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:12px;cursor:pointer">&#127472;&#127475; 中国</button>
-        <button type="button" class="city-region-tab" data-region="AS" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">&#127759; 亚洲其他</button>
-        <button type="button" class="city-region-tab" data-region="EU" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">&#127466;&#127482; 欧洲</button>
-        <button type="button" class="city-region-tab" data-region="NA" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">&#127482;&#127480; 北美</button>
-        <button type="button" class="city-region-tab" data-region="OTHER" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">&#127758; 其他</button>
-      </div>
-      <!-- 省份 Tab -->
-      <div id="cityPickerProvinceTabs" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed var(--border)"></div>
-      <!-- 城市网格 -->
-      <div id="cityPickerCityGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;max-height:340px;overflow-y:auto;padding-right:4px"></div>
+      <!-- 地图容器 -->
+      <div id="leafletMap" style="height:400px;width:100%;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--surface2)"></div>
     </div>
     <div class="modal-footer">
-      <span class="coords" id="cityPickerHint">&#128161; 点击 Tab 切换省份，或直接搜索；点选城市即自动加载天气</span>
-      <button class="modal-btn modal-btn-outline" onclick="closeModal('cityPickerModal')" data-i18n="close">关闭</button>
+      <span class="coords" id="mapCoords" style="font-size:12px;color:var(--text2)">&#128161; 点击地图任意位置选择，或用上方搜索框查找地点</span>
+      <button class="modal-btn modal-btn-outline" onclick="closeModal('mapModal')" data-i18n="close">关闭</button>
+      <button class="modal-btn modal-btn-primary" onclick="confirmMapLocation()" style="background:var(--primary);color:#fff">&#9989; 确认并查看天气</button>
     </div>
   </div>
 </div>
@@ -3408,9 +3405,9 @@ document.addEventListener('click', e => {
       });
       return;
     }
-    if (value === '__picker__') {
+    if (value === '__map__') {
       closeDropdown();
-      openCityPicker();
+      openMap();
       return;
     }
     setWeatherCity(value);
@@ -3960,124 +3957,174 @@ const CITY_DB_FLAT = (function () {
   return out;
 })();
 
-// ========== City Picker UI ==========
-let cityPickerCurrentRegion = 'CN';
-let cityPickerCurrentProv = null;
-let cityPickerSearchTimer = null;
+// ========== Map City Picker (Leaflet + OSM 瓦片 + Nominatim 搜索) ==========
+let mapInstance = null;
+let mapMarker = null;
+let selectedLatLon = null;
+let mapSearchTimer = null;
 
-function openCityPicker() {
-  openModal('cityPickerModal');
+function makeMapIcon() {
   try {
-    // 默认选中中国第一个省
-    if (!cityPickerCurrentProv) {
-      var first = CITY_DB.find(function (p) { return p.region === 'CN'; });
-      cityPickerCurrentProv = first ? first.prov : null;
-    }
-    bindCityPickerEvents();
-    renderCityPickerProvinceTabs();
-    renderCityPickerCityGrid();
-  } catch (e) {
-    console.error(e);
-  }
+    return L.divIcon({
+      className: 'custom-map-marker',
+      html: '<div style="transform:translate(-50%,-100%);-webkit-transform:translate(-50%,-100%);font-size:32px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));">\uD83D\uDCCD</div>',
+      iconSize: [0, 0],
+      iconAnchor: [0, 0],
+      popupAnchor: [0, -32]
+    });
+  } catch (e) { return null; }
 }
 
-function bindCityPickerEvents() {
-  var regionTabs = document.querySelectorAll('#cityPickerRegionTabs .city-region-tab');
-  regionTabs.forEach(function (btn) {
-    if (btn._bound) return;
-    btn._bound = true;
-    btn.addEventListener('click', function () {
-      regionTabs.forEach(function (b) {
-        b.classList.remove('active');
-        b.style.background = 'transparent';
-      });
-      btn.classList.add('active');
-      btn.style.background = 'var(--surface2)';
-      cityPickerCurrentRegion = btn.dataset.region;
-      // 切换到该 region 第一个省份
-      var p = CITY_DB.find(function (x) { return x.region === cityPickerCurrentRegion; });
-      cityPickerCurrentProv = p ? p.prov : null;
-      renderCityPickerProvinceTabs();
-      renderCityPickerCityGrid();
-    });
-  });
-  var search = document.getElementById('cityPickerSearch');
-  if (search && !search._bound) {
-    search._bound = true;
-    search.addEventListener('input', function () {
-      clearTimeout(cityPickerSearchTimer);
-      cityPickerSearchTimer = setTimeout(renderCityPickerCityGrid, 100);
-    });
-  }
-}
+function openMap() {
+  openModal('mapModal');
+  var coordsEl = document.getElementById('mapCoords');
+  var mapEl = document.getElementById('leafletMap');
+  if (!coordsEl || !mapEl) return;
 
-function renderCityPickerProvinceTabs() {
-  var box = document.getElementById('cityPickerProvinceTabs');
-  if (!box) return;
-  var list = CITY_DB.filter(function (p) { return p.region === cityPickerCurrentRegion; });
-  box.innerHTML = list.map(function (p) {
-    var active = p.prov === cityPickerCurrentProv ? 'background:var(--primary);color:#fff;border-color:var(--primary);' : 'background:transparent;';
-    return '<button type="button" data-prov="' + p.prov + '" style="padding:4px 9px;border-radius:6px;border:1px solid var(--border);color:var(--text2);font-size:11px;cursor:pointer;white-space:nowrap;' + active + '">' + p.prov + '</button>';
-  }).join('');
-  box.querySelectorAll('button').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      cityPickerCurrentProv = btn.dataset.prov;
-      renderCityPickerProvinceTabs();
-      renderCityPickerCityGrid();
-    });
-  });
-}
+  mapEl.style.height = '400px';
+  mapEl.style.width = '100%';
+  void mapEl.offsetHeight;
 
-function renderCityPickerCityGrid() {
-  var grid = document.getElementById('cityPickerCityGrid');
-  var hint = document.getElementById('cityPickerHint');
-  if (!grid) return;
-  var keyword = '';
-  var s = document.getElementById('cityPickerSearch');
-  if (s) keyword = s.value.trim().toLowerCase();
+  coordsEl.textContent = '\uD83D\uDD04 正在初始化地图...';
 
-  var list = CITY_DB_FLAT;
-  if (keyword) {
-    list = list.filter(function (c) { return c.searchKey.indexOf(keyword) !== -1; });
-  } else {
-    list = list.filter(function (c) { return c.region === cityPickerCurrentRegion && c.prov === cityPickerCurrentProv; });
-  }
-
-  if (!list.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--text3);font-size:13px">未找到匹配的城市，请换个关键词</div>';
+  if (typeof L === 'undefined') {
+    coordsEl.innerHTML = '\u274C Leaflet 地图库加载失败，请检查网络后 <a href="javascript:window.location.reload()" style="color:var(--primary)">刷新页面</a> 重试';
     return;
   }
 
-  grid.innerHTML = list.map(function (c) {
-    return '<button type="button" data-en="' + encodeURIComponent(c.en) + '" data-label="' + encodeURIComponent(c.zh + ' ' + c.en) + '" data-lat="' + c.lat + '" data-lon="' + c.lon + '"' +
-      ' style="padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;cursor:pointer;text-align:left;transition:all .15s;line-height:1.3">' +
-      '<div style="font-weight:500">' + c.zh + '</div>' +
-      '<div style="font-size:10px;color:var(--text3);margin-top:2px">' + c.en + ' · ' + c.prov + '</div>' +
-      '</button>';
-  }).join('');
+  function refreshSize() {
+    try {
+      if (!mapInstance) return;
+      mapEl.style.height = '400px';
+      mapInstance.invalidateSize(false);
+    } catch (e) {}
+  }
 
-  grid.querySelectorAll('button').forEach(function (btn) {
-    btn.addEventListener('mouseenter', function () { btn.style.background = 'var(--primary-bg)'; btn.style.borderColor = 'var(--primary)'; });
-    btn.addEventListener('mouseleave', function () { btn.style.background = 'var(--surface2)'; btn.style.borderColor = 'var(--border)'; });
-    btn.addEventListener('click', function () {
-      try {
-        var lat = parseFloat(btn.dataset.lat);
-        var lon = parseFloat(btn.dataset.lon);
-        var label = decodeURIComponent(btn.dataset.label);
-        var en = decodeURIComponent(btn.dataset.en);
-        // 使用 __latlon__ 存储，避免再次 geocode 网络请求
-        setWeatherCity('__latlon__' + lat.toFixed(4) + ',' + lon.toFixed(4));
-        var nameEl = document.getElementById('weatherCityName');
-        if (nameEl) nameEl.textContent = label;
-        closeModal('cityPickerModal');
-        closeDropdown();
-        fetchWeather();
-        if (hint) hint.innerHTML = '&#9989; 已切换到 <b>' + label + '</b>，正在加载天气...';
-      } catch (e) {
-        console.error(e);
+  setTimeout(function () {
+    try {
+      if (!mapInstance) {
+        mapInstance = L.map('leafletMap', {
+          zoomControl: true,
+          attributionControl: true,
+          worldCopyJump: false,
+          minZoom: 2,
+          maxZoom: 18
+        }).setView([35.8617, 104.1954], 4);
+
+        // OSM 瓦片（file:// 下无 Referer 限制，全球覆盖，最稳定）
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          subdomains: 'abc',
+          minZoom: 2,
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(mapInstance);
+
+        // 点击放置 marker
+        mapInstance.on('click', function (e) {
+          try {
+            selectedLatLon = e.latlng;
+            if (mapMarker) {
+              mapMarker.setLatLng(e.latlng);
+            } else {
+              var ic = makeMapIcon();
+              var opts = ic ? { icon: ic, draggable: true, autoPan: true } : { draggable: true, autoPan: true };
+              mapMarker = L.marker(e.latlng, opts).addTo(mapInstance);
+              mapMarker.on('dragend', function () {
+                try {
+                  var p = mapMarker.getLatLng();
+                  selectedLatLon = p;
+                  coordsEl.textContent = '\u7EAC\u5EA6: ' + p.lat.toFixed(4) + ', \u7ECF\u5EA6: ' + p.lng.toFixed(4);
+                } catch (e) {}
+              });
+            }
+            coordsEl.textContent = '\u7EAC\u5EA6: ' + e.latlng.lat.toFixed(4) + ', \u7ECF\u5EA6: ' + e.latlng.lng.toFixed(4);
+          } catch (e) {
+            coordsEl.textContent = '\u26A0\uFE0F \u9009\u62E9\u4F4D\u7F6E\u51FA\u9519: ' + e.message;
+          }
+        });
+
+        // 多时间点刷新尺寸
+        var sizes = [100, 250, 450, 700, 1100, 1600];
+        for (var i = 0; i < sizes.length; i++) {
+          setTimeout(refreshSize, sizes[i]);
+        }
+        mapInstance.on('zoomend', function () { setTimeout(refreshSize, 60); });
+
+        mapInstance.whenReady(function () {
+          refreshSize();
+          if (coordsEl.textContent.indexOf('\u8D85\u65F6') === -1 && coordsEl.textContent.indexOf('\u51FA\u9519') === -1) {
+            coordsEl.textContent = '\u2705 \u70B9\u51FB\u6216\u62D6\u52A8\u5730\u56FE\u6807\u8BB0\u9009\u62E9\u4F4D\u7F6E\uFF0C\u6216\u7528\u641C\u7D22\u6846\u67E5\u627E\u5730\u70B9';
+          }
+        });
       }
-    });
+      refreshSize();
+    } catch (e) {
+      console.error('地图初始化失败:', e);
+      coordsEl.innerHTML = '\u274C \u521D\u59CB\u5316\u5931\u8D25: ' + (e && e.message ? e.message : String(e)) +
+        ' &nbsp; <a href="javascript:window.location.reload()" style="color:var(--primary)">\u5237\u65B0\u9875\u9762\u91CD\u8BD5</a>';
+    }
+  }, 200);
+}
+
+// Nominatim 地名搜索（覆盖全球，免费无Key）
+async function mapSearch() {
+  var input = document.getElementById('mapSearchInput');
+  var coordsEl = document.getElementById('mapCoords');
+  if (!input) return;
+  var q = input.value.trim();
+  if (!q) return;
+  coordsEl.textContent = '\uD83D\uDD0D 搜索中: ' + q + ' ...';
+  try {
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q) + '&limit=1&accept-language=zh-CN,en';
+    var d = await fetchJSON(url, 8000);
+    if (d && d.length > 0) {
+      var r = d[0];
+      var lat = parseFloat(r.lat), lon = parseFloat(r.lon);
+      selectedLatLon = { lat: lat, lng: lon };
+      // 飞到位置
+      if (mapInstance) {
+        mapInstance.setView([lat, lon], 10);
+        if (mapMarker) {
+          mapMarker.setLatLng([lat, lon]);
+        } else {
+          var ic = makeMapIcon();
+          var opts = ic ? { icon: ic, draggable: true, autoPan: true } : { draggable: true, autoPan: true };
+          mapMarker = L.marker([lat, lon], opts).addTo(mapInstance);
+        }
+      }
+      var name = r.display_name ? r.display_name.split(',')[0] : q;
+      coordsEl.innerHTML = '\u2705 <b>' + name + '</b> (' + lat.toFixed(3) + ', ' + lon.toFixed(3) + ') \u2014 \u70B9\u51FB\u786E\u8BA4\u67E5\u770B\u5929\u6C14';
+    } else {
+      coordsEl.textContent = '\u274C \u672A\u627E\u5230 "' + q + '"\uFF0C\u8BF7\u6362\u4E2A\u540D\u79F0\u8BD5\u8BD5';
+    }
+  } catch (e) {
+    coordsEl.textContent = '\u274C \u641C\u7D22\u5931\u8D25: ' + (e && e.message ? e.message : String(e));
+  }
+}
+
+function confirmMapLocation() {
+  if (!selectedLatLon) return;
+  var lat = selectedLatLon.lat;
+  var lon = selectedLatLon.lng;
+  var value = '__latlon__' + lat.toFixed(4) + ',' + lon.toFixed(4);
+  setWeatherCity(value);
+  // 尝试用 CITY_DB 最近邻反查中文名
+  var near = null, minD = Infinity;
+  CITY_DB_FLAT.forEach(function (c) {
+    var d = (c.lat - lat) * (c.lat - lat) + (c.lon - lon) * (c.lon - lon);
+    if (d < minD) { minD = d; near = c; }
   });
+  var displayName;
+  if (near && minD < 1.0) {
+    displayName = near.label;
+  } else {
+    displayName = lat.toFixed(2) + ', ' + lon.toFixed(2);
+  }
+  var nameEl = document.getElementById('weatherCityName');
+  if (nameEl) nameEl.textContent = displayName;
+  closeModal('mapModal');
+  fetchWeather();
+  closeDropdown();
 }
 
 // ========== Toast Notification ==========
