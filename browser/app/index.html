@@ -4008,16 +4008,17 @@ function openMap() {
           attributionControl: true,
           worldCopyJump: false,
           minZoom: 2,
-          maxZoom: 18
+          maxZoom: 20,
+          zoomSnap: 1,
+          wheelPxPerZoomLevel: 120
         }).setView([35.8617, 104.1954], 4);
 
-        // 瓦片多源降级：OSM → CartoDB → 高德 → 百度
-        // 仅在完全加载不出任何瓦片时才切换，避免加载中途误判
+        // 瓦片多源降级：CartoDB(最稳定不限流) → OSM → 高德 → 百度
         var tileSources = [
-          { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', sub: 'abc', attr: '&copy; OpenStreetMap' },
-          { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO' },
-          { url: 'https://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', sub: '1234', attr: '&copy; 高德地图' },
-          { url: 'https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1', sub: '0123', attr: '&copy; 百度地图' }
+          { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20 },
+          { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', sub: 'abc', attr: '&copy; OpenStreetMap', maxZoom: 19 },
+          { url: 'https://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', sub: '1234', attr: '&copy; 高德地图', maxZoom: 18 },
+          { url: 'https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1', sub: '0123', attr: '&copy; 百度地图', maxZoom: 18 }
         ];
         var currentTileIdx = 0;
         var tileLayer = null;
@@ -4035,19 +4036,23 @@ function openMap() {
           tileLayer = L.tileLayer(src.url, {
             subdomains: src.sub,
             minZoom: 2,
-            maxZoom: 19,
-            attribution: src.attr
+            maxZoom: src.maxZoom || 19,
+            attribution: src.attr,
+            keepBuffer: 4,
+            updateWhenZooming: false,
+            crossOrigin: true
           }).addTo(mapInstance);
 
-          // 关键：只要有一个瓦片成功加载，就锁定当前源，不再自动降级
+          // 只要有一个瓦片成功加载，就锁定当前源
+          tileLayer.on('tileload', function () {
+            tileHasSuccess = true;
+          });
           tileLayer.on('load', function () {
             tileHasSuccess = true;
           });
-          // 错误计数，但不轻易切换
           var errCount = 0;
           tileLayer.on('tileerror', function () {
             errCount++;
-            // 只有累计 20 个错误且从未成功加载过任何瓦片，才切换
             if (errCount >= 20 && !tileHasSuccess) {
               tryTileSource(idx + 1);
             }
@@ -4086,12 +4091,12 @@ function openMap() {
           }
         });
 
-        // 多时间点刷新尺寸
+        // 多时间点刷新尺寸（仅在初始化阶段）
         var sizes = [100, 250, 450, 700, 1100, 1600];
         for (var i = 0; i < sizes.length; i++) {
           setTimeout(refreshSize, sizes[i]);
         }
-        mapInstance.on('zoomend', function () { setTimeout(refreshSize, 60); });
+        // 注意：zoomend 时不再调用 invalidateSize，避免打断瓦片加载导致放大后空白
 
         mapInstance.whenReady(function () {
           refreshSize();
