@@ -2112,7 +2112,7 @@ body.pixel-theme .modal-btn:active {
   </div>
 </div>
 
-<!-- Map Modal (Leaflet + OSM 瓦片 + 地名搜索，覆盖全球) -->
+<!-- Map Modal (Leaflet + 多瓦片源可切换 + 地名搜索，覆盖全球) -->
 <div class="modal-overlay" id="mapModal">
   <div class="modal-panel" style="max-width:680px">
     <div class="modal-header">
@@ -2120,6 +2120,8 @@ body.pixel-theme .modal-btn:active {
       <button class="modal-close" onclick="closeModal('mapModal')">&#215;</button>
     </div>
     <div class="modal-body" style="padding:12px 16px">
+      <!-- 瓦片源切换按钮 -->
+      <div id="tileSourceTabs" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px"></div>
       <!-- 搜索框 -->
       <div style="display:flex;gap:8px;margin-bottom:10px">
         <input id="mapSearchInput" type="text" placeholder="&#128269; 搜索地点（中文/英文，如：成都 / Paris / 東京）"
@@ -3957,11 +3959,78 @@ const CITY_DB_FLAT = (function () {
   return out;
 })();
 
-// ========== Map City Picker (Leaflet + OSM 瓦片 + Nominatim 搜索) ==========
+// ========== Map City Picker (Leaflet + 瓦片源可切换 + Nominatim 搜索) ==========
 let mapInstance = null;
 let mapMarker = null;
 let selectedLatLon = null;
 let mapSearchTimer = null;
+let currentTileLayer = null;
+let currentTileIdx = 0;
+
+// 瓦片源定义（全局，可切换）
+const TILE_SOURCES = [
+  { id: 'carto',    name: 'CartoDB',   flag: '\uD83C\uDF0D', url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '推荐·全球·不限流' },
+  { id: 'osm',      name: 'OSM',       flag: '\uD83C\uDF10', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', sub: 'abc', attr: '&copy; OpenStreetMap', maxZoom: 19, desc: '开源·全球' },
+  { id: 'amap',     name: '高德地图',   flag: '\uD83C\uDDE8\uD83C\uDDF3', url: 'https://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', sub: '1234', attr: '&copy; 高德地图', maxZoom: 18, desc: '国内·中文标注' },
+  { id: 'baidu',    name: '百度地图',   flag: '\uD83C\uDDE8\uD83C\uDDF3', url: 'https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1', sub: '0123', attr: '&copy; 百度地图', maxZoom: 18, desc: '国内·中文标注' },
+  { id: 'cartoPos', name: 'CartoPos',   flag: '\uD83D\uDFE2', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '浅色·全球' },
+  { id: 'cartoDark',name: 'CartoDark',  flag: '\uD83C\uDF19', url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '深色·全球' },
+];
+
+// 渲染瓦片源切换按钮
+function renderTileTabs() {
+  var box = document.getElementById('tileSourceTabs');
+  if (!box) return;
+  var saved = 0;
+  try {
+    var s = localStorage.getItem('mapTileSource');
+    if (s !== null) {
+      var n = parseInt(s, 10);
+      if (n >= 0 && n < TILE_SOURCES.length) saved = n;
+    }
+  } catch (e) {}
+  currentTileIdx = saved;
+  box.innerHTML = TILE_SOURCES.map(function (src, i) {
+    var active = i === currentTileIdx;
+    var bg = active ? 'background:var(--primary);color:#fff;border-color:var(--primary);' : 'background:var(--surface2);color:var(--text2);';
+    return '<button type="button" data-idx="' + i + '" title="' + src.desc + '"' +
+      ' style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);font-size:11px;cursor:pointer;white-space:nowrap;line-height:1.3;' + bg + '">' +
+      src.flag + ' ' + src.name +
+      '</button>';
+  }).join('');
+  box.querySelectorAll('button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      setTileSource(parseInt(btn.dataset.idx, 10), true);
+    });
+  });
+}
+
+// 切换瓦片源
+function setTileSource(idx, userClick) {
+  if (idx < 0 || idx >= TILE_SOURCES.length) return;
+  currentTileIdx = idx;
+  try { localStorage.setItem('mapTileSource', String(idx)); } catch (e) {}
+  renderTileTabs();
+  if (!mapInstance) return;
+  var src = TILE_SOURCES[idx];
+  if (currentTileLayer) { try { mapInstance.removeLayer(currentTileLayer); } catch (e) {} }
+  currentTileLayer = L.tileLayer(src.url, {
+    subdomains: src.sub,
+    minZoom: 2,
+    maxZoom: src.maxZoom || 19,
+    attribution: src.attr,
+    keepBuffer: 4,
+    updateWhenZooming: false,
+    crossOrigin: true
+  }).addTo(mapInstance);
+  var coordsEl = document.getElementById('mapCoords');
+  if (coordsEl && userClick) {
+    coordsEl.innerHTML = '\uD83D\uDD04 已切换到 <b>' + src.flag + ' ' + src.name + '</b> (' + src.desc + ') - 加载中...';
+    currentTileLayer.on('load', function () {
+      try { coordsEl.textContent = '\u2705 已切换到 ' + src.name + ' · 点击地图或用搜索框查找地点'; } catch (e) {}
+    });
+  }
+}
 
 function makeMapIcon() {
   try {
@@ -4000,6 +4069,9 @@ function openMap() {
     } catch (e) {}
   }
 
+  // 先渲染瓦片源按钮（读取 localStorage 的用户上次选择）
+  renderTileTabs();
+
   setTimeout(function () {
     try {
       if (!mapInstance) {
@@ -4013,57 +4085,17 @@ function openMap() {
           wheelPxPerZoomLevel: 120
         }).setView([35.8617, 104.1954], 4);
 
-        // 瓦片多源降级：CartoDB(最稳定不限流) → OSM → 高德 → 百度
-        var tileSources = [
-          { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20 },
-          { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', sub: 'abc', attr: '&copy; OpenStreetMap', maxZoom: 19 },
-          { url: 'https://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', sub: '1234', attr: '&copy; 高德地图', maxZoom: 18 },
-          { url: 'https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1', sub: '0123', attr: '&copy; 百度地图', maxZoom: 18 }
-        ];
-        var currentTileIdx = 0;
-        var tileLayer = null;
-        var tileHasSuccess = false;
+        // 加载用户选择的瓦片源
+        setTileSource(currentTileIdx);
 
-        function tryTileSource(idx) {
-          if (idx >= tileSources.length) {
-            coordsEl.innerHTML = '\u274C 所有地图瓦片源均加载失败。<br>请检查网络，或点击搜索框用地名搜索后再确认位置。';
-            return;
-          }
-          currentTileIdx = idx;
-          tileHasSuccess = false;
-          var src = tileSources[idx];
-          if (tileLayer) { try { mapInstance.removeLayer(tileLayer); } catch(e){} }
-          tileLayer = L.tileLayer(src.url, {
-            subdomains: src.sub,
-            minZoom: 2,
-            maxZoom: src.maxZoom || 19,
-            attribution: src.attr,
-            keepBuffer: 4,
-            updateWhenZooming: false,
-            crossOrigin: true
-          }).addTo(mapInstance);
-
-          // 只要有一个瓦片成功加载，就锁定当前源
-          tileLayer.on('tileload', function () {
-            tileHasSuccess = true;
-          });
-          tileLayer.on('load', function () {
-            tileHasSuccess = true;
-          });
-          var errCount = 0;
-          tileLayer.on('tileerror', function () {
-            errCount++;
-            if (errCount >= 20 && !tileHasSuccess) {
-              tryTileSource(idx + 1);
-            }
-          });
+        // 8 秒后检测：如果当前源完全加载失败，自动尝试下一个源
+        var tileLoadSuccess = false;
+        if (currentTileLayer) {
+          currentTileLayer.on('tileload', function () { tileLoadSuccess = true; });
         }
-        tryTileSource(0);
-
-        // 8 秒后检测：只在从未成功加载过任何瓦片时才切换
         setTimeout(function () {
-          if (!tileHasSuccess && currentTileIdx < tileSources.length - 1) {
-            tryTileSource(currentTileIdx + 1);
+          if (!tileLoadSuccess && currentTileIdx < TILE_SOURCES.length - 1) {
+            setTileSource(currentTileIdx + 1);
           }
         }, 8000);
 
