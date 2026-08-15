@@ -3968,13 +3968,14 @@ let currentTileLayer = null;
 let currentTileIdx = 0;
 
 // 瓦片源定义（全局，可切换）
+// 注意：占位符必须使用 Leaflet 标准 {s}/{x}/{y}/{z}/{r}，{1-4} 这种自定义占位符是无效的
 const TILE_SOURCES = [
   { id: 'carto',    name: 'CartoDB',   flag: '\uD83C\uDF0D', url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '推荐·全球·不限流' },
   { id: 'osm',      name: 'OSM',       flag: '\uD83C\uDF10', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', sub: 'abc', attr: '&copy; OpenStreetMap', maxZoom: 19, desc: '开源·全球' },
-  { id: 'amap',     name: '高德地图',   flag: '\uD83C\uDDE8\uD83C\uDDF3', url: 'https://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', sub: '1234', attr: '&copy; 高德地图', maxZoom: 18, desc: '国内·中文标注' },
+  { id: 'amap',     name: '高德地图',   flag: '\uD83C\uDDE8\uD83C\uDDF3', url: 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', sub: '1234', attr: '&copy; 高德地图', maxZoom: 18, desc: '国内·中文标注' },
   { id: 'baidu',    name: '百度地图',   flag: '\uD83C\uDDE8\uD83C\uDDF3', url: 'https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1', sub: '0123', attr: '&copy; 百度地图', maxZoom: 18, desc: '国内·中文标注' },
-  { id: 'cartoPos', name: 'CartoPos',   flag: '\uD83D\uDFE2', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '浅色·全球' },
-  { id: 'cartoDark',name: 'CartoDark',  flag: '\uD83C\uDF19', url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '深色·全球' },
+  { id: 'cartoPos', name: 'Carto浅色',  flag: '\uD83D\uDFE2', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '浅色简洁·全球' },
+  { id: 'cartoDark',name: 'Carto深色',  flag: '\uD83C\uDF19', url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '深色暗夜·全球' },
 ];
 
 // 渲染瓦片源切换按钮
@@ -4074,7 +4075,9 @@ function openMap() {
 
   setTimeout(function () {
     try {
-      if (!mapInstance) {
+      var isFirstInit = !mapInstance;
+
+      if (isFirstInit) {
         mapInstance = L.map('leafletMap', {
           zoomControl: true,
           attributionControl: true,
@@ -4085,21 +4088,7 @@ function openMap() {
           wheelPxPerZoomLevel: 120
         }).setView([35.8617, 104.1954], 4);
 
-        // 加载用户选择的瓦片源
-        setTileSource(currentTileIdx);
-
-        // 8 秒后检测：如果当前源完全加载失败，自动尝试下一个源
-        var tileLoadSuccess = false;
-        if (currentTileLayer) {
-          currentTileLayer.on('tileload', function () { tileLoadSuccess = true; });
-        }
-        setTimeout(function () {
-          if (!tileLoadSuccess && currentTileIdx < TILE_SOURCES.length - 1) {
-            setTileSource(currentTileIdx + 1);
-          }
-        }, 8000);
-
-        // 点击放置 marker
+        // 点击放置 marker（只绑定一次）
         mapInstance.on('click', function (e) {
           try {
             selectedLatLon = e.latlng;
@@ -4122,22 +4111,49 @@ function openMap() {
             coordsEl.textContent = '\u26A0\uFE0F \u9009\u62E9\u4F4D\u7F6E\u51FA\u9519: ' + e.message;
           }
         });
+      }
 
-        // 多时间点刷新尺寸（仅在初始化阶段）
-        var sizes = [100, 250, 450, 700, 1100, 1600];
-        for (var i = 0; i < sizes.length; i++) {
-          setTimeout(refreshSize, sizes[i]);
-        }
-        // 注意：zoomend 时不再调用 invalidateSize，避免打断瓦片加载导致放大后空白
+      // ⭐ 每次打开都加载用户选择的瓦片源（解决：第2次打开时按钮高亮和实际瓦片不一致）
+      setTileSource(currentTileIdx);
 
+      // 如果是首次初始化：8 秒后检测当前源是否完全加载失败，失败则自动切下一源
+      if (isFirstInit) {
+        (function () {
+          var tileLoadSuccess = false;
+          var successHandler = function () { tileLoadSuccess = true; };
+          if (currentTileLayer) {
+            currentTileLayer.on('tileload', successHandler);
+            currentTileLayer.on('load', successHandler);
+          }
+          setTimeout(function () {
+            if (!tileLoadSuccess && currentTileIdx < TILE_SOURCES.length - 1) {
+              setTileSource(currentTileIdx + 1);
+            }
+          }, 8000);
+        })();
+      }
+
+      // ⭐ 每次打开都多时间点 refreshSize（解决：关闭/重开后 modal 动画期间尺寸为0导致的空白）
+      var sizes = [50, 180, 350, 550, 900, 1400, 2000];
+      for (var i = 0; i < sizes.length; i++) {
+        setTimeout(refreshSize, sizes[i]);
+      }
+
+      if (isFirstInit) {
         mapInstance.whenReady(function () {
           refreshSize();
-          if (coordsEl.textContent.indexOf('\u8D85\u65F6') === -1 && coordsEl.textContent.indexOf('\u51FA\u9519') === -1) {
-            coordsEl.textContent = '\u2705 \u70B9\u51FB\u6216\u62D6\u52A8\u5730\u56FE\u6807\u8BB0\u9009\u62E9\u4F4D\u7F6E\uFF0C\u6216\u7528\u641C\u7D22\u6846\u67E5\u627E\u5730\u70B9';
-          }
         });
       }
-      refreshSize();
+
+      // 统一的成功提示（避免和 setTileSource 内部的 userClick 提示冲突）
+      setTimeout(function () {
+        if (coordsEl && (
+          coordsEl.textContent.indexOf('\u521D\u59CB\u5316\u5730\u56FE') !== -1 ||
+          coordsEl.textContent.trim() === ''
+        )) {
+          coordsEl.textContent = '\u2705 \u70B9\u51FB\u6216\u62D6\u52A8\u5730\u56FE\u6807\u8BB0\u9009\u62E9\u4F4D\u7F6E\uFF0C\u6216\u7528\u641C\u7D22\u6846\u67E5\u627E\u5730\u70B9';
+        }
+      }, 1200);
     } catch (e) {
       console.error('地图初始化失败:', e);
       coordsEl.innerHTML = '\u274C \u521D\u59CB\u5316\u5931\u8D25: ' + (e && e.message ? e.message : String(e)) +
@@ -4175,15 +4191,26 @@ async function mapSearch() {
       var name = r.display_name ? r.display_name.split(',')[0] : q;
       coordsEl.innerHTML = '\u2705 <b>' + name + '</b> (' + lat.toFixed(3) + ', ' + lon.toFixed(3) + ') \u2014 \u70B9\u51FB\u786E\u8BA4\u67E5\u770B\u5929\u6C14';
     } else {
-      coordsEl.textContent = '\u274C \u672A\u627E\u5230 "' + q + '"\uFF0C\u8BF7\u6362\u4E2A\u540D\u79F0\u8BD5\u8BD5';
+      coordsEl.innerHTML = '\u274C \u672A\u627E\u5230 <b>"' + q + '"</b><br>\uD83D\uDCA1 \u5C1D\u8BD5\uFF1A\u4F7F\u7528\u5E02\u53BF\u7EA7\u540D\u79F0\u3001\u82F1\u6587\u540D\u3001\u6216\u5220\u9664\u7701\u4EFD\u524D\u7F00\uFF08\u4F8B\uFF1A\u6210\u90FD\u800C\u4E0D\u662F\u56DB\u5DDD\u7701\u6210\u90FD\u5E02\uFF09';
     }
   } catch (e) {
-    coordsEl.textContent = '\u274C \u641C\u7D22\u5931\u8D25: ' + (e && e.message ? e.message : String(e));
+    var msg = e && e.message ? e.message : String(e);
+    var tip = '';
+    if (msg.indexOf('timeout') !== -1 || msg.indexOf('Timeout') !== -1) {
+      tip = '<br>\uD83D\uDCA1 \u5C1D\u8BD5\u5207\u6362\u4EE3\u7406\uFF0C\u6216\u4F7F\u7528\u5730\u56FE\u70B9\u51FB\u9009\u62E9';
+    }
+    coordsEl.innerHTML = '\u274C \u641C\u7D22\u5931\u8D25: ' + msg + tip;
   }
 }
 
 function confirmMapLocation() {
-  if (!selectedLatLon) return;
+  if (!selectedLatLon) {
+    var coordsEl = document.getElementById('mapCoords');
+    if (coordsEl) {
+      coordsEl.innerHTML = '\u26A0\uFE0F \u8BF7\u5148\u9009\u62E9\u4F4D\u7F6E\uFF1A\u70B9\u51FB\u5730\u56FE\u4EFB\u610F\u4F4D\u7F6E\u6216\u4F7F\u7528\u641C\u7D22\u6846\u5B9A\u4F4D';
+    }
+    return;
+  }
   var lat = selectedLatLon.lat;
   var lon = selectedLatLon.lng;
   var value = '__latlon__' + lat.toFixed(4) + ',' + lon.toFixed(4);
