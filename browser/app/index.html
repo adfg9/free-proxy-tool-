@@ -3968,14 +3968,19 @@ let currentTileLayer = null;
 let currentTileIdx = 0;
 
 // 瓦片源定义（全局，可切换）
-// 注意：占位符必须使用 Leaflet 标准 {s}/{x}/{y}/{z}/{r}，{1-4} 这种自定义占位符是无效的
+// 注意：
+//  - 占位符必须使用 Leaflet 标准 {s}/{x}/{y}/{z}/{r}，{1-4} 这种自定义占位符是无效的
+//  - Electron file:// 协议下，国内高德/百度/腾讯瓦片对 Referer+预检极严，必须 cors=false（否则 OPTIONS 直接失败）
+//  - 高德的 wprd 矢量瓦片比 webrd 更稳定
 const TILE_SOURCES = [
-  { id: 'carto',    name: 'CartoDB',   flag: '\uD83C\uDF0D', url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '推荐·全球·不限流' },
-  { id: 'osm',      name: 'OSM',       flag: '\uD83C\uDF10', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', sub: 'abc', attr: '&copy; OpenStreetMap', maxZoom: 19, desc: '开源·全球' },
-  { id: 'amap',     name: '高德地图',   flag: '\uD83C\uDDE8\uD83C\uDDF3', url: 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', sub: '1234', attr: '&copy; 高德地图', maxZoom: 18, desc: '国内·中文标注' },
-  { id: 'baidu',    name: '百度地图',   flag: '\uD83C\uDDE8\uD83C\uDDF3', url: 'https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1', sub: '0123', attr: '&copy; 百度地图', maxZoom: 18, desc: '国内·中文标注' },
-  { id: 'cartoPos', name: 'Carto浅色',  flag: '\uD83D\uDFE2', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '浅色简洁·全球' },
-  { id: 'cartoDark',name: 'Carto深色',  flag: '\uD83C\uDF19', url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '深色暗夜·全球' },
+  { id: 'carto',    name: 'CartoDB',   flag: '\uD83C\uDF0D', url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '推荐·全球·不限流', cors: true },
+  { id: 'osm',      name: 'OSM',       flag: '\uD83C\uDF10', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', sub: 'abc', attr: '&copy; OpenStreetMap', maxZoom: 19, desc: '开源·全球', cors: true },
+  { id: 'amap',     name: '高德地图',   flag: '\uD83C\uDDE8\uD83C\uDDF3', url: 'https://wprd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', sub: '1234', attr: '&copy; 高德地图', maxZoom: 18, desc: '国内·中文标注', cors: false },
+  { id: 'amap2',    name: '高德道路',   flag: '\uD83D\uDED3', url: 'https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', sub: '1234', attr: '&copy; 高德地图', maxZoom: 18, desc: '国内·道路精简版', cors: false },
+  { id: 'baidu',    name: '百度地图',   flag: '\uD83C\uDDE8\uD83C\uDDF3', url: 'https://maponline{s}.bdimg.com/streetmaps2d/tile?qt=tile&x={x}&y={y}&z={z}&styles=pl&udt=20240515&scaler=1&p=1', sub: '0123', attr: '&copy; 百度地图', maxZoom: 18, desc: '国内·中文标注', cors: false },
+  { id: 'tencent',  name: '腾讯地图',   flag: '\uD83D\uDCAC', url: 'https://rt{s}.map.gtimg.com/realtimerender?z={z}&x={x}&y={y}&type=vector&style=0', sub: '0123', attr: '&copy; 腾讯地图', maxZoom: 18, desc: '国内·中文标注·稳定', cors: false },
+  { id: 'cartoPos', name: 'Carto浅色',  flag: '\uD83D\uDFE2', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '浅色简洁·全球', cors: true },
+  { id: 'cartoDark',name: 'Carto深色',  flag: '\uD83C\uDF19', url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', sub: 'abcd', attr: '&copy; CARTO', maxZoom: 20, desc: '深色暗夜·全球', cors: true },
 ];
 
 // 渲染瓦片源切换按钮
@@ -4015,21 +4020,52 @@ function setTileSource(idx, userClick) {
   if (!mapInstance) return;
   var src = TILE_SOURCES[idx];
   if (currentTileLayer) { try { mapInstance.removeLayer(currentTileLayer); } catch (e) {} }
-  currentTileLayer = L.tileLayer(src.url, {
+
+  // 关键：国内高德/百度/腾讯在 Electron file:// 下对 CORS 预检极严格
+  // cors=false 会以 no-cors 方式加载（<img> 默认行为，不加跨域头），
+  // 这样不会触发预检，Referer 检查也会宽松很多
+  var tileOpts = {
     subdomains: src.sub,
     minZoom: 2,
     maxZoom: src.maxZoom || 19,
     attribution: src.attr,
     keepBuffer: 4,
     updateWhenZooming: false,
-    crossOrigin: true
-  }).addTo(mapInstance);
+    updateWhenIdle: true
+  };
+  if (src.cors) tileOpts.crossOrigin = true;
+  // 高德/百度/腾讯：强制匿名请求，去掉任何可能触发检查的头部
+  else tileOpts.crossOrigin = false;
+
+  currentTileLayer = L.tileLayer(src.url, tileOpts).addTo(mapInstance);
+
   var coordsEl = document.getElementById('mapCoords');
+  var hasLoadSuccess = false;
+
+  // 成功监听：只在 userClick 时改变提示
+  currentTileLayer.on('tileload', function () { hasLoadSuccess = true; });
+  currentTileLayer.on('load', function () {
+    hasLoadSuccess = true;
+    if (coordsEl && userClick) {
+      try { coordsEl.textContent = '\u2705 已切换到 ' + src.name + ' · 点击地图或用搜索框查找地点'; } catch (e) {}
+    }
+  });
+
+  // 失败监听：累积 8 次错误就明确给用户提示 + 建议
+  var errCount = 0;
+  currentTileLayer.on('tileerror', function () {
+    errCount++;
+    if (coordsEl && errCount % 8 === 0 && !hasLoadSuccess) {
+      var tip = '';
+      if (src.id === 'amap' || src.id === 'amap2' || src.id === 'baidu' || src.id === 'tencent') {
+        tip = '<br>\uD83D\uDCA1 \u56FD\u5185\u74E6\u7247\u6E90\u53EF\u80FD\u88AB\u4EE3\u7406\u62E6\u622A\u6216\u6821\u9A8C\u5931\u8D25\uFF0C\u5EFA\u8BAE\u5207\u6362\u4E3A CartoDB / OSM';
+      }
+      coordsEl.innerHTML = '\u26A0\uFE0F <b>' + src.name + '</b> \u74E6\u7247\u52A0\u8F7D\u5931\u8D25 (' + errCount + ' \u6B21)' + tip;
+    }
+  });
+
   if (coordsEl && userClick) {
     coordsEl.innerHTML = '\uD83D\uDD04 已切换到 <b>' + src.flag + ' ' + src.name + '</b> (' + src.desc + ') - 加载中...';
-    currentTileLayer.on('load', function () {
-      try { coordsEl.textContent = '\u2705 已切换到 ' + src.name + ' · 点击地图或用搜索框查找地点'; } catch (e) {}
-    });
   }
 }
 
