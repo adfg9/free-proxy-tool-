@@ -4022,12 +4022,27 @@ function setTileSource(idx, userClick) {
   var src = TILE_SOURCES[idx];
   if (currentTileLayer) { try { mapInstance.removeLayer(currentTileLayer); } catch (e) {} }
 
+  // 关键修复：动态限制地图的 maxZoom 不超过瓦片源支持的最大级别
+  // 否则用户放大到瓦片源不支持的级别时，瓦片请求 404 → 空白
+  var srcMaxZoom = src.maxZoom || 19;
+  mapInstance.setMaxZoom(srcMaxZoom);
+
+  // 如果当前缩放级别已经超过瓦片源支持的最大值，立即回退
+  var currentZoom = mapInstance.getZoom();
+  if (currentZoom > srcMaxZoom) {
+    mapInstance.setZoom(srcMaxZoom, { animate: true });
+  }
+
   // 极简配置：只传必要的，避免任何可能干扰瓦片加载的选项
+  // updateWhenIdle: true 放大时只在停止后加载瓦片，避免过程中加载导致闪烁
+  // keepBuffer: 2 保留视口外 2 层瓦片缓存
   currentTileLayer = L.tileLayer(src.url, {
     subdomains: src.sub,
     minZoom: 2,
-    maxZoom: src.maxZoom || 19,
-    attribution: src.attr
+    maxZoom: srcMaxZoom,
+    attribution: src.attr,
+    updateWhenIdle: true,
+    keepBuffer: 2
   }).addTo(mapInstance);
 
   var coordsEl = document.getElementById('mapCoords');
@@ -4106,7 +4121,13 @@ function openMap() {
           minZoom: 2,
           maxZoom: 20,
           zoomSnap: 1,
-          wheelPxPerZoomLevel: 120
+          zoomDelta: 1,
+          wheelPxPerZoomLevel: 120,
+          // 关键：放大/缩小时平滑过渡，不在动画过程中加载瓦片
+          zoomAnimation: true,
+          fadeAnimation: false,
+          // 防止拖动到超出边界
+          maxBoundsViscosity: 1.0
         }).setView([35.8617, 104.1954], 4);
 
         // 点击放置 marker（只绑定一次）
@@ -4136,6 +4157,21 @@ function openMap() {
 
       // ⭐ 每次打开都加载用户选择的瓦片源（解决：第2次打开时按钮高亮和实际瓦片不一致）
       setTileSource(currentTileIdx);
+
+      // ⭐ 关键修复：缩放结束后强制刷新尺寸，确保放大后瓦片正确加载
+      // 这是解决"放大后空白"的核心机制
+      if (isFirstInit) {
+        mapInstance.on('zoomend', function () {
+          try {
+            // 延迟一帧刷新，等待 DOM 完成
+            setTimeout(function () {
+              if (mapInstance) {
+                mapInstance.invalidateSize(false);
+              }
+            }, 150);
+          } catch (e) {}
+        });
+      }
 
       // 如果是首次初始化：8 秒后检测当前源是否完全加载失败，失败则自动切下一源
       if (isFirstInit) {
