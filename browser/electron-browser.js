@@ -25,7 +25,7 @@ function log(t, m) {
 
 // Built-in Forward Proxy
 function createProxy() {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const s = http.createServer((req, res) => {
       try {
         const u = new URL(req.url);
@@ -42,6 +42,15 @@ function createProxy() {
         const t = net.connect(pt, h, () => { sock.write('HTTP/1.1 200 Connection Established\r\n\r\n'); t.write(head); t.pipe(sock); sock.pipe(t); });
         t.on('error', () => sock.end()); sock.on('error', () => { try { t.destroy(); } catch {} });
       } catch { sock.end(); }
+    });
+    s.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        log('warn', `Port ${PROXY_PORT} already in use, proxy may already be running`);
+        resolve(null);
+      } else {
+        log('err', `Proxy server error: ${err.message}`);
+        reject(err);
+      }
     });
     s.listen(PROXY_PORT, '127.0.0.1', () => { log('ok', `Proxy: 127.0.0.1:${PROXY_PORT}`); resolve(s); });
   });
@@ -134,14 +143,17 @@ app.whenReady().then(async () => {
 
   let proxy;
   try { proxy = await createProxy(); proxyServer = proxy; } catch(e) { log('err', 'Proxy start failed: ' + e.message); }
-
-  try {
-    await session.defaultSession.setProxy({
-      proxyRules: `http://127.0.0.1:${PROXY_PORT}`,
-      proxyBypassRules: '<local>'
-    });
-    log('ok', 'Chromium proxy bound');
-  } catch(e) { log('warn', 'Proxy bind failed: ' + e.message); }
+  if (proxyServer) {
+    try {
+      await session.defaultSession.setProxy({
+        proxyRules: `http://127.0.0.1:${PROXY_PORT}`,
+        proxyBypassRules: '<local>'
+      });
+      log('ok', 'Chromium proxy bound');
+    } catch(e) { log('warn', 'Proxy bind failed: ' + e.message); }
+  } else {
+    log('warn', 'Proxy not started, browser will use direct connection');
+  }
 
   await ensureGUI();
 

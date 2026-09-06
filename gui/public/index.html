@@ -531,6 +531,19 @@ body::after {
 }
 .header h1 span { color: var(--primary); }
 .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lang-toggle-btn {
+  font-weight: 700;
+  border-color: var(--primary);
+  color: var(--primary);
+  min-width: 64px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.lang-toggle-btn:hover {
+  background: var(--primary);
+  color: #fff;
+}
 .badge {
   padding: 4px 12px; font-size: 11px; font-weight: 600;
   border-radius: 0;
@@ -729,7 +742,7 @@ body::after {
   position: absolute;
   width: 100%;
   height: 100%;
-  border-radius: 0;
+  border-radius: 50%;
   border: 3px solid #d0d0d0;
   transition: border-color 1s var(--ease-in-out);
 }
@@ -746,7 +759,7 @@ body::after {
 .orbit-center {
   width: 70px;
   height: 70px;
-  border-radius: 0;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -771,44 +784,29 @@ body::after {
   background: var(--danger);
   box-shadow: 0 0 8px var(--danger);
   z-index: 3;
-  transform: translateX(78px) translateY(-78px);
-  transition: background 0.8s var(--ease-in-out);
+  transition: background 0.8s var(--ease-in-out), box-shadow 0.8s var(--ease-in-out);
 }
 .orbit-ball.success {
   background: var(--success);
-  box-shadow: none;
+  box-shadow: 0 0 12px var(--success);
 }
 .orbit-ball.warning {
   background: var(--warning);
-  box-shadow: none;
+  box-shadow: 0 0 12px var(--warning);
 }
 .orbit-ball.spinning {
-  animation: orbit-spin 1.5s ease-in-out forwards;
+  animation: orbit-spin 3s linear infinite;
 }
 .orbit-ball.spinning-reverse {
-  animation: orbit-spin-reverse 1.5s ease-in-out forwards;
+  animation: orbit-spin-reverse 3s linear infinite;
 }
 @keyframes orbit-spin {
-  0% { transform: translateX(78px) translateY(-78px); }
-  12.5% { transform: translateX(78px) translateY(0); }
-  25% { transform: translateX(78px) translateY(78px); }
-  37.5% { transform: translateX(0) translateY(78px); }
-  50% { transform: translateX(-78px) translateY(78px); }
-  62.5% { transform: translateX(-78px) translateY(0); }
-  75% { transform: translateX(-78px) translateY(-78px); }
-  87.5% { transform: translateX(0) translateY(-78px); }
-  100% { transform: translateX(78px) translateY(-78px); }
+  0%   { transform: rotate(0deg) translateY(-78px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateY(-78px) rotate(-360deg); }
 }
 @keyframes orbit-spin-reverse {
-  0% { transform: translateX(78px) translateY(-78px); }
-  12.5% { transform: translateX(0) translateY(-78px); }
-  25% { transform: translateX(-78px) translateY(-78px); }
-  37.5% { transform: translateX(-78px) translateY(0); }
-  50% { transform: translateX(-78px) translateY(78px); }
-  62.5% { transform: translateX(0) translateY(78px); }
-  75% { transform: translateX(78px) translateY(78px); }
-  87.5% { transform: translateX(78px) translateY(0); }
-  100% { transform: translateX(78px) translateY(-78px); }
+  0%   { transform: rotate(0deg) translateY(-78px) rotate(0deg); }
+  100% { transform: rotate(-360deg) translateY(-78px) rotate(360deg); }
 }
 .orbit-icon {
   transition: all 0.6s var(--physics-bounce);
@@ -959,6 +957,84 @@ body::after {
 .btn-outline:hover { background: var(--hover-bg); border-color: var(--primary); color: var(--text); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 .btn-sm { padding: 6px 14px; font-size: 11px; }
+
+/* ===== Google OAuth UI ===== */
+.google-auth-area { display: flex; align-items: center; }
+.btn-google {
+  background: #fff; color: #3c4043; border: 1px solid #dadce0;
+  display: inline-flex; align-items: center; gap: 6px; font-weight: 500;
+}
+.btn-google:hover { background: #f8f9fa; border-color: #c6c6c6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.google-icon { flex-shrink: 0; }
+html[data-theme="dark"] .btn-google { background: #2d2d2d; color: #e8eaed; border-color: #5f6368; }
+html[data-theme="dark"] .btn-google:hover { background: #353535; border-color: #8b8e92; }
+html[data-theme="pixel"] .btn-google { background: var(--tile-surface2); color: var(--text); border-color: var(--border); }
+
+.google-user-chip {
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  padding: 3px 8px 3px 4px; border-radius: 999px;
+  background: var(--card-bg); border: 1px solid var(--border);
+  position: relative; transition: background var(--dur-fast) linear, border-color var(--dur-fast) linear;
+}
+.google-user-chip:hover { background: var(--hover-bg); border-color: var(--primary); }
+.google-user-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.google-user-name { font-size: 11px; font-weight: 500; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.google-user-caret { font-size: 9px; opacity: 0.6; }
+
+.google-user-dropdown {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0;
+  min-width: 240px; padding: 12px; border-radius: 10px;
+  background: var(--card-bg); border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18); z-index: 1000;
+  animation: gDropdownIn 0.16s ease-out;
+}
+@keyframes gDropdownIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.google-user-dropdown-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.google-user-dropdown-info .google-user-avatar { width: 36px; height: 36px; }
+.google-user-dropdown-name { font-size: 13px; font-weight: 600; }
+.google-user-dropdown-email { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.google-logout-btn { width: 100%; justify-content: center; }
+
+.google-oauth-status { margin-bottom: 12px; padding: 8px 12px; border-radius: 8px; background: var(--hover-bg); }
+.google-oauth-status .setting-label { font-size: 13px; font-weight: 600; }
+
+/* ===== Google Signup Assistant (GSU) ===== */
+.gsu-hero { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  background: linear-gradient(135deg, var(--card-bg) 0%, #4285F412 35%, #EA433518 70%, var(--card-bg) 100%);
+  border: 1px solid var(--border); }
+.gsu-hero-left { display: flex; align-items: center; gap: 16px; }
+.gsu-title { display: flex; align-items: center; gap: 12px; }
+.gsu-hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.gsu-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.gsu-step { display: flex; align-items: flex-start; gap: 10px; padding: 10px; border-radius: 10px; background: var(--hover-bg); }
+.gsu-step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #4285F4, #34A853); color: #fff; font-weight: 700; font-size: 13px; box-shadow: 0 2px 6px #4285F440; }
+@media (max-width: 720px) { .gsu-steps { grid-template-columns: 1fr; } }
+
+.gsu-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 40px; color: var(--text-muted); }
+.gsu-empty { padding: 32px 16px; text-align: center; color: var(--text-muted); }
+.gsu-proxy { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px; border-bottom: 1px solid var(--border); transition: background var(--dur-fast) linear; }
+.gsu-proxy:hover { background: var(--hover-bg); }
+.gsu-proxy-sel { background: #4285F412; border-left: 3px solid #4285F4; }
+.gsu-proxy-main { min-width: 0; flex: 1; }
+.gsu-proxy-host { font-size: 14px; margin-bottom: 4px; }
+.gsu-proxy-type { font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--hover-bg); color: var(--text-muted); font-weight: 600; margin-left: 4px; }
+.gsu-proxy-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--text-muted); }
+.gsu-ping { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--success); }
+.gsu-note { opacity: 0.85; }
+.gsu-launch-btn { flex-shrink: 0; white-space: nowrap; background: linear-gradient(135deg, #4285F4, #1a73e8); border-color: #4285F4; color: #fff; }
+.gsu-launch-btn:hover { background: linear-gradient(135deg, #1a73e8, #0a57c9); }
+
+.gsu-status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.gsu-status-item { padding: 12px; border-radius: 10px; background: var(--hover-bg); }
+.gsu-status-item .text-lg { font-size: 15px; font-weight: 600; margin-top: 4px; word-break: break-all; }
+@media (max-width: 720px) { .gsu-status-grid { grid-template-columns: repeat(2, 1fr); } }
+.gsu-warn { padding: 10px 12px; border-radius: 8px; background: #fbbc0415; border: 1px dashed #fbbc0466; color: var(--text); font-size: 12px; }
+
+.gsu-tips { margin: 0; padding-left: 18px; line-height: 1.8; font-size: 13px; }
+.gsu-tips li { margin-bottom: 4px; }
+.gsu-tips li b { color: var(--primary); }
 
 /* ===== Table (Win10 flat style) ===== */
 /* ===== Stable Pool Cool UI ===== */
@@ -1154,18 +1230,48 @@ tr:hover td { background: var(--hover-bg); transition: none; }
 
 /* ===== Log (Win10 flat) ===== */
 .log-box {
-  background: var(--log-bg); padding: 12px;
-  font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px;
-  overflow-y: auto; line-height: 1.6; color: var(--text2);
+  background: var(--log-bg); padding: 8px;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 12px;
+  overflow-y: auto; line-height: 1.8; color: var(--text2);
   height: 100%;
   box-shadow: none;
   border: 1px solid var(--border);
   border-radius: 0;
 }
+.log-entry {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 4px 8px; border-radius: 4px; margin-bottom: 2px;
+  transition: background 0.15s var(--ease-in-out);
+  border-left: 3px solid transparent;
+  animation: logFadeIn 0.3s var(--ease-expo);
+}
+.log-entry:hover { background: rgba(128,128,128,0.08); }
+@keyframes logFadeIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.log-time {
+  color: var(--text2); opacity: 0.6; font-size: 11px;
+  white-space: nowrap; flex-shrink: 0; min-width: 64px;
+}
+.log-badge {
+  display: inline-block; padding: 1px 6px; border-radius: 3px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; flex-shrink: 0; min-width: 38px; text-align: center;
+}
+.log-msg { flex: 1; word-break: break-word; }
 .log-ok { color: var(--success); }
 .log-err { color: var(--danger); }
 .log-info { color: var(--primary); }
 .log-warn { color: var(--warning); }
+.log-entry.log-info { border-left-color: var(--primary); }
+.log-entry.log-warn { border-left-color: var(--warning); background: rgba(255,140,0,0.05); }
+.log-entry.log-err { border-left-color: var(--danger); background: rgba(209,52,56,0.05); }
+.log-entry.log-ok { border-left-color: var(--success); }
+.log-badge.log-info { background: rgba(0,120,215,0.15); color: var(--primary); }
+.log-badge.log-warn { background: rgba(255,140,0,0.15); color: var(--warning); }
+.log-badge.log-err { background: rgba(209,52,56,0.15); color: var(--danger); }
+.log-badge.log-ok { background: rgba(16,124,16,0.15); color: var(--success); }
 
 /* ===== Tabs (Win10 Metro style) ===== */
 .tabs {
@@ -1173,14 +1279,20 @@ tr:hover td { background: var(--hover-bg); transition: none; }
   margin-bottom: 20px;
   border-bottom: 2px solid var(--border);
   background: transparent;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
 }
 .tab {
-  padding: 10px 20px; cursor: pointer; font-size: 12px;
+  padding: 10px 16px; cursor: pointer; font-size: 12px;
   font-weight: 500; color: var(--text2);
   border: none; border-bottom: 2px solid transparent;
   background: transparent;
   border-radius: 0;
   margin-bottom: -2px;
+  flex-shrink: 0;
+  white-space: nowrap;
   transition: color var(--dur-fast) linear,
               border-color var(--dur-fast) linear;
 }
@@ -1692,22 +1804,50 @@ input:checked + .toggle-slider:before {
     <span id="warpBadge" class="badge badge-err" data-i18n="warpOff">WARP OFF</span>
     <span id="diagBadge" class="badge badge-warn">Loading...</span>
 
-    <button id="langToggle" class="btn btn-outline btn-sm" title="" data-i18n-title="languageTooltip" onclick="toggleLanguage()">EN/中</button>
+    <button id="langToggle" class="btn btn-outline btn-sm lang-toggle-btn" title="" data-i18n-title="languageTooltip" onclick="toggleLanguage()">🌐 <span id="langLabel">EN</span></button>
     <button id="themeToggle" class="btn btn-outline btn-sm" title="" data-i18n-title="themeTooltip">🌙</button>
     <button id="disconnectAllBtn" class="btn btn-danger btn-sm" title="" data-i18n-title="disconnectAllTooltip">✕ <span data-i18n="disconnectAllBtn">Disconnect All</span></button>
+    <div id="googleAuthArea" class="google-auth-area">
+      <!-- Logged out: show login button -->
+      <button id="googleLoginBtn" class="btn btn-google btn-sm" onclick="window.location.href='/api/auth/google'" style="display:none;">
+        <svg class="google-icon" viewBox="0 0 48 48" width="14" height="14"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+        <span data-i18n="loginWithGoogle">Login with Google</span>
+      </button>
+      <!-- Logged in: show user chip -->
+      <div id="googleUserChip" class="google-user-chip" style="display:none;" onclick="googleUserMenuToggle(event)">
+        <img id="googleUserAvatar" class="google-user-avatar" alt="avatar">
+        <span id="googleUserName" class="google-user-name"></span>
+        <span class="google-user-caret">▾</span>
+        <div id="googleUserDropdown" class="google-user-dropdown">
+          <div class="google-user-dropdown-info">
+            <img id="googleUserDropdownAvatar" class="google-user-avatar" alt="">
+            <div>
+              <div id="googleUserDropdownName" class="google-user-dropdown-name"></div>
+              <div id="googleUserDropdownEmail" class="google-user-dropdown-email"></div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm google-logout-btn" onclick="googleLogout(event)">
+            <span data-i18n="logout">Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <div class="container">
   <div class="tabs" id="mainTabs">
     <button class="tab active" data-tab="dashboard"><span class="tab-idx">01</span> <span data-i18n="tabDashboard">Dashboard</span></button>
-    <button class="tab" data-tab="proxies"><span class="tab-idx">02</span> <span data-i18n="tabProxy">Proxy</span> Management</button>
+    <button class="tab" data-tab="proxies"><span class="tab-idx">02</span> <span data-i18n="tabProxy">Proxy Management</span></button>
     <button class="tab" data-tab="warp"><span class="tab-idx">03</span> <span data-i18n="tabWarp">WARP</span></button>
     <button class="tab" data-tab="stats"><span class="tab-idx">04</span> <span data-i18n="statistics">Statistics</span></button>
     <button class="tab" data-tab="server"><span class="tab-idx">05</span> <span data-i18n="localServer">Local Server</span></button>
     <button class="tab" data-tab="apps"><span class="tab-idx">06</span> <span data-i18n="appProxy">App Proxy</span></button>
     <button class="tab" data-tab="logs"><span class="tab-idx">07</span> <span data-i18n="tabLogs">Logs</span></button>
     <button class="tab" data-tab="settings"><span class="tab-idx">08</span> <span data-i18n="tabSettings">Settings</span></button>
+    <button class="tab" data-tab="googlesignup" style="background: linear-gradient(135deg, #4285F422, #EA433522); color: var(--accent-orange, #fbbc04); border-color: #EA433566;">
+      <span class="tab-idx">09</span> <span data-i18n="tabGoogleSignup">Google 注册</span>
+    </button>
   </div>
 
   <!-- Dashboard Tab -->
@@ -1801,7 +1941,7 @@ input:checked + .toggle-slider:before {
           <div class="ranking-list" id="topProxiesList">
             <div class="empty-state">
               <div class="empty-state-icon">📊</div>
-              <div class="empty-state-text">Loading top proxies...</div>
+              <div class="empty-state-text" data-i18n="loading">Loading top proxies...</div>
             </div>
           </div>
         </div>
@@ -1809,10 +1949,10 @@ input:checked + .toggle-slider:before {
 
       <div class="card">
         <div class="card-header">
-          <h2>Daily Quote</h2>
+          <h2 data-i18n="dailyQuote">Daily Quote</h2>
         </div>
         <div class="card-body">
-          <div id="quoteContainer" class="quote-text" style="font-style: italic; color: var(--text2); line-height: 1.6;">
+          <div id="quoteContainer" class="quote-text" style="font-style: italic; color: var(--text2); line-height: 1.6;" data-i18n="loading">
             Loading quote...
           </div>
         </div>
@@ -1828,8 +1968,8 @@ input:checked + .toggle-slider:before {
               <div class="activity-dot info"></div>
               <div class="activity-content">
                 <div class="activity-title"><span data-i18n="initialized">GUI Initialized</span></div>
-                <div class="activity-desc">Management interface loaded</div>
-                <div class="activity-time" id="initTime">just now</div>
+                <div class="activity-desc" data-i18n="managementInterface">Management interface loaded</div>
+                <div class="activity-time" id="initTime" data-i18n="justNow">just now</div>
               </div>
             </div>
           </div>
@@ -1842,11 +1982,11 @@ input:checked + .toggle-slider:before {
   <div class="tab-content" id="tab-proxies" style="display:none;">
     <div class="card stable-pool-card">
       <div class="card-header">
-        <h2>Proxy Management</h2>
+        <h2 data-i18n="tabProxy">Proxy Management</h2>
         <div class="flex gap-8">
           <button class="btn btn-primary btn-sm" onclick="startAutoFind()">⚡ <span data-i18n="findStableProxies">Find Stable Proxies</span></button>
-          <button class="btn btn-outline btn-sm" onclick="testAllProxies()">🧪 Test All</button>
-          <button class="btn btn-outline btn-sm" onclick="fetchFreeProxies()">📥 Fetch List</button>
+          <button class="btn btn-outline btn-sm" onclick="testAllProxies()">🧪 <span data-i18n="testAllBtn">Test All</span></button>
+          <button class="btn btn-outline btn-sm" onclick="fetchFreeProxies()">📥 <span data-i18n="fetchListBtn">Fetch List</span></button>
         </div>
       </div>
       <div class="card-body">
@@ -1894,20 +2034,20 @@ input:checked + .toggle-slider:before {
           </div>
           <div class="sp-progress-info">
             <div class="flex justify-between items-center">
-              <span id="autoFindStage">Initializing...</span>
+              <span id="autoFindStage" data-i18n="initializingStatus">Initializing...</span>
               <span id="autoFindCount">0 / 0</span>
             </div>
             <div class="sp-progress-bar mt-8">
               <div class="sp-progress-fill" id="autoFindBar" style="width: 0%;"></div>
             </div>
-            <div class="sp-progress-stage" id="autoFindDetail">Preparing proxy list...</div>
+            <div class="sp-progress-stage" id="autoFindDetail" data-i18n="preparingProxyList">Preparing proxy list...</div>
           </div>
         </div>
 
         <div class="sp-toolbar">
           <input type="text" class="sp-filter-input" id="proxyFilter" placeholder="Filter by host, IP, type..." data-i18n-placeholder="proxyFilterPlaceholder" oninput="filterProxies()">
           <div class="sp-type-chips">
-            <div class="sp-chip active" data-type="all" onclick="filterByType('all', this)">All</div>
+            <div class="sp-chip active" data-type="all" onclick="filterByType('all', this)" data-i18n="filterAll">All</div>
             <div class="sp-chip" data-type="socks5" onclick="filterByType('socks5', this)">SOCKS5</div>
             <div class="sp-chip" data-type="http" onclick="filterByType('http', this)">HTTP</div>
             <div class="sp-chip" data-type="socks4" onclick="filterByType('socks4', this)">SOCKS4</div>
@@ -1923,18 +2063,18 @@ input:checked + .toggle-slider:before {
           <table class="sp-table">
             <thead>
               <tr>
-                <th>Grade</th>
-                <th>Host</th>
-                <th>Port</th>
-                <th>Type</th>
-                <th>Latency</th>
-                <th>Tests</th>
-                <th>Source</th>
-                <th>Actions</th>
+                <th data-i18n="gradeLabel">Grade</th>
+                <th data-i18n="host">Host</th>
+                <th data-i18n="port">Port</th>
+                <th data-i18n="type">Type</th>
+                <th data-i18n="latency">Latency</th>
+                <th data-i18n="tests">Tests</th>
+                <th data-i18n="source">Source</th>
+                <th data-i18n="action">Actions</th>
               </tr>
             </thead>
             <tbody id="proxyTableBody">
-              <tr><td colspan="8" class="text-center text-muted">Loading proxies...</td></tr>
+              <tr><td colspan="8" class="text-center text-muted"><span data-i18n="loading">Loading proxies...</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -1943,7 +2083,7 @@ input:checked + .toggle-slider:before {
 
     <div class="card mt-16">
       <div class="card-header">
-        <h2>Test Single Proxy</h2>
+        <h2 data-i18n="testSingleProxy">Test Single Proxy</h2>
       </div>
       <div class="card-body">
         <div class="form-group">
@@ -1965,7 +2105,7 @@ input:checked + .toggle-slider:before {
           </div>
           <div class="form-row" style="justify-content: flex-end;">
             <label>&nbsp;</label>
-            <button class="btn btn-primary" onclick="testSingleProxy()">🧪 Test Proxy</button>
+            <button class="btn btn-primary" onclick="testSingleProxy()">🧪 <span data-i18n="testProxy">Test Proxy</span></button>
           </div>
         </div>
         <div id="testResult" style="display:none; margin-top: 12px;"></div>
@@ -1974,7 +2114,7 @@ input:checked + .toggle-slider:before {
 
     <div class="card mt-16">
       <div class="card-header">
-        <h2>Add Manual Proxy</h2>
+        <h2 data-i18n="addManualProxy">Add Manual Proxy</h2>
       </div>
       <div class="card-body">
         <div class="form-group">
@@ -1996,7 +2136,7 @@ input:checked + .toggle-slider:before {
           </div>
           <div class="form-row" style="justify-content: flex-end;">
             <label>&nbsp;</label>
-            <button class="btn btn-success" onclick="addManualProxy()">➕ Add to Pool</button>
+            <button class="btn btn-success" onclick="addManualProxy()">➕ <span data-i18n="addToPool">Add to Pool</span></button>
           </div>
         </div>
       </div>
@@ -2008,8 +2148,8 @@ input:checked + .toggle-slider:before {
     <div class="grid">
       <div class="card">
         <div class="card-header">
-          <h2>Cloudflare WARP</h2>
-          <span id="warpStatusBadge" class="badge badge-err">Disconnected</span>
+          <h2 data-i18n="warpTitle">Cloudflare WARP</h2>
+          <span id="warpStatusBadge" class="badge badge-err" data-i18n="warpDisconnected">Disconnected</span>
         </div>
         <div class="card-body">
           <div class="flex items-center gap-16 mb-16">
@@ -2021,27 +2161,27 @@ input:checked + .toggle-slider:before {
             </div>
           </div>
           <div style="flex: 1;">
-            <h3 style="margin-bottom: 8px;">WARP VPN</h3>
-            <p class="text-muted text-sm" style="margin-bottom: 12px;">
+            <h3 style="margin-bottom: 8px;" data-i18n="warpVpn">WARP VPN</h3>
+            <p class="text-muted text-sm" style="margin-bottom: 12px;" data-i18n="warpDesc">
               Cloudflare WARP provides a fast, secure VPN connection.
             </p>
             <div id="warpInstalled" class="badge badge-warn" data-i18n="checkingInstallation">Checking installation status...</div>
           </div>
         </div>
         <div class="flex gap-8">
-          <button class="btn btn-success" id="warpConnectBtn" onclick="connectWarp()">🔗 Connect</button>
-          <button class="btn btn-outline" id="warpDisconnectBtn" onclick="disconnectWarp()" style="display:none;">⏏ Disconnect</button>
-          <button class="btn btn-outline" onclick="registerWarp()">📝 Register</button>
+          <button class="btn btn-success" id="warpConnectBtn" onclick="connectWarp()">🔗 <span data-i18n="connectBtn">Connect</span></button>
+          <button class="btn btn-outline" id="warpDisconnectBtn" onclick="disconnectWarp()" style="display:none;">⏏ <span data-i18n="disconnectBtn">Disconnect</span></button>
+          <button class="btn btn-outline" onclick="registerWarp()">📝 <span data-i18n="registerBtn">Register</span></button>
         </div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <h2>WARP Status</h2>
+          <h2 data-i18n="warpStatus">WARP Status</h2>
         </div>
         <div class="card-body">
-          <div class="code-block" id="warpRawStatus">Loading...</div>
+          <div class="code-block" id="warpRawStatus" data-i18n="loading">Loading...</div>
           <div class="mt-12">
             <button class="btn btn-outline btn-sm" onclick="refreshWarpStatus()">↻ <span data-i18n="refreshStatus">Refresh Status</span></button>
           </div>
@@ -2059,7 +2199,7 @@ input:checked + .toggle-slider:before {
       </div>
       <div class="stat-card">
         <div class="value" id="statSuccessRate">0%</div>
-        <div class="label">Success Rate</div>
+        <div class="label" data-i18n="successRate">Success Rate</div>
       </div>
       <div class="stat-card">
         <div class="value" id="statAvgLatency">0ms</div>
@@ -2074,7 +2214,7 @@ input:checked + .toggle-slider:before {
     <div class="grid">
       <div class="card">
         <div class="card-header">
-          <h2>Latency Distribution</h2>
+          <h2 data-i18n="latencyDistribution">Latency Distribution</h2>
         </div>
         <div class="card-body">
           <div class="chart-container">
@@ -2085,7 +2225,7 @@ input:checked + .toggle-slider:before {
 
       <div class="card">
         <div class="card-header">
-          <h2>Proxy Types Distribution</h2>
+          <h2 data-i18n="proxyTypesDistribution">Proxy Types Distribution</h2>
         </div>
         <div class="card-body">
           <div class="chart-container">
@@ -2096,10 +2236,10 @@ input:checked + .toggle-slider:before {
 
       <div class="card full">
         <div class="card-header">
-          <h2>Test History</h2>
+          <h2 data-i18n="testHistory">Test History</h2>
           <div class="flex gap-8">
             <button class="btn btn-outline btn-sm" onclick="loadHistory()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
-            <button class="btn btn-danger btn-sm" onclick="clearStats()">🗑 Clear</button>
+            <button class="btn btn-danger btn-sm" onclick="clearStats()">🗑 <span data-i18n="clearBtn">Clear</span></button>
           </div>
         </div>
         <div class="card-body">
@@ -2107,16 +2247,16 @@ input:checked + .toggle-slider:before {
             <table>
               <thead>
                 <tr>
-                  <th>Time</th>
-                  <th>Host</th>
-                  <th>Port</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  <th>Latency</th>
+                  <th data-i18n="timeLabel">Time</th>
+                  <th data-i18n="host">Host</th>
+                  <th data-i18n="port">Port</th>
+                  <th data-i18n="type">Type</th>
+                  <th data-i18n="statusLabel">Status</th>
+                  <th data-i18n="latency">Latency</th>
                 </tr>
               </thead>
               <tbody id="historyTableBody">
-                <tr><td colspan="6" class="text-center text-muted">Loading history...</td></tr>
+                <tr><td colspan="6" class="text-center text-muted"><span data-i18n="loadingHistory">Loading history...</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -2130,7 +2270,7 @@ input:checked + .toggle-slider:before {
     <div class="grid">
       <div class="card">
         <div class="card-header">
-          <h2>Proxy Server Control</h2>
+          <h2 data-i18n="proxyServerControl">Proxy Server Control</h2>
           <span id="serverStatusBadge" class="badge badge-err" data-i18n="stopped">Stopped</span>
         </div>
         <div class="card-body">
@@ -2142,11 +2282,11 @@ input:checked + .toggle-slider:before {
           </div>
         </div>
         <div class="text-center mb-16">
-          <div style="font-size: 18px; font-weight: 700;" id="serverStatusText">Server is stopped</div>
-          <div class="text-muted text-sm mt-8" id="serverPortText">Port: -</div>
+          <div style="font-size: 18px; font-weight: 700;" id="serverStatusText" data-i18n="statusStopped">Server is stopped</div>
+          <div class="text-muted text-sm mt-8" id="serverPortText"><span data-i18n="portLabel">Port</span>: -</div>
         </div>
         <div class="flex gap-8 justify-center">
-          <button class="btn btn-primary" id="startServerBtn" onclick="startServer()">▶ Start Server</button>
+          <button class="btn btn-primary" id="startServerBtn" onclick="startServer()">▶ <span data-i18n="startServerBtn">Start Server</span></button>
           <button class="btn btn-danger" id="stopServerBtn" onclick="stopServer()" style="display:none;">⏹ <span data-i18n="stopServerBtn">Stop Server</span></button>
         </div>
         </div>
@@ -2154,7 +2294,7 @@ input:checked + .toggle-slider:before {
 
       <div class="card">
         <div class="card-header">
-          <h2>Server Settings</h2>
+          <h2 data-i18n="serverSettings">Server Settings</h2>
         </div>
         <div class="card-body">
           <div class="form-row">
@@ -2162,26 +2302,26 @@ input:checked + .toggle-slider:before {
             <input type="number" class="input" id="serverPortInput" value="1080" min="1" max="65535">
           </div>
           <div class="form-row">
-            <label>Upstream Proxy (optional)</label>
+            <label data-i18n="upstreamProxy">Upstream Proxy (optional)</label>
             <input type="text" class="input" id="upstreamProxy" placeholder="socks5://host:port or http://host:port" data-i18n-placeholder="serverUpstreamPlaceholder">
-            <div class="text-sm text-muted mt-8">
+            <div class="text-sm text-muted mt-8" data-i18n="upstreamProxyDesc">
               Route all traffic through another proxy. Format: socks5://host:port, http://host:port
             </div>
           </div>
-          <button class="btn btn-primary w-full" onclick="setUpstreamProxy()">🔗 Set Upstream</button>
+          <button class="btn btn-primary w-full" onclick="setUpstreamProxy()">🔗 <span data-i18n="setUpstream">Set Upstream</span></button>
         </div>
       </div>
 
       <div class="card full">
         <div class="card-header">
-          <h2>System Proxy</h2>
-          <span id="sysProxyBadge" class="badge badge-err">Disabled</span>
+          <h2 data-i18n="systemProxy">System Proxy</h2>
+          <span id="sysProxyBadge" class="badge badge-err" data-i18n="sysProxyDisabled">Disabled</span>
         </div>
         <div class="card-body">
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="enableSystemProxy">Enable System Proxy</div>
-              <div class="setting-desc">Route all system traffic through the local proxy server</div>
+              <div class="setting-desc" data-i18n="systemProxyDesc">Route all system traffic through the local proxy server</div>
             </div>
             <label class="toggle-switch">
               <input type="checkbox" id="sysProxyToggle" onchange="toggleSystemProxy()">
@@ -2191,11 +2331,11 @@ input:checked + .toggle-slider:before {
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="pacFileUrl">PAC File URL</div>
-              <div class="setting-desc">Auto-configuration script for advanced setups</div>
+              <div class="setting-desc" data-i18n="pacFileDesc">Auto-configuration script for advanced setups</div>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="copyPacUrl()">📋 Copy URL</button>
+            <button class="btn btn-outline btn-sm" onclick="copyPacUrl()">📋 <span data-i18n="copyUrlBtn">Copy URL</span></button>
           </div>
-          <div class="code-block mt-12" id="pacUrlDisplay">Loading...</div>
+          <div class="code-block mt-12" id="pacUrlDisplay" data-i18n="loading">Loading...</div>
         </div>
       </div>
     </div>
@@ -2205,21 +2345,21 @@ input:checked + .toggle-slider:before {
   <div class="tab-content" id="tab-apps" style="display:none;">
     <div class="card">
       <div class="card-header">
-        <h2>Proxy Apps</h2>
+        <h2 data-i18n="proxyApps">Proxy Apps</h2>
         <div class="flex gap-8">
-          <button class="btn btn-primary btn-sm" onclick="showAddAppModal()">➕ Add App</button>
-          <button class="btn btn-outline btn-sm" onclick="loadApp<span data-i18n="presets">Presets</span>()">📋 <span data-i18n="presets">Presets</span></button>
+          <button class="btn btn-primary btn-sm" onclick="showAddAppModal()">➕ <span data-i18n="addApp">Add App</span></button>
+          <button class="btn btn-outline btn-sm" onclick="loadAppPresets()">📋 <span data-i18n="presets">Presets</span></button>
         </div>
       </div>
       <div class="card-body">
-        <div id="app<span data-i18n="presets">Presets</span>" style="display:none; margin-bottom: 16px;">
-          <div class="text-sm text-muted mb-8">Quick add detected applications:</div>
+        <div id="appPresets" style="display:none; margin-bottom: 16px;">
+          <div class="text-sm text-muted mb-8" data-i18n="quickAddDetected">Quick add detected applications:</div>
           <div id="presetList" class="flex gap-8" style="flex-wrap: wrap;"></div>
         </div>
         <div class="app-grid" id="appGrid">
           <div class="empty-state" style="grid-column: 1 / -1;">
             <div class="empty-state-icon">📱</div>
-            <div class="empty-state-text">No apps configured. Click "Add App" to get started.</div>
+            <div class="empty-state-text" data-i18n="noAppsConfigured">No apps configured. Click "Add App" to get started.</div>
           </div>
         </div>
       </div>
@@ -2230,22 +2370,23 @@ input:checked + .toggle-slider:before {
   <div class="tab-content" id="tab-logs" style="display:none;">
     <div class="card">
       <div class="card-header">
-        <h2>System Logs</h2>
-        <div class="flex gap-8">
+        <h2 data-i18n="systemLogs">System Logs</h2>
+        <div class="flex gap-8 items-center">
+          <span id="logStats" class="text-muted text-sm" style="margin-right:8px;"></span>
           <select id="logLevelFilter" class="sp-sort-select" onchange="filterLogs()">
             <option value="all" data-i18n="logLevelAll">All Levels</option>
-            <option value="info">Info</option>
+            <option value="info" data-i18n="logLevelInfo">Info</option>
             <option value="warn" data-i18n="logLevelWarn">Warning</option>
-            <option value="error">Error</option>
-            <option value="success" data-i18n="logLevelSuccess">Success</option>
+            <option value="error" data-i18n="logLevelError">Error</option>
+            <option value="debug">Debug</option>
           </select>
           <button class="btn btn-outline btn-sm" onclick="loadLogs()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
-          <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑 Clear</button>
+          <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑 <span data-i18n="clearBtn">Clear</span></button>
         </div>
       </div>
-      <div class="card-body" style="padding: 0; height: 500px;">
-        <div class="log-box" id="logBox" style="height: 100%; border: none;">
-          <div class="text-muted">Loading logs...</div>
+      <div class="card-body" style="padding: 0; height: 520px;">
+        <div class="log-box" id="logBox" style="height: 100%; border: none; border-radius: 0;">
+          <div class="text-muted" data-i18n="loadingLogs">Loading logs...</div>
         </div>
       </div>
     </div>
@@ -2256,13 +2397,13 @@ input:checked + .toggle-slider:before {
     <div class="grid">
       <div class="card">
         <div class="card-header">
-          <h2>General Settings</h2>
+          <h2 data-i18n="generalSettings">General Settings</h2>
         </div>
         <div class="card-body">
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="theme">Theme</div>
-              <div class="setting-desc">Choose your preferred visual theme</div>
+              <div class="setting-desc" data-i18n="themeDesc">Choose your preferred visual theme</div>
             </div>
             <select id="themeSelect" class="sp-sort-select" onchange="changeTheme(this.value)">
               <option value="dark" data-i18n="themeDark">Dark</option>
@@ -2273,7 +2414,7 @@ input:checked + .toggle-slider:before {
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="defaultMode">Default Mode</div>
-              <div class="setting-desc">Default proxy mode</div>
+              <div class="setting-desc" data-i18n="defaultModeDesc">Default proxy mode</div>
             </div>
             <select id="defaultMode" class="sp-sort-select" onchange="saveConfig('defaultMode', this.value)">
               <option value="auto" data-i18n="modeAuto">Auto</option>
@@ -2284,14 +2425,14 @@ input:checked + .toggle-slider:before {
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="defaultPort">Default Port</div>
-              <div class="setting-desc">Default port for the proxy server</div>
+              <div class="setting-desc" data-i18n="defaultPortDesc">Default port for the proxy server</div>
             </div>
             <input type="number" class="input" style="width: 100px;" id="defaultPort" value="1080" onchange="saveConfig('defaultPort', parseInt(this.value))">
           </div>
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="proxyTestCount">Proxy Test Count</div>
-              <div class="setting-desc">Number of proxies to test in batch</div>
+              <div class="setting-desc" data-i18n="proxyTestCountDesc">Number of proxies to test in batch</div>
             </div>
             <input type="number" class="input" style="width: 100px;" id="proxyTestCount" value="30" onchange="saveConfig('proxyTestCount', parseInt(this.value))">
           </div>
@@ -2300,25 +2441,25 @@ input:checked + .toggle-slider:before {
 
       <div class="card">
         <div class="card-header">
-          <h2>Log Settings</h2>
+          <h2 data-i18n="logSettings">Log Settings</h2>
         </div>
         <div class="card-body">
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="logLevel">Log Level</div>
-              <div class="setting-desc">Minimum level to log</div>
+              <div class="setting-desc" data-i18n="logLevelDesc">Minimum level to log</div>
             </div>
             <select id="logLevel" class="sp-sort-select" onchange="saveConfig('logLevel', this.value)">
-              <option value="debug">Debug</option>
-              <option value="info">Info</option>
+              <option value="debug" data-i18n="logLevelDebug">Debug</option>
+              <option value="info" data-i18n="logLevelInfo">Info</option>
               <option value="warn" data-i18n="logLevelWarn">Warning</option>
-              <option value="error">Error</option>
+              <option value="error" data-i18n="logLevelError">Error</option>
             </select>
           </div>
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label" data-i18n="logToFile">Log to File</div>
-              <div class="setting-desc">Save logs to file</div>
+              <div class="setting-desc" data-i18n="logToFileDesc">Save logs to file</div>
             </div>
             <label class="toggle-switch">
               <input type="checkbox" id="logToFile" checked onchange="saveConfig('logToFile', this.checked)">
@@ -2328,9 +2469,46 @@ input:checked + .toggle-slider:before {
         </div>
       </div>
 
+      <div class="card">
+        <div class="card-header">
+          <h2><svg viewBox="0 0 48 48" width="18" height="18" style="vertical-align:middle;margin-right:6px;"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg><span data-i18n="googleOAuthSettings">Google OAuth Configuration</span></h2>
+        </div>
+        <div class="card-body">
+          <div id="googleOAuthStatus" class="google-oauth-status">
+            <div class="setting-label" data-i18n="googleOAuthNotConfigured">Not configured</div>
+            <div class="setting-desc" data-i18n="googleOAuthConfigDesc">Configure Google OAuth to enable login with Google account</div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Client ID</div>
+              <div class="setting-desc" data-i18n="googleClientIdDesc">Google OAuth Client ID</div>
+            </div>
+            <input type="text" class="input" style="flex:1;min-width:200px;" id="googleClientId" placeholder="xxxxx.apps.googleusercontent.com" data-i18n-placeholder="googleClientIdPlaceholder">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Client Secret</div>
+              <div class="setting-desc" data-i18n="googleClientSecretDesc">Google OAuth Client Secret</div>
+            </div>
+            <input type="password" class="input" style="flex:1;min-width:200px;" id="googleClientSecret" placeholder="GOCSPX-xxxxx" data-i18n-placeholder="googleClientSecretPlaceholder">
+          </div>
+          <div class="mt-16 flex gap-8">
+            <button class="btn btn-primary btn-sm" onclick="saveGoogleOAuthConfig()"><span data-i18n="save">Save</span></button>
+            <button class="btn btn-outline btn-sm" onclick="loadGoogleOAuthStatus()"><span data-i18n="refreshBtn">Refresh</span></button>
+          </div>
+          <div class="setting-desc mt-8" style="margin-top:12px;font-size:11px;line-height:1.5;">
+            <span data-i18n="googleOAuthHelpTitle">Setup guide:</span><br>
+            <span data-i18n="googleOAuthHelp1">1. Visit Google Cloud Console → APIs & Services → Credentials</span><br>
+            <span data-i18n="googleOAuthHelp2">2. Create OAuth 2.0 Client ID (Web application)</span><br>
+            <span data-i18n="googleOAuthHelp3">3. Add authorized redirect URI:</span> <code id="googleRedirectUri"></code><br>
+            <span data-i18n="googleOAuthHelp4">4. Copy Client ID and Secret here, then Save</span>
+          </div>
+        </div>
+      </div>
+
       <div class="card full">
         <div class="card-header">
-          <h2>System Information</h2>
+          <h2 data-i18n="systemInfo">System Information</h2>
         </div>
         <div class="card-body">
           <div class="form-group">
@@ -2361,8 +2539,112 @@ input:checked + .toggle-slider:before {
           </div>
           <div class="mt-16 flex gap-8">
             <button class="btn btn-outline btn-sm" onclick="loadDiagnostics()">↻ <span data-i18n="refreshBtn">Refresh</span></button>
-            <button class="btn btn-outline btn-sm" onclick="resetConfig()">🔄 Reset to Defaults</button>
+            <button class="btn btn-outline btn-sm" onclick="resetConfig()">🔄 <span data-i18n="resetToDefaults">Reset to Defaults</span></button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Signup Assistant Tab -->
+  <div class="tab-content" id="tab-googlesignup" style="display:none;">
+    <div class="grid">
+      <!-- Hero / 说明卡片 -->
+      <div class="card full gsu-hero">
+        <div class="gsu-hero-left">
+          <div class="gsu-title">
+            <svg viewBox="0 0 48 48" width="36" height="36"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+            <div>
+              <h2 style="margin:0;font-size:18px;" data-i18n="gsuHeroTitle">Google 账号注册助手</h2>
+              <div class="setting-desc" data-i18n="gsuHeroSubtitle">筛选干净代理 · 一键启动 · 自动打开注册页</div>
+            </div>
+          </div>
+        </div>
+        <div class="gsu-hero-actions">
+          <button class="btn btn-outline btn-sm" onclick="loadGsuProxies()">🔄 <span data-i18n="gsuRefreshList">刷新代理列表</span></button>
+          <button id="gsuScanBtn" class="btn btn-primary btn-sm" onclick="runGsuScan()">🔍 <span data-i18n="gsuScanBtn">搜索干净代理</span></button>
+        </div>
+      </div>
+
+      <!-- Steps -->
+      <div class="card full gsu-steps">
+        <div class="gsu-step">
+          <div class="gsu-step-num">1</div>
+          <div><strong data-i18n="gsuStep1Title">选择一个干净代理</strong><br><span class="setting-desc" data-i18n="gsuStep1Desc">优先选择 ⭐ 延迟低、评分高（5/6）的代理</span></div>
+        </div>
+        <div class="gsu-step">
+          <div class="gsu-step-num">2</div>
+          <div><strong data-i18n="gsuStep2Title">点击「一键启动并注册」</strong><br><span class="setting-desc" data-i18n="gsuStep2Desc">本地代理启动 → 设系统代理 → 浏览器打开注册页</span></div>
+        </div>
+        <div class="gsu-step">
+          <div class="gsu-step-num">3</div>
+          <div><strong data-i18n="gsuStep3Title">在浏览器中手动完成注册</strong><br><span class="setting-desc" data-i18n="gsuStep3Desc">所有流量通过干净代理，降低风控概率</span></div>
+        </div>
+      </div>
+
+      <!-- 代理列表卡片 -->
+      <div class="card full">
+        <div class="card-header">
+          <h2>🌐 <span data-i18n="gsuListTitle">干净代理列表</span></h2>
+          <div class="text-sm" id="gsuListMeta"></div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div id="gsuListContainer" style="min-height:200px;">
+            <div class="gsu-loading" id="gsuLoading"><div class="spinner"></div> <span data-i18n="gsuLoading">加载中...</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 启动中 / 状态卡片 -->
+      <div class="card full" id="gsuStatusCard" style="display:none;">
+        <div class="card-header">
+          <h2>🚀 <span data-i18n="gsuStatusTitle">注册会话状态</span></h2>
+          <button class="btn btn-danger btn-sm" onclick="gsuCleanup()">🛑 <span data-i18n="gsuStopBtn">停止并清理</span></button>
+        </div>
+        <div class="card-body">
+          <div class="gsu-status-grid">
+            <div class="gsu-status-item">
+              <div class="text-sm text-muted" data-i18n="gsuStCleanProxy">干净代理</div>
+              <div class="text-lg" id="gsuStProxy">-</div>
+            </div>
+            <div class="gsu-status-item">
+              <div class="text-sm text-muted" data-i18n="gsuStLocalPort">本地端口</div>
+              <div class="text-lg" id="gsuStPort">-</div>
+            </div>
+            <div class="gsu-status-item">
+              <div class="text-sm text-muted" data-i18n="gsuStSystemProxy">系统代理</div>
+              <div class="text-lg" id="gsuStSystem">-</div>
+            </div>
+            <div class="gsu-status-item">
+              <div class="text-sm text-muted" data-i18n="gsuStBrowser">浏览器</div>
+              <div class="text-lg" id="gsuStBrowser">-</div>
+            </div>
+          </div>
+          <div class="mt-16 flex gap-8">
+            <button class="btn btn-outline btn-sm" onclick="gsuReopenSignup()">🌐 <span data-i18n="gsuReopenBtn">重新打开注册页</span></button>
+            <a class="btn btn-google btn-sm" id="gsuDirectLink" target="_blank" href="https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp">
+              <span data-i18n="gsuDirectLink">直接打开注册页</span> ↗
+            </a>
+          </div>
+          <div class="gsu-warn mt-16" data-i18n="gsuCleanupWarning">
+            ⚠️ 注册完成后请点击「停止并清理」按钮，还原系统代理设置。
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="card full gsu-tips-card">
+        <div class="card-header">
+          <h2>💡 <span data-i18n="gsuTipsTitle">注册注意事项（降低封号/风控风险）</span></h2>
+        </div>
+        <div class="card-body">
+          <ul class="gsu-tips">
+            <li data-i18n="gsuTip1"><b>慢慢来</b>：每步停顿几秒，不要自动填表过快。</li>
+            <li data-i18n="gsuTip2"><b>真实信息</b>：名字/生日尽量贴近现实，不要用完全随机字符串。</li>
+            <li data-i18n="gsuTip3"><b>手机号</b>：准备能接收短信的真实号码（Google 强制验证）。</li>
+            <li data-i18n="gsuTip4"><b>设备干净</b>：浏览器尽量无痕模式，清空 cookies，避免多账号同环境。</li>
+            <li data-i18n="gsuTip5"><b>换 IP</b>：如果注册页面提示异常，换一个代理重试（本页换代理+清理后重试）。</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -2382,14 +2664,14 @@ input:checked + .toggle-slider:before {
     </div>
     <div class="modal-body">
       <div class="form-row">
-        <label data-i18n="appName">App Name</label>
+        <label data-i18n="appNameLabel">App Name</label>
         <input type="text" class="input" id="appNameInput" placeholder="e.g. Google Chrome" data-i18n-placeholder="appNamePlaceholder">
       </div>
       <div class="form-row">
         <label data-i18n="appPath">App Path</label>
         <div class="flex gap-8">
           <input type="text" class="input" id="appPathInput" placeholder="C:\path\to\app.exe" style="flex:1;">
-          <button class="btn btn-outline btn-sm" onclick="browseApp()">📁 Browse</button>
+          <button class="btn btn-outline btn-sm" onclick="browseApp()">📁 <span data-i18n="browseBtn">Browse</span></button>
         </div>
       </div>
       <div class="form-row">
@@ -2402,7 +2684,7 @@ input:checked + .toggle-slider:before {
       <div class="form-row">
         <label data-i18n="processName">Process Name (optional)</label>
         <input type="text" class="input" id="appProcessInput" placeholder="e.g. chrome.exe" data-i18n-placeholder="processNamePlaceholder">
-        <div class="text-sm text-muted mt-8">Process name to kill before launching (optional)</div>
+        <div class="text-sm text-muted mt-8" data-i18n="processNameDesc">Process name to kill before launching (optional)</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -2424,6 +2706,7 @@ let currentFilter = 'all';
 let currentSort = 'latency';
 let editingApp = null;
 let activityLog = [];
+let cachedStatus = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
@@ -2439,7 +2722,296 @@ document.addEventListener('DOMContentLoaded', () => {
   updateFooterTime();
   setInterval(updateFooterTime, 1000);
   setInterval(loadStatus, 10000);
+  loadGoogleAuthStatus();
+  checkAuthErrorInUrl();
 });
+
+// ===== Google Signup Assistant =====
+let gsuSelectedProxy = null;
+let gsuLaunching = false;
+let gsuProxiesCache = [];
+
+async function loadGsuProxies() {
+  const ctr = document.getElementById('gsuListContainer');
+  const meta = document.getElementById('gsuListMeta');
+  if (!ctr) return;
+  ctr.innerHTML = `<div class="gsu-loading"><div class="spinner"></div> ${_t('gsuLoading')}</div>`;
+  try {
+    const res = await fetch('/api/google-signup/proxies');
+    const data = await res.json();
+    gsuProxiesCache = data.proxies || [];
+    meta.textContent = `${gsuProxiesCache.length} ${_t('gsuCountSuffix')}`;
+    if (gsuProxiesCache.length === 0) {
+      ctr.innerHTML = `<div class="gsu-empty">${_t('gsuEmpty')}</div>`;
+      return;
+    }
+    renderGsuList();
+  } catch (e) {
+    ctr.innerHTML = `<div class="gsu-empty" style="color:var(--danger)">${_t('gsuLoadFailed')}</div>`;
+  }
+}
+
+function renderGsuList() {
+  const ctr = document.getElementById('gsuListContainer');
+  if (!ctr) return;
+  ctr.innerHTML = '';
+  gsuProxiesCache.forEach((p, idx) => {
+    const row = document.createElement('div');
+    row.className = 'gsu-proxy' + (gsuSelectedProxy && gsuSelectedProxy.host === p.host && gsuSelectedProxy.port === p.port ? ' gsu-proxy-sel' : '');
+    const score = p.googleSignupScore || 0;
+    const stars = Math.max(1, Math.min(5, Math.round(score / 6 * 5)));
+    const starStr = '⭐'.repeat(stars) + '·'.repeat(5 - stars);
+    const note = p.note || p.source || '';
+    const fromSaved = p.source && !p.source.startsWith('builtin') ? '🟢' : '🔵';
+    const latencyRaw = p.avgLatency ?? p.latency;
+    const latencyStr = (latencyRaw == null || latencyRaw === '') ? '-' : `${latencyRaw}ms`;
+    row.innerHTML = `
+      <div class="gsu-proxy-main">
+        <div class="gsu-proxy-host">${fromSaved} <b>${p.host}:${p.port}</b> <span class="gsu-proxy-type">${(p.type||'').toUpperCase()}</span></div>
+        <div class="gsu-proxy-meta">
+          <span class="gsu-ping" title="${_t('gsuLatencyTitle') || ''}">${latencyStr}</span>
+          <span class="gsu-score" title="${score}/6 ${_t('gsuScoreTitle') || ''}">${starStr}</span>
+          ${note ? `<span class="gsu-note">${note}</span>` : ''}
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm gsu-launch-btn" onclick="gsuLaunch(${idx})">
+        🚀 <span data-i18n="gsuLaunchBtn">一键启动并注册</span>
+      </button>
+    `;
+    ctr.appendChild(row);
+  });
+  applyI18n();
+}
+
+async function gsuLaunch(idx) {
+  if (gsuLaunching) return;
+  const p = gsuProxiesCache[idx];
+  if (!p) return;
+  gsuSelectedProxy = p;
+  gsuLaunching = true;
+  renderGsuList();
+  showToast(`${_t('gsuLaunching')} ${p.host}:${p.port}...`, 'info');
+
+  try {
+    const res = await fetch('/api/google-signup/launch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ host: p.host, port: p.port, type: p.type, localPort: 1080 }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'launch failed');
+
+    // Fill status card
+    document.getElementById('gsuStatusCard').style.display = 'block';
+    document.getElementById('gsuStProxy').textContent = `${data.upstream.host}:${data.upstream.port}`;
+    document.getElementById('gsuStPort').textContent = `127.0.0.1:${data.port}`;
+    const sysEl = document.getElementById('gsuStSystem');
+    sysEl.textContent = data.systemProxy ? _t('gsuEnabled') : _t('gsuSkipped');
+    sysEl.style.color = data.systemProxy ? 'var(--success)' : 'var(--warning)';
+    const brEl = document.getElementById('gsuStBrowser');
+    brEl.textContent = data.browserOpened ? _t('gsuBrowserYes') : _t('gsuBrowserNo');
+    brEl.style.color = data.browserOpened ? 'var(--success)' : 'var(--warning)';
+    showToast(_t('gsuLaunchSuccess'), 'success');
+    if (!data.browserOpened) {
+      // Fallback: open via link click
+      setTimeout(() => { document.getElementById('gsuDirectLink')?.click(); }, 500);
+    }
+    // Scroll status into view
+    document.getElementById('gsuStatusCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    showToast(_t('gsuLaunchFailed') + ': ' + e.message, 'error');
+  } finally {
+    gsuLaunching = false;
+    renderGsuList();
+  }
+}
+
+async function gsuCleanup() {
+  try {
+    await fetch('/api/google-signup/cleanup', { method: 'POST' });
+    document.getElementById('gsuStatusCard').style.display = 'none';
+    showToast(_t('gsuCleanedUp'), 'success');
+  } catch (e) {
+    showToast(_t('gsuCleanupFailed'), 'error');
+  }
+}
+
+function gsuReopenSignup() {
+  window.open('https://accounts.google.com/signup/v2/webcreateaccount?flowName=GlifWebSignIn&flowEntry=SignUp', '_blank');
+}
+
+// Expose inline-onclick targets to the global scope (required because these are defined inside <script> blocks
+// where top-level declarations aren't auto-exposed to the `window` object — HTML onclick="" resolves on window only).
+window.gsuLaunch = gsuLaunch;
+window.gsuCleanup = gsuCleanup;
+window.gsuReopenSignup = gsuReopenSignup;
+
+async function runGsuScan() {
+  const btn = document.getElementById('gsuScanBtn');
+  if (!btn) return;
+  if (window._gsuScanRunning) { showToast(_t('gsuScanHint'), 'info'); return; }
+  btn.disabled = true;
+  // Save original button content (with i18n spans) so we can restore it exactly
+  if (!window._gsuScanBtnOrig) window._gsuScanBtnOrig = btn.innerHTML;
+  const origHTML = window._gsuScanBtnOrig;
+  btn.innerHTML = `⏳ ${_t('gsuScanning') || 'Scanning'} (${_t('gsuStartingShort') || 'starting'})...`;
+  showToast(_t('gsuScanHint'), 'info');
+  try {
+    const res = await fetch('/api/google-signup/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // Tuned defaults for speed: 120 candidates split into 12 parallel batches × 5s timeout
+      body: JSON.stringify({ sample: 120, batch: 12, timeout: 5000 }),
+    });
+    if (res.status === 409) {
+      showToast(_t('gsuScanAlreadyRunning') || 'Already running, wait...', 'warn');
+      return;
+    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const info = await res.json();
+    // 202 = immediate return; real progress comes via WS gsu-scan-* messages handled above
+    if (res.status === 202) {
+      btn.innerHTML = `⏳ 1% · ${_t('gsuPhaseFetching') || 'Fetching sources...'}`;
+    }
+  } catch (e) {
+    showToast(_t('gsuScanFailed') + (e.message ? ' · ' + e.message : ''), 'error');
+    runGsuScanCleanup();
+  }
+
+  function noop(){}
+}
+// Restore button state + meta base text after scan finishes (success or error)
+// Called from both gsu-scan-complete and gsu-scan-error WS handlers + local catch path
+window.runGsuScanCleanup = function () {
+  const btn = document.getElementById('gsuScanBtn');
+  if (btn) {
+    btn.disabled = false;
+    if (window._gsuScanBtnOrig) btn.innerHTML = window._gsuScanBtnOrig;
+  }
+  const meta = document.getElementById('gsuListMeta');
+  if (meta && meta._originalBaseText) {
+    meta.textContent = meta._originalBaseText;
+    meta._originalBaseText = null;
+  }
+  if (typeof applyI18n === 'function') applyI18n();
+};
+window._gsuScanRunning = false;
+
+// ===== Google OAuth Authentication =====
+async function loadGoogleAuthStatus() {
+  try {
+    const res = await fetch('/api/auth/status');
+    const data = await res.json();
+    const loginBtn = document.getElementById('googleLoginBtn');
+    const userChip = document.getElementById('googleUserChip');
+    if (data.loggedIn && data.user) {
+      loginBtn.style.display = 'none';
+      userChip.style.display = 'flex';
+      const avatar = document.getElementById('googleUserAvatar');
+      const dropdownAvatar = document.getElementById('googleUserDropdownAvatar');
+      avatar.src = data.user.picture || '';
+      dropdownAvatar.src = data.user.picture || '';
+      document.getElementById('googleUserName').textContent = data.user.name || data.user.email;
+      document.getElementById('googleUserDropdownName').textContent = data.user.name || '';
+      document.getElementById('googleUserDropdownEmail').textContent = data.user.email || '';
+    } else {
+      loginBtn.style.display = data.googleConfigured ? 'inline-flex' : 'none';
+      userChip.style.display = 'none';
+    }
+    // Also update settings page status
+    const statusEl = document.getElementById('googleOAuthStatus');
+    if (statusEl) {
+      const labelEl = statusEl.querySelector('.setting-label');
+      if (data.googleConfigured) {
+        labelEl.textContent = data.loggedIn ? '✓ ' + (data.user.name || _t('authLoggedIn')) : '✓ ' + _t('authConfigured');
+        labelEl.style.color = 'var(--success, #22c55e)';
+      } else {
+        labelEl.textContent = _t('googleOAuthNotConfigured');
+        labelEl.style.color = 'var(--text-muted, #888)';
+      }
+    }
+  } catch (e) { console.warn('loadGoogleAuthStatus failed', e); }
+}
+
+function checkAuthErrorInUrl() {
+  const params = new URLSearchParams(location.search);
+  const err = params.get('auth_error');
+  const ok = params.get('auth_success');
+  if (err || ok) {
+    history.replaceState(null, '', location.pathname);
+    if (err) {
+      const msgs = {
+        no_config: _t('authErrorNoConfig'),
+        denied: _t('authErrorDenied'),
+        token_failed: _t('authErrorTokenFailed'),
+        exception: _t('authErrorException'),
+      };
+      showToast(msgs[err] || _t('authErrorDefault'), 'error');
+    } else if (ok) {
+      showToast(_t('authLoginSuccess'), 'success');
+    }
+    loadGoogleAuthStatus();
+  }
+}
+
+function googleUserMenuToggle(e) {
+  e.stopPropagation();
+  const dropdown = document.getElementById('googleUserDropdown');
+  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+}
+
+document.addEventListener('click', (e) => {
+  const chip = document.getElementById('googleUserChip');
+  const dropdown = document.getElementById('googleUserDropdown');
+  if (chip && dropdown && !chip.contains(e.target)) {
+    dropdown.style.display = 'none';
+  }
+});
+
+async function googleLogout(e) {
+  e.stopPropagation();
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    document.getElementById('googleUserDropdown').style.display = 'none';
+    showToast(_t('authLoggedOut'), 'success');
+    loadGoogleAuthStatus();
+  } catch (e) { showToast(_t('authLogoutFailed'), 'error'); }
+}
+
+async function saveGoogleOAuthConfig() {
+  const clientId = document.getElementById('googleClientId').value.trim();
+  const clientSecret = document.getElementById('googleClientSecret').value.trim();
+  if (!clientId || !clientSecret) {
+    showToast(_t('authConfigRequired'), 'error');
+    return;
+  }
+  try {
+    const res = await fetch('/api/auth/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId, clientSecret }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(_t('authConfigSaved'), 'success');
+      document.getElementById('googleClientSecret').value = '';
+      loadGoogleAuthStatus();
+    } else {
+      showToast(data.error || _t('authConfigSaveFailed'), 'error');
+    }
+  } catch (e) {
+    showToast(_t('authConfigSaveFailed'), 'error');
+  }
+}
+
+async function loadGoogleOAuthStatus() {
+  // Display the redirect URI for setup guide
+  const redirectUriEl = document.getElementById('googleRedirectUri');
+  if (redirectUriEl) {
+    redirectUriEl.textContent = location.origin + '/api/auth/google/callback';
+  }
+  loadGoogleAuthStatus();
+}
 
 function initTheme() {
   const saved = localStorage.getItem('theme') || 'dark';
@@ -2490,8 +3062,10 @@ function switchTab(tabName) {
     setTimeout(drawCharts, 100);
   }
   if (tabName === 'logs') loadLogs();
-  if (tabName === 'settings') loadDiagnostics();
+  if (tabName === 'settings') { loadDiagnostics(); loadGoogleOAuthStatus(); }
   if (tabName === 'warp') refreshWarpStatus();
+  if (tabName === 'proxies') renderProxyTable();
+  if (tabName === 'googlesignup') { loadGsuProxies(); }
 }
 
 function initWebSocket() {
@@ -2522,7 +3096,7 @@ function handleWebSocketMessage(event) {
         updateWarpStatusUI(data.warp.installed, data.warp.connected);
         break;
       case 'free-proxy-update':
-        toast('info', `Proxy cache updated: ' + data.count + ' proxies');
+        toast('info', _t('proxyCacheUpdated', data.count));
         break;
       case 'test-progress':
         handleTestProgress(data);
@@ -2543,9 +3117,62 @@ function handleWebSocketMessage(event) {
         toast('warn', _t('allDisconnected'));
         loadStatus();
         break;
+      // Google Signup fast scan progress — broadcast per-batch from /api/google-signup/scan
+      case 'gsu-scan-started':
+        window._gsuScanRunning = true;
+        gsuUpdateScanStatus(0, 0, 0, `⏳ ${_t('gsuScanStarting') || 'Starting...'}`);
+        break;
+      case 'gsu-scan-phase':
+        if (data.phase === 1 && data.done) {
+          gsuUpdateScanStatus(0, data.count || 0, 0,
+            `🌐 ${_t('gsuPhaseFetch') || 'Fetched'} ${data.count} ${_t('gsuPhaseCandidates') || 'candidates'}`);
+        } else if (data.phase === 1) {
+          gsuUpdateScanStatus(0, 0, 0, `🌐 ${_t('gsuPhaseFetching') || 'Fetching sources...'}`);
+        } else if (data.phase === 2) {
+          gsuUpdateScanStatus(0, data.total || 0, 0,
+            `🔬 ${_t('gsuPhaseValidating') || 'Validating Google capability...'} (${data.total || '?'})`);
+        } else if (data.phase === 3) {
+          gsuUpdateScanStatus(1, 1, data.count || 0,
+            `💾 ${_t('gsuPhaseSaving') || 'Saving'} ${data.count}...`);
+        }
+        break;
+      case 'gsu-scan-progress':
+        window._gsuScanRunning = true;
+        gsuUpdateScanStatus(data.done || 0, data.total || 1, data.found || 0,
+          `🔎 ${data.done || 0}/${data.total || '?'} · ${_t('gsuFoundSoFar') || 'Found'} ${data.found || 0}`);
+        break;
+      case 'gsu-scan-complete':
+        window._gsuScanRunning = false;
+        gsuUpdateScanStatus(data.total || 1, data.total || 1, data.found || 0,
+          `✅ ${_t('gsuScanDone') || 'Done'}: ${data.found || 0}/${data.total || 0}${data.savedTotal ? ' · ' + _t('gsuSaved') + ' ' + data.savedTotal : ''} · ${((data.elapsedMs||0)/1000).toFixed(1)}s`);
+        toast('info', _t('gsuScanDone') + `${data.found ? ' · ' + _t('gsuFoundN', data.found) : ''}`);
+        // Refresh the list so users see newly saved Google-capable proxies immediately
+        if (typeof loadGsuProxies === 'function') loadGsuProxies();
+        if (typeof runGsuScanCleanup === 'function') runGsuScanCleanup();
+        break;
+      case 'gsu-scan-error':
+        window._gsuScanRunning = false;
+        toast('error', _t('gsuScanFailed') + (data.error ? ` · ${data.error}` : ''));
+        if (typeof runGsuScanCleanup === 'function') runGsuScanCleanup();
+        break;
     }
   } catch (e) {
     console.error('WS parse error', e);
+  }
+}
+
+// Render realtime GSU scan progress into: scan button + gsuListMeta header
+function gsuUpdateScanStatus(done, total, found, textExtra) {
+  const btn = document.getElementById('gsuScanBtn');
+  const meta = document.getElementById('gsuListMeta');
+  const pct = total > 0 ? Math.min(100, Math.round(done / total * 100)) : 0;
+  const label = `⏳ ${pct}%${textExtra ? ' · ' + textExtra : ''}`;
+  if (btn) { btn.disabled = true; btn.innerHTML = label; }
+  if (meta) {
+    // Strip any previously appended progress tag (so we don't pile up)
+    const baseText = meta._originalBaseText
+      || (meta._originalBaseText = meta.textContent.replace(/\s*\[.*?\]\s*$/, ''));
+    meta.textContent = baseText + `   [${pct}% ${_t('gsuScanning') || 'Scanning'} · ${found} ${_t('gsuFoundSuffix') || 'found'}]`;
   }
 }
 
@@ -2565,6 +3192,7 @@ async function apiCall(path, method = 'GET', body = null) {
 async function loadStatus() {
   try {
     const data = await apiCall('/api/status');
+    cachedStatus = data;
     updateServerStatus(data.server.running, data.server.port);
     updateWarpStatusUI(data.warp.installed, data.warp.connected);
     updateSystemProxyUI(data.systemProxy);
@@ -2587,25 +3215,25 @@ function updateServerStatus(running, port) {
 
   if (running) {
     badge.className = 'badge badge-ok';
-    badge.textContent = 'Server ON';
+    badge.textContent = _t('serverOn');
     statusBadge.className = 'badge badge-ok';
-    statusBadge.textContent = 'Running';
+    statusBadge.textContent = _t('serverRunning');
     text.textContent = _t('statusRunning');
-    portText.textContent = 'Port: ' + port;
+    portText.textContent = _t('portLabel') + ': ' + port;
     startBtn.style.display = 'none';
     stopBtn.style.display = 'inline-flex';
-    dashStatus.textContent = 'ON';
+    dashStatus.textContent = _t('on');
     dashPort.textContent = port;
     ring.className = 'orbit-ring active';
     center.className = 'orbit-center success';
-    ball.className = 'orbit-ball success';
+    ball.className = 'orbit-ball success spinning';
   } else {
     badge.className = 'badge badge-err';
     badge.textContent = _t('serverOff');
     statusBadge.className = 'badge badge-err';
     statusBadge.textContent = _t('stopped');
     text.textContent = _t('statusStopped');
-    portText.textContent = 'Port: -';
+    portText.textContent = _t('portLabel') + ': -';
     startBtn.style.display = 'inline-flex';
     stopBtn.style.display = 'none';
     dashStatus.textContent = _t('off');
@@ -2614,7 +3242,6 @@ function updateServerStatus(running, port) {
     center.className = 'orbit-center error';
     ball.className = 'orbit-ball';
   }
-  updateOrbitAnimation();
 }
 
 function updateWarpStatusUI(installed, connected) {
@@ -2638,15 +3265,15 @@ function updateWarpStatusUI(installed, connected) {
 
   if (connected) {
     badge.className = 'badge badge-ok';
-    badge.textContent = 'WARP ON';
+    badge.textContent = _t('warpOn');
     statusBadge.className = 'badge badge-ok';
     statusBadge.textContent = _t('warpConnected');
     connectBtn.style.display = 'none';
     disconnectBtn.style.display = 'inline-flex';
-    dashStatus.textContent = 'ON';
+    dashStatus.textContent = _t('on');
     ring.className = 'orbit-ring active';
     center.className = 'orbit-center success';
-    ball.className = 'orbit-ball success';
+    ball.className = 'orbit-ball success spinning-reverse';
   } else {
     badge.className = 'badge badge-err';
     badge.textContent = _t('warpOff');
@@ -2667,12 +3294,12 @@ function updateSystemProxyUI(info) {
   const dash = document.getElementById('dashSysProxy');
   if (info.enabled) {
     badge.className = 'badge badge-ok';
-    badge.textContent = 'Enabled';
+    badge.textContent = _t('sysProxyEnabled');
     toggle.checked = true;
-    dash.textContent = 'ON';
+    dash.textContent = _t('on');
   } else {
     badge.className = 'badge badge-err';
-    badge.textContent = 'Disabled';
+    badge.textContent = _t('sysProxyDisabled');
     toggle.checked = false;
     dash.textContent = _t('off');
   }
@@ -2686,16 +3313,7 @@ function updateDashboardStats(stats) {
 
   const diagBadge = document.getElementById('diagBadge');
   diagBadge.className = 'badge badge-ok';
-  diagBadge.textContent = '<span data-i18n="systemOk">System OK</span>';
-}
-
-function updateOrbitAnimation() {
-  const balls = document.querySelectorAll('.orbit-ball');
-  balls.forEach((ball, i) => {
-    ball.classList.remove('spinning', 'spinning-reverse');
-    void ball.offsetWidth;
-    ball.classList.add(i % 2 === 0 ? 'spinning' : 'spinning-reverse');
-  });
+  diagBadge.textContent = _t('systemOk');
 }
 
 async function startServer() {
@@ -2705,10 +3323,10 @@ async function startServer() {
     const data = await apiCall('/api/server/start', 'POST', { port });
     if (data.running) {
       toast('ok', _t('serverStarted', data.port));
-      addActivity('success', 'Proxy Server Started', 'Started on port ' + data.port);
+      addActivity('success', _t('proxyServerStartedActivity'), _t('startedOnPortActivity', data.port));
       updateServerStatus(true, data.port);
     } else {
-      toast('err', _t('serverStartFailed', data.error || 'Unknown error'));
+      toast('err', _t('serverStartFailed', data.error || _t('unknown')));
     }
   } catch (e) {}
 }
@@ -2734,7 +3352,7 @@ async function setUpstreamProxy() {
     const data = await apiCall('/api/server/set-upstream', 'POST', { proxy });
     if (data.running) {
       toast('ok', _t('upstreamSet', data.upstream.host, data.upstream.port));
-      addActivity('info', 'Upstream Proxy Set', proxy);
+      addActivity('info', _t('upstreamProxySetActivity'), proxy);
     } else {
       toast('err', data.error || _t('upstreamSet'));
     }
@@ -2747,7 +3365,7 @@ async function connectWarp() {
     const data = await apiCall('/api/warp/connect', 'POST');
     if (data.connected) {
       toast('ok', _t('warpConnected'));
-      addActivity('success', 'WARP Connected', 'VPN connection established');
+      addActivity('success', _t('warpConnectedActivity'), _t('warpConnectionEstablished'));
     } else {
       toast('err', _t('warpConnectFailed'));
     }
@@ -2761,7 +3379,7 @@ async function disconnectWarp() {
     toast('info', _t('warpDisconnected'));
     await apiCall('/api/warp/disconnect', 'POST');
     toast('ok', _t('warpDisconnected'));
-    addActivity('info', 'WARP Disconnected', 'VPN disconnected');
+    addActivity('info', _t('warpDisconnectedActivity'), _t('vpnDisconnected'));
     loadStatus();
     refreshWarpStatus();
   } catch (e) {}
@@ -2774,7 +3392,7 @@ async function registerWarp() {
     if (data.success) {
       toast('ok', _t('warpRegistered'));
     } else {
-      toast('err', _t('warpRegisterFailed', data.raw || 'Unknown error'));
+      toast('err', _t('warpRegisterFailed', data.raw || _t('unknown')));
     }
     refreshWarpStatus();
   } catch (e) {}
@@ -2783,7 +3401,7 @@ async function registerWarp() {
 async function refreshWarpStatus() {
   try {
     const data = await apiCall('/api/status');
-    document.getElementById('warpRawStatus').textContent = data.warp.raw || 'No status data';
+    document.getElementById('warpRawStatus').textContent = data.warp.raw || _t('noStatusData');
     updateWarpStatusUI(data.warp.installed, data.warp.connected);
   } catch (e) {}
 }
@@ -2794,7 +3412,7 @@ async function toggleSystemProxy() {
     const data = await apiCall('/api/proxy/system', 'POST', { enable });
     if (data.success) {
       toast('ok', enable ? _t('sysProxyEnabledMsg') : _t('sysProxyDisabledMsg'));
-      addActivity(enable ? 'success' : 'info', 'System Proxy', enable ? 'Enabled' : 'Disabled');
+      addActivity(enable ? 'success' : 'info', _t('systemProxyActivity'), enable ? _t('sysProxyEnabled') : _t('sysProxyDisabled'));
     } else {
       toast('err', _t('sysProxyFailed'));
       document.getElementById('sysProxyToggle').checked = !enable;
@@ -2821,7 +3439,7 @@ async function loadPacUrl() {
 }
 
 async function disconnectAll() {
-  if (!confirm('Disconnect all connections (server, WARP, system proxy)?')) return;
+  if (!confirm(_t('disconnectAllConfirm'))) return;
   try {
     toast('info', _t('allDisconnected'));
     await apiCall('/api/proxy/disconnect-all', 'POST');
@@ -2878,7 +3496,10 @@ function _doRenderProxyTable() {
   });
 
   if (currentSort === 'latency') {
-    filtered.sort((a, b) => (a.latency || 9999) - (b.latency || 9999));
+    const builtins = filtered.filter(p => p.builtin);
+    const others = filtered.filter(p => !p.builtin);
+    others.sort((a, b) => (a.latency || 9999) - (b.latency || 9999));
+    filtered = [...builtins, ...others];
   } else if (currentSort === 'tests') {
     filtered.sort((a, b) => (b.tests || 0) - (a.tests || 0));
   } else if (currentSort === 'host') {
@@ -2891,27 +3512,33 @@ function _doRenderProxyTable() {
   }
 
   tbody.innerHTML = filtered.map((p, i) => {
-    const grade = getGrade(p.latency);
-    const latencyColor = p.latency > 0 && p.latency < 300 ? 'var(--success)' :
-                         p.latency > 0 && p.latency < 600 ? 'var(--warning)' :
-                         p.latency > 0 ? 'var(--danger)' : 'var(--text2)';
-    const latencyPct = p.latency > 0 ? Math.min(100, (1000 - p.latency) / 10) : 0;
+    const measuredLatency = p.hint ? 0 : p.latency;
+    const displayLatency = p.hint ? p.latency : p.latency;
+    const grade = getGrade(measuredLatency);
+    const latencyColor = measuredLatency > 0 && measuredLatency < 300 ? 'var(--success)' :
+                         measuredLatency > 0 && measuredLatency < 600 ? 'var(--warning)' :
+                         measuredLatency > 0 ? 'var(--danger)' :
+                         p.hint ? (displayLatency < 300 ? 'var(--primary)' : 'var(--text2)') : 'var(--text2)';
+    const latencyPct = displayLatency > 0 ? Math.min(100, (1000 - displayLatency) / 10) : 0;
+    const latencyText = p.hint
+      ? `<span title="${_t('hintLatencyTitle') || 'Verified expected latency (re-test for precise value)'}">~${displayLatency}ms</span>`
+      : (displayLatency > 0 ? displayLatency + 'ms' : _t('noData'));
     return `
       <tr>
         <td><span class="sp-grade sp-grade-${grade}">${grade}</span></td>
-        <td class="mono">${p.host}${p.builtin ? '<span class="sp-builtin-tag">BUILT-IN</span>' : ''}</td>
+        <td class="mono">${p.host}${p.builtin ? '<span class="sp-builtin-tag">' + _t('builtInTag') + '</span>' : ''}</td>
         <td>${p.port}</td>
         <td><span class="badge badge-ok" style="font-size:10px;">${(p.type || 'socks5').toUpperCase()}</span></td>
         <td>
-          <span style="color:${latencyColor};font-weight:600;">${p.latency > 0 ? p.latency + 'ms' : 'N/A'}</span>
-          <span class="sp-latency-bar"><span class="sp-latency-bar-fill" style="width:${latencyPct}%;background:${latencyColor};"></span></span>
+          <span style="color:${latencyColor};font-weight:600;${p.hint ? 'opacity:0.85;font-style:italic;' : ''}">${latencyText}</span>
+          <span class="sp-latency-bar"><span class="sp-latency-bar-fill" style="width:${latencyPct}%;background:${latencyColor};${p.hint ? 'opacity:0.5;' : ''}"></span></span>
         </td>
         <td>${p.tests || 0}</td>
-        <td class="text-muted text-sm">${p.source || 'Unknown'}</td>
+        <td class="text-muted text-sm">${p.source || _t('unknown')}</td>
         <td>
           <div class="flex gap-8">
-            <button class="btn btn-outline btn-sm" onclick="testOneProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">🧪 Test</button>
-            <button class="btn btn-outline btn-sm" onclick="launchAppWithProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">🚀 Launch</button>
+            <button class="btn btn-outline btn-sm" onclick="testOneProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">🧪 ${_t('testBtn')}</button>
+            <button class="btn btn-outline btn-sm" onclick="launchAppWithProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">🚀 ${_t('launchBtn')}</button>
             ${!p.builtin ? `<button class="btn btn-danger btn-sm" onclick="removeProxy('${p.host}', ${p.port})">🗑</button>` : ''}
           </div>
         </td>
@@ -2982,7 +3609,7 @@ function _doRenderTopProxies() {
           </div>
         </div>
         <div class="ranking-actions">
-          <button class="btn btn-outline btn-sm" onclick="testOneProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">Test</button>
+          <button class="btn btn-outline btn-sm" onclick="testOneProxy('${p.host}', ${p.port}, '${p.type || 'socks5'}')">${_t('testBtn')}</button>
         </div>
       </div>
     `;
@@ -3010,8 +3637,8 @@ async function testOneProxy(host, port, type) {
       resultEl.innerHTML = `
         <div class="card" style="padding: 12px; border-color: var(--success);">
           <div class="flex items-center justify-between">
-            <span class="speed-score fast">✅ ALIVE - ${result.latency}ms</span>
-            <span class="text-muted mono text-sm">IP: ${result.ip || 'N/A'}</span>
+            <span class="speed-score fast">✅ ${_t('aliveLabel')} - ${result.latency}ms</span>
+            <span class="text-muted mono text-sm">IP: ${result.ip || _t('noData')}</span>
           </div>
         </div>
       `;
@@ -3019,12 +3646,12 @@ async function testOneProxy(host, port, type) {
     } else {
       resultEl.innerHTML = `
         <div class="card" style="padding: 12px; border-color: var(--danger);">
-          <span class="speed-score slow">❌ FAILED - No response</span>
+          <span class="speed-score slow">❌ ${_t('failedText')} - ${_t('noResponse')}</span>
         </div>
       `;
       toast('err', _t('proxyTestFailed'));
     }
-    addActivity(result.alive ? 'success' : 'error', 'Proxy Test', `${host}:${port} - ${result.alive ? result.latency + 'ms' : 'Failed'}`);
+    addActivity(result.alive ? 'success' : 'error', _t('proxyTestActivity'), `${host}:${port} - ${result.alive ? result.latency + 'ms' : _t('failedText')}`);
     loadStableProxies();
   } catch (e) {}
 }
@@ -3032,24 +3659,28 @@ async function testOneProxy(host, port, type) {
 async function testAllProxies() {
   try {
     toast('info', _t('startingBatchTest'));
-    const max = parseInt(document.getElementById('proxyTestCount').value) || 30;
-    await apiCall('/api/proxy/test-all-free', 'POST', { max });
-    addActivity('info', 'Batch Test', `Testing up to ${max} proxies`);
+    document.getElementById('autoFindProgress').style.display = 'flex';
+    document.getElementById('autoFindStage').textContent = _t('testingProxiesStage');
+    document.getElementById('autoFindCount').textContent = '0 / ?';
+    document.getElementById('autoFindBar').style.width = '0%';
+    await apiCall('/api/proxy/test-stable', 'POST');
+    addActivity('info', _t('batchTestActivity'), _t('testingUpToActivity', 'all'));
   } catch (e) {}
 }
 
 function handleTestProgress(data) {
   const progress = document.getElementById('autoFindProgress');
   progress.style.display = 'flex';
-  document.getElementById('autoFindStage').textContent = 'Testing proxies...';
+  document.getElementById('autoFindStage').textContent = _t('testingProxiesStage');
   document.getElementById('autoFindCount').textContent = `${data.tested} / ${data.total}`;
   document.getElementById('autoFindBar').style.width = `${(data.tested / data.total) * 100}%`;
-  document.getElementById('autoFindDetail').textContent = `Testing batch ${data.tested} of ${data.total}`;
+  const aliveText = data.alive !== undefined ? ` · ${data.alive} alive` : '';
+  document.getElementById('autoFindDetail').textContent = _t('testingBatchDetail', data.tested, data.total) + aliveText;
 }
 
 function handleTestComplete(data) {
   toast('ok', _t('testCompleteAlive', data.alive.length));
-  addActivity('success', 'Test Complete', `${data.alive.length} alive proxies found`);
+  addActivity('success', _t('testCompleteActivity'), _t('aliveProxiesFound', data.alive.length));
   setTimeout(() => {
     document.getElementById('autoFindProgress').style.display = 'none';
   }, 2000);
@@ -3072,16 +3703,16 @@ async function startAutoFind() {
 }
 
 function handleAutoFindStage(data) {
-  document.getElementById('autoFindStage').textContent = data.message || 'Processing...';
-  document.getElementById('autoFindDetail').textContent = `Stage: ${data.stage || 'unknown'}`;
+  document.getElementById('autoFindStage').textContent = data.message || _t('processing');
+  document.getElementById('autoFindDetail').textContent = _t('stageLabel') + ': ' + (data.stage || _t('unknown'));
 }
 
 function handleAutoFindProgress(data) {
   const progress = document.getElementById('autoFindProgress');
   progress.style.display = 'flex';
-  document.getElementById('autoFindCount').textContent = `${data.tested} / ${data.total} (${data.alive} alive)`;
+  document.getElementById('autoFindCount').textContent = `${data.tested} / ${data.total} (${data.alive} ${_t('aliveLabel')})`;
   document.getElementById('autoFindBar').style.width = `${(data.tested / data.total) * 100}%`;
-  document.getElementById('autoFindDetail').textContent = `${data.alive} alive so far - ${data.current ? 'Last: ' + data.current.host : ''}`;
+  document.getElementById('autoFindDetail').textContent = `${data.alive} ${_t('aliveSoFar')} - ${data.current ? _t('lastLabel') + ': ' + data.current.host : ''}`;
 }
 
 function handleAutoFindComplete(data) {
@@ -3105,7 +3736,7 @@ async function fetchFreeProxies() {
     allProxies = data.proxies || [];
     renderProxyTable();
     toast('ok', _t('fetchedProxies', data.count));
-    addActivity('info', 'Fetch Proxies', `${data.count} proxies fetched`);
+    addActivity('info', _t('fetchProxiesActivity'), _t('proxiesFetchedActivity', data.count));
   } catch (e) {}
 }
 
@@ -3121,7 +3752,7 @@ async function addManualProxy() {
     const data = await apiCall('/api/proxy/stable/add', 'POST', { host, port, type });
     if (data.success) {
       toast('ok', _t('proxyAddedPool'));
-      addActivity('success', 'Add Proxy', `${host}:${port}`);
+      addActivity('success', _t('addProxyActivity'), `${host}:${port}`);
       document.getElementById('addHost').value = '';
       document.getElementById('addPort').value = '';
       loadStableProxies();
@@ -3132,12 +3763,12 @@ async function addManualProxy() {
 }
 
 async function removeProxy(host, port) {
-  if (!confirm(`Remove proxy ${host}:${port}?`)) return;
+  if (!confirm(_t('removeProxyConfirm', host, port))) return;
   try {
     const data = await apiCall('/api/proxy/stable/remove', 'POST', { host, port });
     if (data.success) {
       toast('ok', _t('proxyRemoved'));
-      addActivity('info', 'Remove Proxy', `${host}:${port}`);
+      addActivity('info', _t('removeProxyActivity'), `${host}:${port}`);
       loadStableProxies();
     } else {
       toast('err', data.error || _t('failedRemoveProxy'));
@@ -3174,8 +3805,8 @@ async function loadHistory() {
     tbody.innerHTML = tests.slice(0, 50).map(t => {
       const time = t.time ? new Date(t.time).toLocaleString() : '-';
       const status = t.alive
-        ? '<span class="badge badge-ok" style="font-size:10px;">ALIVE</span>'
-        : '<span class="badge badge-err" style="font-size:10px;">FAILED</span>';
+        ? '<span class="badge badge-ok" style="font-size:10px;">' + _t('aliveLabel') + '</span>'
+        : '<span class="badge badge-err" style="font-size:10px;">' + _t('failedText') + '</span>';
       return `
         <tr>
           <td class="text-sm mono">${time}</td>
@@ -3191,7 +3822,7 @@ async function loadHistory() {
 }
 
 async function clearStats() {
-  if (!confirm('Clear all test history and statistics?')) return;
+  if (!confirm(_t('clearStatsConfirm'))) return;
   try {
     await apiCall('/api/stats/clear', 'POST');
     toast('ok', _t('statsCleared'));
@@ -3210,6 +3841,7 @@ function drawLatencyChart() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const rect = canvas.getBoundingClientRect();
+  if (rect.width < 10 || rect.height < 10) return;
   canvas.width = rect.width;
   canvas.height = rect.height;
   const w = canvas.width;
@@ -3221,7 +3853,7 @@ function drawLatencyChart() {
     ctx.fillStyle = 'var(--text2)';
     ctx.font = '12px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('No latency data available', w / 2, h / 2);
+    ctx.fillText(_t('noLatencyData'), w / 2, h / 2);
     return;
   }
 
@@ -3265,6 +3897,7 @@ function drawTypeChart() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const rect = canvas.getBoundingClientRect();
+  if (rect.width < 10 || rect.height < 10) return;
   canvas.width = rect.width;
   canvas.height = rect.height;
   const w = canvas.width;
@@ -3282,7 +3915,7 @@ function drawTypeChart() {
     ctx.fillStyle = 'var(--text2)';
     ctx.font = '12px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('No type data available', w / 2, h / 2);
+    ctx.fillText(_t('noTypeData'), w / 2, h / 2);
     return;
   }
 
@@ -3331,7 +3964,7 @@ async function loadApps() {
       grid.innerHTML = `
         <div class="empty-state" style="grid-column: 1 / -1;">
           <div class="empty-state-icon">📱</div>
-          <div class="empty-state-text">No apps configured. Click "Add App" to get started.</div>
+          <div class="empty-state-text" data-i18n="noAppsConfigured">No apps configured. Click "Add App" to get started.</div>
         </div>
       `;
       return;
@@ -3341,10 +3974,10 @@ async function loadApps() {
         <div class="app-icon">📱</div>
         <div class="app-name">${app.name}</div>
         <div class="app-path" title="${app.path}">${app.path}</div>
-        <div class="text-sm text-muted">Mode: ${app.mode || 'http'}</div>
+        <div class="text-sm text-muted">${_t('modeLabel')}: ${app.mode || 'http'}</div>
         <div class="app-actions">
-          <button class="btn btn-primary btn-sm" onclick="launchApp('${app.name}')">🚀 Launch</button>
-          <button class="btn btn-outline btn-sm" onclick="editApp('${app.name}')">✏️</button>
+          <button class="btn btn-primary btn-sm" onclick="launchApp('${app.name}')">🚀 ${_t('launchBtn')}</button>
+          <button class="btn btn-outline btn-sm" onclick="editApp('${app.name}')" title="${_t('editApp')}">✏️</button>
           <button class="btn btn-danger btn-sm" onclick="removeApp('${app.name}')">🗑</button>
         </div>
       </div>
@@ -3354,7 +3987,7 @@ async function loadApps() {
 
 function showAddAppModal() {
   editingApp = null;
-  document.getElementById('appModalTitle').textContent = 'Add App';
+  document.getElementById('appModalTitle').textContent = _t('addApp');
   document.getElementById('appNameInput').value = '';
   document.getElementById('appPathInput').value = '';
   document.getElementById('appModeSelect').value = 'http';
@@ -3372,7 +4005,7 @@ async function editApp(name) {
     const app = (data.apps || []).find(a => a.name === name);
     if (!app) return;
     editingApp = name;
-    document.getElementById('appModalTitle').textContent = 'Edit App';
+    document.getElementById('appModalTitle').textContent = _t('editApp');
     document.getElementById('appNameInput').value = app.name;
     document.getElementById('appPathInput').value = app.path;
     document.getElementById('appModeSelect').value = app.mode || 'http';
@@ -3399,7 +4032,7 @@ async function saveApp() {
     }
     if (data.success) {
       toast('ok', _t('appUpdatedAdded', editingApp ? _t('edit') : _t('add'), name));
-      addActivity('success', editingApp ? 'Edit App' : 'Add App', name);
+      addActivity('success', editingApp ? _t('editApp') : _t('addApp'), name);
       closeAppModal();
       loadApps();
     } else {
@@ -3409,12 +4042,12 @@ async function saveApp() {
 }
 
 async function removeApp(name) {
-  if (!confirm(`Remove app "${name}"?`)) return;
+  if (!confirm(_t('removeAppConfirm', name))) return;
   try {
     const data = await apiCall('/api/proxy/apps/remove', 'POST', { name });
     if (data.success) {
       toast('ok', _t('appRemoved'));
-      addActivity('info', 'Remove App', name);
+      addActivity('info', _t('removeAppActivity'), name);
       loadApps();
     } else {
       toast('err', data.error || _t('failedRemoveProxy'));
@@ -3428,7 +4061,7 @@ async function launchApp(name) {
     const data = await apiCall('/api/proxy/apps/launch', 'POST', { name });
     if (data.success) {
       toast('ok', data.message || _t('appLaunchedMsg'));
-      addActivity('success', 'Launch App', name);
+      addActivity('success', _t('launchAppActivity'), name);
     } else {
       toast('err', data.error || _t('failedLaunchApp'));
     }
@@ -3444,12 +4077,12 @@ async function browseApp() {
   } catch (e) {}
 }
 
-async function loadApp<span data-i18n="presets">Presets</span>() {
+async function loadAppPresets() {
   try {
     const data = await apiCall('/api/proxy/apps/presets');
     const presets = data.presets || [];
     const container = document.getElementById('presetList');
-    const presetsDiv = document.getElementById('app<span data-i18n="presets">Presets</span>');
+    const presetsDiv = document.getElementById('appPresets');
     presetsDiv.style.display = 'block';
     if (presets.length === 0) {
       container.innerHTML = '<span class="text-muted text-sm" data-i18n="noPresetsDetected">No presets detected</span>';
@@ -3479,21 +4112,35 @@ async function addPresetApp(name, path) {
 
 async function loadLogs() {
   try {
-    const data = await apiCall('/api/logs?limit=200');
+    const levelFilter = document.getElementById('logLevelFilter')?.value || 'all';
+    const data = await apiCall('/api/logs?limit=200&level=' + levelFilter);
     const logs = data.logs || [];
     const box = document.getElementById('logBox');
+    const logStats = data.stats || {};
+    const logSizeKB = logStats.totalSize ? Math.round(logStats.totalSize / 1024) : 0;
+
+    // Update stats display
+    const statsEl = document.getElementById('logStats');
+    if (statsEl) {
+      statsEl.textContent = `${logs.length} entries · ${logSizeKB}KB · ${logStats.fileCount || 0} files`;
+    }
+
     if (logs.length === 0) {
-      box.innerHTML = '<div class="text-muted" data-i18n="noLogsAvailable">No logs available</div>';
+      box.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text2);">' + (window._t ? _t('noLogsAvailable') : 'No logs available') + '</div>';
       return;
     }
+    const icons = { info: 'ℹ', warn: '⚠', error: '✕', err: '✕', ok: '✓', success: '✓', debug: '⚙' };
     box.innerHTML = logs.map(l => {
-      const time = l.time ? new Date(l.time).toLocaleTimeString() : '';
+      const time = l.time ? new Date(l.time).toLocaleTimeString('en', {hour12: false}) : '';
       let cls = 'log-info';
-      if (l.level === 'error' || l.level === 'err') cls = 'log-err';
-      else if (l.level === 'warn' || l.level === 'warning') cls = 'log-warn';
-      else if (l.level === 'success' || l.level === 'ok') cls = 'log-ok';
-      else if (l.level === 'info') cls = 'log-info';
-      return `<div class="${cls}"><span class="text-muted">[${time}]</span> ${l.message || l.msg || ''}</div>`;
+      let badgeText = 'INFO';
+      if (l.level === 'error' || l.level === 'err') { cls = 'log-err'; badgeText = 'ERR'; }
+      else if (l.level === 'warn' || l.level === 'warning') { cls = 'log-warn'; badgeText = 'WARN'; }
+      else if (l.level === 'success' || l.level === 'ok') { cls = 'log-ok'; badgeText = 'OK'; }
+      else if (l.level === 'debug') { cls = 'log-info'; badgeText = 'DBG'; }
+      const icon = icons[l.level] || icons.info;
+      const msg = l.message || l.msg || '';
+      return `<div class="log-entry ${cls}"><span class="log-time">${time}</span><span class="log-badge ${cls}">${icon} ${badgeText}</span><span class="log-msg">${msg}</span></div>`;
     }).join('');
     box.scrollTop = box.scrollHeight;
   } catch (e) {}
@@ -3504,7 +4151,7 @@ function filterLogs() {
 }
 
 async function clearLogs() {
-  if (!confirm('Clear all logs?')) return;
+  if (!confirm(_t('clearLogsConfirm'))) return;
   try {
     await apiCall('/api/logs/clear', 'POST');
     toast('ok', _t('logsCleared'));
@@ -3535,7 +4182,7 @@ async function saveConfig(key, value) {
 }
 
 async function resetConfig() {
-  if (!confirm('Reset all settings to defaults?')) return;
+  if (!confirm(_t('resetSettingsConfirm'))) return;
   try {
     await apiCall('/api/config/reset', 'POST');
     toast('ok', _t('settingsReset'));
@@ -3567,7 +4214,7 @@ async function loadQuote() {
       document.getElementById('quoteContainer').innerHTML = `
         "${data.data.content}"
         <br><br>
-        <span style="font-size: 11px; color: var(--text2);">— ${data.data.author || 'Unknown'}</span>
+        <span style="font-size: 11px; color: var(--text2);">— ${data.data.author || _t('unknown')}</span>
       `;
     }
   } catch (e) {}
@@ -3600,7 +4247,9 @@ function toast(type, message) {
   const container = document.getElementById('toastContainer');
   if (!container) return;
   const el = document.createElement('div');
-  el.className = 'toast toast-' + type + ' show';
+  // Map convenience aliases to real CSS class names
+  const clsType = ({ info: 'info', success: 'success', warn: 'warn', warning: 'warn', error: 'err', err: 'err' }[type] || type || 'info');
+  el.className = 'toast toast-' + clsType + ' show';
   el.textContent = message;
   el.style.opacity = '1';
   el.style.transform = 'translateY(0)';
@@ -3612,13 +4261,18 @@ function toast(type, message) {
   }, 4000);
 }
 
+// Compatibility shim: multiple modules (GSU scan / auth flow) call showToast(...)
+// while the project's canonical helper is toast(type, message). Alias here so
+// existing callers keep working without a bulk rename, and future callers can use either.
+function showToast(message, type) { toast(type || 'info', message); }
+window.showToast = showToast;
+
 function updateFooterTime() {
   const now = new Date();
   document.getElementById('footerTime').textContent = now.toLocaleString();
 }
 
 window.addEventListener('load', () => {
-  setTimeout(updateOrbitAnimation, 500);
   loadPacUrl();
 });
 </script>
@@ -3637,6 +4291,7 @@ window.addEventListener('load', () => {
         if (data.lang) currentLang = data.lang;
         localStorage.setItem('fpt-lang', currentLang);
         document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+        updateLangLabel();
       })
       .catch(() => { translations = {}; });
   }
@@ -3652,9 +4307,19 @@ window.addEventListener('load', () => {
   };
 
   function applyI18n() {
+    var SAFE_HTML_TAGS = /<(b|i|u|strong|em|br|span|code|kbd)\b[^>]*>/i;
     document.querySelectorAll('[data-i18n]').forEach(function(el) {
       var key = el.getAttribute('data-i18n');
-      if (translations[key]) el.textContent = translations[key];
+      var value = translations[key];
+      if (value === undefined || value === null) return;
+      value = String(value);
+      // Use innerHTML only when the translation explicitly contains known-safe inline HTML tags,
+      // otherwise default to textContent to avoid accidental HTML injection.
+      if (SAFE_HTML_TAGS.test(value)) {
+        el.innerHTML = value;
+      } else {
+        el.textContent = value;
+      }
     });
     document.querySelectorAll('[data-i18n-title]').forEach(function(el) {
       var key = el.getAttribute('data-i18n-title');
@@ -3665,21 +4330,106 @@ window.addEventListener('load', () => {
       if (translations[key]) el.setAttribute('placeholder', translations[key]);
     });
   }
+  window.applyI18n = applyI18n;
+
+  function updateLangLabel() {
+    var label = document.getElementById('langLabel');
+    if (label) label.textContent = currentLang === 'zh' ? '中' : 'EN';
+  }
+
+  // Re-render dynamic content that uses _t() for translations
+  function refreshDynamicContent() {
+    // Re-render status UI from cached data (no API call needed)
+    if (cachedStatus) {
+      if (typeof updateServerStatus === 'function') {
+        updateServerStatus(cachedStatus.server.running, cachedStatus.server.port);
+      }
+      if (typeof updateWarpStatusUI === 'function') {
+        updateWarpStatusUI(cachedStatus.warp.installed, cachedStatus.warp.connected);
+      }
+      if (typeof updateSystemProxyUI === 'function') {
+        updateSystemProxyUI(cachedStatus.systemProxy);
+      }
+      if (typeof updateDashboardStats === 'function') {
+        updateDashboardStats(cachedStatus.stats);
+      }
+    }
+
+    // Re-render cached content after a short delay to skip debounce timers
+    setTimeout(function() {
+      if (typeof _doRenderProxyTable === 'function') _doRenderProxyTable();
+      if (typeof _doRenderTopProxies === 'function') _doRenderTopProxies();
+      if (typeof drawCharts === 'function') drawCharts();
+      if (typeof renderGsuList === 'function' && (gsuProxiesCache && gsuProxiesCache.length)) {
+        renderGsuList();
+        const meta = document.getElementById('gsuListMeta');
+        if (meta) meta.textContent = `${gsuProxiesCache.length} ${_t('gsuCountSuffix')}`;
+      }
+    }, 80);
+
+    // Refresh active tab's dynamic content
+    var activeTab = document.querySelector('.tab.active');
+    if (activeTab) {
+      var tabName = activeTab.dataset.tab;
+      if (tabName === 'stats') {
+        if (typeof loadStats === 'function') loadStats();
+        if (typeof loadHistory === 'function') loadHistory();
+      } else if (tabName === 'logs') {
+        if (typeof loadLogs === 'function') loadLogs();
+      } else if (tabName === 'apps') {
+        if (typeof loadApps === 'function') loadApps();
+      } else if (tabName === 'settings') {
+        if (typeof loadDiagnostics === 'function') loadDiagnostics();
+        if (typeof loadConfig === 'function') loadConfig();
+      } else if (tabName === 'warp') {
+        if (typeof refreshWarpStatus === 'function') refreshWarpStatus();
+      } else if (tabName === 'proxies') {
+        if (typeof loadStableProxies === 'function') loadStableProxies();
+      }
+    }
+
+    // Re-apply i18n to catch any new data-i18n elements from re-rendered content
+    setTimeout(applyI18n, 250);
+  }
 
   window.toggleLanguage = function() {
     currentLang = currentLang === 'zh' ? 'en' : 'zh';
-    fetchTranslations().then(function() {
-      applyI18n();
-      if (window.toast) window.toast('info', currentLang === 'zh' ? '已切换为中文' : 'Switched to English');
-    });
+    localStorage.setItem('fpt-lang', currentLang);
+    document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+    updateLangLabel();
+    fetch('/api/lang', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lang: currentLang })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.translations) translations = data.translations;
+        if (data.lang) { currentLang = data.lang; localStorage.setItem('fpt-lang', currentLang); }
+        applyI18n();
+        updateLangLabel();
+        refreshDynamicContent();
+        if (window.toast) window.toast('info', currentLang === 'zh' ? window._t('languageSwitchedZh') : window._t('languageSwitchedEn'));
+      })
+      .catch(function() {
+        if (window.toast) window.toast('err', window._t('languageSwitchFailed'));
+      });
   };
 
   window.refreshI18n = function() {
-    return fetchTranslations().then(applyI18n);
+    return fetchTranslations().then(function() {
+      applyI18n();
+      refreshDynamicContent();
+    });
   };
 
   document.addEventListener('DOMContentLoaded', function() {
-    fetchTranslations().then(applyI18n);
+    fetchTranslations().then(function() {
+      applyI18n();
+      // Re-render dynamic content after translations are loaded
+      // This fixes the race condition where dynamic content renders before translations
+      setTimeout(refreshDynamicContent, 300);
+    });
   });
 })();
 </script>
