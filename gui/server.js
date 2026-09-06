@@ -126,6 +126,7 @@ function saveProxyApps(apps) {
 // (treated as "soft latency": replaced as soon as tests run via latency>0)
 // Updated 2026-08-07 with latest 5-round measured averages
 const BUILTIN_HINT_LATENCY = {
+  '203.19.38.114:1080':  355,  // HIGH ANONYMITY elite, avg=355ms
   '115.239.234.43:7302': 108,  // sub-200ms stable, actual avg=108ms
   '59.110.63.234:80':    188,  // sub-200ms stable, actual avg=188ms
   '31.43.179.194:80':    450,  // improved from 665ms
@@ -289,6 +290,9 @@ const BUILTIN_PROXIES = [
   // ===== Re-verified 2026-08-07 (5 rounds each, actual measured latency) =====
   // Tested 66761 proxies from all sources + 1000 Asia-focused samples
   // All below are 80-100% success rate across 5 consecutive test rounds.
+
+  // 🛡️ HIGH ANONYMITY (Elite) - verified 2026-08-20: exit IP != real IP, no leak headers
+  { host: '203.19.38.114', port: 1080, type: 'http' }, // avg=355ms min=335ms max=369ms 3/3 elite (ClearProxy)
 
   // 🏆 SUB-200ms STABLE (avg 108ms, 100%): fastest verified free proxy!
   { host: '115.239.234.43', port: 7302, type: 'http' }, // avg=108ms min=87ms max=149ms 100% (ERD-HTTP)
@@ -1951,7 +1955,39 @@ function start(port = 3000, opts = {}) {
   });
 
   httpServer = server;
+
+  // ===== 自动启动代理服务器 =====
+  // 关键修复：确保代理服务器在GUI启动时自动运行
+  // 这样Chromium浏览器才能通过代理访问外网资源（地图瓦片、天气API等）
+  if (!opts.skipAutoProxy) {
+    setTimeout(async () => {
+      try {
+        if (!proxyServerInstance) {
+          proxyServerInstance = new ProxyServer(serverPort, null);
+          const ok = await proxyServerInstance.start();
+          serverRunning = ok;
+          serverPort = proxyServerInstance.port;
+          if (ok) {
+            logger.info(`[AutoStart] Proxy server started on port ${serverPort}`);
+          } else {
+            logger.warn('[AutoStart] Proxy server failed to start');
+          }
+        }
+      } catch (e) {
+        logger.error('[AutoStart] Proxy server error: ' + e.message);
+      }
+    }, 500);
+  }
+
   return server;
+}
+
+// 暴露方法：获取当前代理端口（供Electron主进程使用）
+function getProxyPort() {
+  return serverPort;
+}
+function isProxyRunning() {
+  return serverRunning;
 }
 
 // Graceful shutdown: clear timer, stop proxy, close wss & http server
@@ -1973,4 +2009,4 @@ function stop() {
   }
 }
 
-module.exports = { start, stop };
+module.exports = { start, stop, getProxyPort, isProxyRunning };

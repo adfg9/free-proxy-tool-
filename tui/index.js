@@ -73,6 +73,8 @@ const WARP = {
 
 // ========== Proxy ==========
 const BUILTIN_PROXIES = [
+  // 🛡️ HIGH ANONYMITY (Elite) - verified 2026-08-20
+  { host: '203.19.38.114', port: 1080, type: 'http' }, // avg=355ms elite
   { host: '24.249.199.4', port: 4145, type: 'socks5' },
   { host: '174.75.211.222', port: 4145, type: 'socks5' },
   { host: '72.195.34.58', port: 4145, type: 'socks5' },

@@ -3139,7 +3139,22 @@ async function fetchJSON(url, timeout) {
     clearTimeout(t);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return await r.json();
-  } catch(e) { clearTimeout(t); throw e; }
+  } catch(e) {
+    clearTimeout(t);
+    // 第一次失败，快速重试一次（可能是网络抖动）
+    if (!url._retried) {
+      url._retried = true;
+      const ac2 = new AbortController();
+      const t2 = setTimeout(() => ac2.abort(), (timeout || 10000) * 1.5);
+      try {
+        const r2 = await fetch(url, { signal: ac2.signal });
+        clearTimeout(t2);
+        if (!r2.ok) throw new Error('HTTP ' + r2.status);
+        return await r2.json();
+      } catch(e2) { clearTimeout(t2); throw e2; }
+    }
+    throw e;
+  }
 }
 
 async function geocodeCity(name) {
@@ -3167,17 +3182,21 @@ async function fetchWeatherByCoords(lat, lon) {
     }
   } catch(e) { /* fallback */ }
   // 备用：open-meteo
-  const d = await fetchJSON('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1', 8000);
-  if (!d || !d.current) throw Error('no data');
-  return {
-    temp: d.current.temperature_2m,
-    code: d.current.weather_code,
-    hi: d.daily ? d.daily.temperature_2m_max[0] : null,
-    lo: d.daily ? d.daily.temperature_2m_min[0] : null,
-    humidity: d.current.relative_humidity_2m,
-    wind: d.current.wind_speed_10m,
-    source: 'open-meteo'
-  };
+  try {
+    const d = await fetchJSON('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1', 8000);
+    if (d && d.current) {
+      return {
+        temp: d.current.temperature_2m,
+        code: d.current.weather_code,
+        hi: d.daily ? d.daily.temperature_2m_max[0] : null,
+        lo: d.daily ? d.daily.temperature_2m_min[0] : null,
+        humidity: d.current.relative_humidity_2m,
+        wind: d.current.wind_speed_10m,
+        source: 'open-meteo'
+      };
+    }
+  } catch(e) { /* fallback */ }
+  throw new Error('All weather sources failed');
 }
 
 async function getIPLocation() {
@@ -4034,14 +4053,14 @@ function setTileSource(idx, userClick) {
   }
 
   // 极简配置：只传必要的，避免任何可能干扰瓦片加载的选项
-  // updateWhenIdle: true 放大时只在停止后加载瓦片，避免过程中加载导致闪烁
+  // updateWhenIdle: false 立即加载瓦片，不等用户停止操作
   // keepBuffer: 2 保留视口外 2 层瓦片缓存
   currentTileLayer = L.tileLayer(src.url, {
     subdomains: src.sub,
     minZoom: 2,
     maxZoom: srcMaxZoom,
     attribution: src.attr,
-    updateWhenIdle: true,
+    updateWhenIdle: false,
     keepBuffer: 2
   }).addTo(mapInstance);
 

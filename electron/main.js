@@ -30,6 +30,27 @@ async function startGuiServer() {
   });
 }
 
+// ========== 等待代理服务器就绪 ==========
+async function waitForProxy(maxWaitMs = 10000) {
+  const startTime = Date.now();
+  const proxyPort = PROXY_PORT;
+  console.log(`[Browser] Waiting for proxy server on port ${proxyPort}...`);
+
+  while (Date.now() - startTime < maxWaitMs) {
+    try {
+      const ready = await checkPort(proxyPort);
+      if (ready) {
+        console.log(`[Browser] Proxy server is ready on port ${proxyPort}`);
+        return { port: proxyPort, ready: true };
+      }
+    } catch {}
+    await new Promise(r => setTimeout(r, 500));
+  }
+
+  console.warn(`[Browser] Proxy server not ready after ${maxWaitMs}ms, proceeding anyway`);
+  return { port: proxyPort, ready: false };
+}
+
 // ========== 检查端口占用 ==========
 function checkPort(port) {
   return new Promise(r => {
@@ -40,23 +61,35 @@ function checkPort(port) {
 }
 
 // ========== 绑定 Chromium 代理（走 127.0.0.1:PROXY_PORT） ==========
-async function bindChromiumProxy() {
+async function bindChromiumProxy(proxyPort) {
+  const port = proxyPort || PROXY_PORT;
   try {
-    const ready = await checkPort(PROXY_PORT);
+    // 先检查代理服务器是否就绪
+    const ready = await checkPort(port);
     if (!ready) {
-      console.log('[Browser] Proxy port not ready yet, waiting up to 8s...');
-      for (let i = 0; i < 8; i++) {
-        await new Promise(r => setTimeout(r, 1000));
-        if (await checkPort(PROXY_PORT)) break;
+      console.log(`[Browser] Proxy port ${port} not ready yet, waiting up to 10s...`);
+      for (let i = 0; i < 20; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        if (await checkPort(port)) {
+          console.log(`[Browser] Proxy port ${port} is ready`);
+          break;
+        }
       }
     }
     await session.defaultSession.setProxy({
-      proxyRules: `http://127.0.0.1:${PROXY_PORT}`,
+      proxyRules: `http://127.0.0.1:${port}`,
       proxyBypassRules: '<local>'
     });
-    console.log('[Browser] Chromium proxy bound → 127.0.0.1:' + PROXY_PORT);
+    console.log('[Browser] Chromium proxy bound → 127.0.0.1:' + port);
+    return true;
   } catch (e) {
     console.warn('[Browser] Proxy bind failed:', e.message);
+    // 如果代理绑定失败，清除代理设置让浏览器直连
+    try {
+      await session.defaultSession.setProxy({ proxyRules: '', proxyBypassRules: '' });
+      console.log('[Browser] Cleared proxy settings, browser will connect directly');
+    } catch {}
+    return false;
   }
 }
 
@@ -204,16 +237,29 @@ app.whenReady().then(async () => {
   console.log('');
 
   try {
-    const port = await startGuiServer();
-    buildMenu(port);
-    bindChromiumProxy(); // 异步，不阻塞面板显示
+    // 1. 启动 GUI 服务器（同时自动启动代理服务器）
+    const guiPort = await startGuiServer();
+    buildMenu(guiPort);
+
+    // 2. 等待代理服务器就绪（最多等10秒）
+    const proxyInfo = await waitForProxy(10000);
+    const proxyReady = proxyInfo.ready;
+    const proxyPort = proxyInfo.port;
+
+    // 3. 绑定 Chromium 代理（只有代理就绪时才绑定，否则直连）
+    if (proxyReady) {
+      await bindChromiumProxy(proxyPort);
+    } else {
+      console.warn('[Browser] Proxy not ready, browser will connect directly');
+      try {
+        await session.defaultSession.setProxy({ proxyRules: '', proxyBypassRules: '' });
+      } catch {}
+    }
 
     globalShortcut.register('CommandOrControl+T', () => createBrowserWindow(NEW_TAB_HTML));
     globalShortcut.register('CommandOrControl+N', () => createBrowserWindow(NEW_TAB_HTML));
 
-    // 🔑 启动时第一个窗口：独立浏览器的 New Tab Dashboard（file:///browser/app/index.html）
-    // 用户要的是 file:///D:/free-proxy-tool/browser/app/index.html 作为默认主页/首屏。
-    // 管理面板仍可通过 菜单 File / Ctrl+1 打开。
+    // 4. 打开独立浏览器窗口
     createBrowserWindow(NEW_TAB_HTML);
 
     app.on('activate', () => {
