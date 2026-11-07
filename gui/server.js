@@ -5,21 +5,6 @@ const path = require('path');
 const zlib = require('zlib');
 const { WebSocketServer } = require('ws');
 
-// ===== Process safety net =====
-// Prevent background-IIFE crashes (auto-find, test-all-free) from taking the whole process down.
-// Without these, a single unhandled rejection kills the GUI server and user has to restart manually.
-process.on('unhandledRejection', (reason, promise) => {
-  const msg = reason?.message || String(reason);
-  logger?.error?.('UNHANDLED_REJECTION: ' + msg, { stack: reason?.stack?.slice(0, 400) });
-  console.error('[UnhandledRejection]', msg);
-});
-process.on('uncaughtException', (err) => {
-  try { logger?.error?.('UNCAUGHT_EXCEPTION: ' + err.message, { stack: err.stack?.slice(0, 400) }); } catch {}
-  console.error('[UncaughtException]', err.message);
-  // Only for truly unrecoverable memory corruption; generally keep serving.
-  // Explicit comment: exit only on very specific signals; here we let the process continue.
-});
-
 // Reuse project modules
 const HOME = require('os').homedir();
 const PROJECT_ROOT = path.join(__dirname, '..');
