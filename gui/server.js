@@ -2,22 +2,8 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 const { WebSocketServer } = require('ws');
-
-// ===== Process safety net =====
-// Prevent background-IIFE crashes (auto-find, test-all-free) from taking the whole process down.
-// Without these, a single unhandled rejection kills the GUI server and user has to restart manually.
-process.on('unhandledRejection', (reason, promise) => {
-  const msg = reason?.message || String(reason);
-  logger?.error?.('UNHANDLED_REJECTION: ' + msg, { stack: reason?.stack?.slice(0, 400) });
-  console.error('[UnhandledRejection]', msg);
-});
-process.on('uncaughtException', (err) => {
-  try { logger?.error?.('UNCAUGHT_EXCEPTION: ' + err.message, { stack: err.stack?.slice(0, 400) }); } catch {}
-  console.error('[UncaughtException]', err.message);
-  // Only for truly unrecoverable memory corruption; generally keep serving.
-  // Explicit comment: exit only on very specific signals; here we let the process continue.
-});
 
 // Reuse project modules
 const HOME = require('os').homedir();
@@ -25,9 +11,24 @@ const PROJECT_ROOT = path.join(__dirname, '..');
 const stats = require(path.join(PROJECT_ROOT, 'lib', 'stats'));
 const ProxyServer = require(path.join(PROJECT_ROOT, 'lib', 'proxy-server'));
 const proxyCore = require(path.join(PROJECT_ROOT, 'lib', 'proxy-core'));
+const { mapPool, loadConfig, saveConfig } = require(path.join(PROJECT_ROOT, 'lib', 'utils'));
 const i18n = require(path.join(PROJECT_ROOT, 'lib', 'i18n'));
 const logger = require(path.join(PROJECT_ROOT, 'lib', 'logger'));
 const { t } = i18n;
+
+// ===== Process safety net =====
+// Prevent background-IIFE crashes (auto-find, test-all-free) from taking the whole
+// process down. Registered after the requires so `logger` is never in its TDZ.
+process.on('unhandledRejection', (reason) => {
+  const msg = reason?.message || String(reason);
+  try { logger.error('UNHANDLED_REJECTION: ' + msg, { stack: reason?.stack?.slice(0, 400) }); } catch {}
+  console.error('[UnhandledRejection]', msg);
+});
+process.on('uncaughtException', (err) => {
+  try { logger.error('UNCAUGHT_EXCEPTION: ' + err.message, { stack: err.stack?.slice(0, 400) }); } catch {}
+  console.error('[UncaughtException]', err.message);
+  // Keep serving: only truly unrecoverable states should end the process.
+});
 
 // Inline core functions to avoid circular deps
 const { execSync, spawn } = require('child_process');
@@ -62,7 +63,6 @@ function httpGet(url, timeout = 8000) {
 let proxyServerInstance = null;  // In-process ProxyServer (replaces child process spawning)
 let serverRunning = false;
 let serverPort = 1080;
-let warpConnected = false;
 
 // ========== Proxy Apps ==========
 const APPS_DIR = path.join(PROJECT_ROOT, 'gui');
@@ -141,7 +141,31 @@ const BUILTIN_HINT_LATENCY = {
   '172.64.94.22:80':     838,  // newly tested
   '45.12.31.237:80':     952,  // newly tested
 };
+// Cached read of the stable pool.
+// loadStableProxies() parses the file, merges the built-in list, re-sorts and
+// sometimes writes the file back — and it is called by /api/proxy/stable,
+// /api/proxy/test-stable and the auto-find flow. Cache by (mtime, size) and let
+// saveStableProxies() invalidate explicitly; callers get a defensive copy so
+// in-place edits (test results) never corrupt the cache.
+let stableCache = { key: '', data: null };
+
 function loadStableProxies() {
+  let st = null;
+  try { st = fs.statSync(STABLE_PROXIES_FILE); } catch {}
+  const key = st ? st.mtimeMs + ':' + st.size : 'missing';
+  if (stableCache.data && stableCache.key === key) return stableCache.data.map(p => ({ ...p }));
+
+  const data = loadStableProxiesUncached();
+  try {
+    const st2 = fs.statSync(STABLE_PROXIES_FILE);
+    stableCache = { key: st2.mtimeMs + ':' + st2.size, data };
+  } catch {
+    stableCache = { key: 'missing', data };
+  }
+  return data.map(p => ({ ...p }));
+}
+
+function loadStableProxiesUncached() {
   try {
     const builtinHintKeys = BUILTIN_PROXIES.map(p => p.host + ':' + p.port);
     const builtinHintOrder = new Map(builtinHintKeys.map((k, i) => [k, i]));
@@ -207,23 +231,44 @@ function loadStableProxies() {
 function saveStableProxies(proxies) {
   try {
     fs.writeFileSync(STABLE_PROXIES_FILE, JSON.stringify(proxies, null, 2));
+    stableCache = { key: '', data: null }; // invalidate the read cache
   } catch {}
 }
-function getSystemProxy() {
+// Cached for 60s: /api/status polls this every 10s and each miss costs one
+// synchronous reg.exe spawn, which blocks the whole event loop (jams the panel
+// while a proxy test is streaming progress over WebSocket). setSystemProxy()
+// invalidates explicitly, so the panel never sees stale data after its own write.
+let sysProxyCache = { at: 0, data: null };
+const SYS_PROXY_TTL = 60000;
+
+function getSystemProxy(force = false) {
+  const now = Date.now();
+  if (!force && sysProxyCache.data && (now - sysProxyCache.at) < SYS_PROXY_TTL) return sysProxyCache.data;
+  const data = readSystemProxy();
+  sysProxyCache = { at: now, data };
+  return data;
+}
+
+function readSystemProxy() {
   if (os.platform() !== 'win32') return { enabled: false, server: '', autoConfig: '' };
   const regBase = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings';
-  const query = (name) => {
-    try {
-      const r = execSync(`reg query "${regBase}" /v ${name}`, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
-      const m = r.match(new RegExp(name + '\\s+REG_(?:SZ|DWORD|BINARY)\\s+(.+)', 'i'));
-      return m ? m[1].trim() : '';
-    } catch { return ''; }
+  // One `reg query` for the whole key — /api/status polls this every 10s and it used
+  // to spawn three separate synchronous reg.exe processes each time.
+  let out = '';
+  try {
+    out = execSync(`reg query "${regBase}"`, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+  } catch {
+    return { enabled: false, server: '', autoConfig: '' };
+  }
+  const value = (name) => {
+    const m = out.match(new RegExp('^\\s*' + name + '\\s+REG_(?:SZ|DWORD|BINARY)\\s+(.+)$', 'im'));
+    return m ? m[1].trim() : '';
   };
-  const enabledRaw = query('ProxyEnable');
+  const enabledRaw = value('ProxyEnable');
   return {
     enabled: enabledRaw.includes('0x1'),
-    server: query('ProxyServer'),
-    autoConfig: query('AutoConfigURL')
+    server: value('ProxyServer'),
+    autoConfig: value('AutoConfigURL')
   };
 }
 function refreshSystemProxy() {
@@ -234,6 +279,7 @@ function refreshSystemProxy() {
 }
 function setSystemProxy(enable, port = 1080) {
   if (os.platform() !== 'win32') return false;
+  sysProxyCache = { at: 0, data: null }; // our own write must not be masked by the cache
   const regBase = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings';
   const reg = (args) => { try { execSync(`reg ${args}`, { stdio: 'ignore' }); return true; } catch { return false; } };
   try {
@@ -254,8 +300,18 @@ function setSystemProxy(enable, port = 1080) {
 }
 function generatePAC(port = 1080) {
   return `function FindProxyForURL(url, host) {
-  // Bypass local addresses
-  if (isPlainHostName(host) || host === '127.0.0.1' || host === '::1' || host.startsWith('10.') || host.startsWith('192.168.') || host.startsWith('172.16.') || host.endsWith('.local')) {
+  // Bypass local / RFC1918 / link-local / loopback names.
+  // The old expression only covered 172.16.* — the rest of 172.16.0.0/12
+  // (172.17-172.31.x) went through the proxy, breaking LAN access on many
+  // corporate/VPN networks. dnsDomainIs is kept in sync with isPlainHostName.
+  if (isPlainHostName(host) ||
+      host === 'localhost' || host === '127.0.0.1' || host === '::1' ||
+      shExpMatch(host, '127.*') ||
+      shExpMatch(host, '10.*') ||
+      shExpMatch(host, '192.168.*') ||
+      shExpMatch(host, '172.1[6-9].*') || shExpMatch(host, '172.2[0-9].*') || shExpMatch(host, '172.3[01].*') ||
+      shExpMatch(host, '169.254.*') ||
+      dnsDomainIs(host, '.local') || dnsDomainIs(host, '.lan')) {
     return 'DIRECT';
   }
   // Proxy everything else through the built-in proxy
@@ -270,127 +326,92 @@ function warpCmd(args, timeout = 8000) {
   return run(cmd, timeout);
 }
 const WARP = {
+  _installedCache: undefined,
+  // status() spawns warp-cli.exe synchronously and is called by /api/status every
+  // 10s (plus once per WebSocket connect). Cache briefly; connect()/disconnect()
+  // invalidate so user actions are never masked.
+  _statusCache: { at: 0, data: null },
   installed() {
-    if (os.platform() === 'win32' && fs.existsSync(WARP_PATH)) return true;
-    const r = run('warp-cli --version');
-    return r && r.includes('warp');
+    if (this._installedCache !== undefined) return this._installedCache;
+    let result = false;
+    if (os.platform() === 'win32' && fs.existsSync(WARP_PATH)) result = true;
+    else {
+      const r = run('warp-cli --version');
+      result = !!(r && r.includes('warp'));
+    }
+    this._installedCache = result;
+    return result;
   },
-  status() {
+  status(force = false) {
+    const now = Date.now();
+    if (!force && this._statusCache.data && (now - this._statusCache.at) < 5000) return this._statusCache.data;
     const r = warpCmd('status');
-    if (!r) return null;
-    return { connected: r.includes('Connected'), raw: r };
+    const data = r ? { connected: r.includes('Connected'), raw: r } : null;
+    this._statusCache = { at: now, data };
+    return data;
   },
-  register() { return warpCmd('registration new', 15000); },
-  connect() { warpCmd('connect', 10000); return true; },
-  disconnect() { warpCmd('disconnect'); return true; }
+  register() { const r = warpCmd('registration new', 15000); this._statusCache = { at: 0, data: null }; return r; },
+  connect() { warpCmd('connect', 10000); this._statusCache = { at: 0, data: null }; return true; },
+  disconnect() { warpCmd('disconnect'); this._statusCache = { at: 0, data: null }; return true; }
 };
 
 // ========== Proxy ==========
-const BUILTIN_PROXIES = [
-  // ===== Re-verified 2026-08-07 (5 rounds each, actual measured latency) =====
-  // Tested 66761 proxies from all sources + 1000 Asia-focused samples
-  // All below are 80-100% success rate across 5 consecutive test rounds.
-
-  // 🛡️ HIGH ANONYMITY (Elite) - verified 2026-08-20: exit IP != real IP, no leak headers
-  { host: '203.19.38.114', port: 1080, type: 'http' }, // avg=355ms min=335ms max=369ms 3/3 elite (ClearProxy)
-
-  // 🏆 SUB-200ms STABLE (avg 108ms, 100%): fastest verified free proxy!
-  { host: '115.239.234.43', port: 7302, type: 'http' }, // avg=108ms min=87ms max=149ms 100% (ERD-HTTP)
-
-  // ⚡ SUB-200ms STABLE (avg 188ms, 100%): always reliable, sub-200ms
-  { host: '59.110.63.234', port: 80, type: 'http' },   // avg=188ms min=108ms max=470ms 100%
-
-  // 🎯 SOLID 100% STABLE (avg 450-460ms, 100% 5/5 rounds): improved latency!
-  { host: '31.43.179.194',    port: 80, type: 'http' }, // avg=450ms min=446ms 100%
-  { host: '141.101.120.214',  port: 80, type: 'http' }, // avg=451ms min=441ms  80%
-  { host: '45.131.4.250',     port: 80, type: 'http' }, // avg=454ms min=440ms 100%
-  { host: '159.112.235.94',   port: 80, type: 'http' }, // avg=454ms min=442ms 100%
-  { host: '141.101.121.226',  port: 80, type: 'http' }, // avg=456ms min=437ms 100%
-
-  // 🎯 SOLID 100% STABLE (avg 650-950ms, 100%): reliable backups (5/5 rounds)
-  { host: '103.21.244.132',   port: 80, type: 'http' }, // avg=650ms min=446ms 100%
-  { host: '185.162.231.23',   port: 80, type: 'http' }, // avg=655ms min=448ms 100%
-  { host: '141.193.213.254',  port: 80, type: 'http' }, // avg=663ms min=448ms 100%
-  { host: '172.64.94.22',     port: 80, type: 'http' }, // avg=838ms min=457ms 100%
-  { host: '45.12.31.237',     port: 80, type: 'http' }, // avg=952ms min=441ms  80%
-
-  // 🆕 NEW STABLE (avg 434ms, 100%): found in Asia-focused search 2026-08-07 (3/3 rounds)
-  { host: '39.109.113.97',    port: 4090, type: 'http' }, // avg=434ms min=334ms 100% (SCDN-ASIA)
-
-  // Stable legacy HTTP proxies (always-on data-center IP ranges)
-  { host: '185.170.166.75', port: 80, type: 'http' },
-  { host: '185.162.229.141', port: 80, type: 'http' },
-  { host: '185.238.228.203', port: 80, type: 'http' },
-  { host: '45.131.5.145', port: 80, type: 'http' },
-  { host: '147.185.161.0', port: 80, type: 'http' },
-  { host: '173.245.49.53', port: 80, type: 'http' },
-  { host: '45.131.6.206', port: 80, type: 'http' },
-  { host: '141.193.213.123', port: 80, type: 'http' },
-  { host: '31.43.179.83', port: 80, type: 'http' },
-  { host: '173.245.49.148', port: 80, type: 'http' },
-  { host: '45.131.7.99', port: 80, type: 'http' },
-  { host: '185.162.231.118', port: 80, type: 'http' },
-  { host: '185.238.228.111', port: 80, type: 'http' },
-  { host: '45.12.31.83', port: 80, type: 'http' },
-  { host: '173.245.49.52', port: 80, type: 'http' },
-  { host: '172.67.74.107', port: 80, type: 'http' },
-  { host: '172.67.67.147', port: 80, type: 'http' },
-  { host: '172.67.181.49', port: 80, type: 'http' },
-  { host: '172.67.106.72', port: 80, type: 'http' },
-  { host: '172.67.211.192', port: 80, type: 'http' },
-  { host: '172.67.174.112', port: 80, type: 'http' },
-  { host: '63.141.128.88', port: 80, type: 'http' },
-  { host: '185.162.229.219', port: 80, type: 'http' },
-  { host: '185.162.229.48', port: 80, type: 'http' },
-  { host: '31.43.179.21', port: 80, type: 'http' },
-  { host: '66.235.200.115', port: 80, type: 'http' },
-  { host: '185.162.231.6', port: 80, type: 'http' },
-  { host: '172.67.182.164', port: 80, type: 'http' },
-  { host: '172.67.182.64', port: 80, type: 'http' },
-  { host: '5.10.247.239', port: 80, type: 'http' },
-  // SOCKS5 fallback proxies
-  { host: '24.249.199.4', port: 4145, type: 'socks5' },
-  { host: '174.75.211.222', port: 4145, type: 'socks5' },
-  { host: '72.195.34.58', port: 4145, type: 'socks5' },
-  { host: '72.195.114.169', port: 4145, type: 'socks5' },
-  { host: '174.64.199.79', port: 4145, type: 'socks5' },
-];
-
-async function fetchProxies() {
-  try {
-    const proxies = await proxyCore.fetchProxies();
-    return proxies.map(p => ({ ...p, source: p.source || 'Unknown' }));
-  } catch (e) {
-    logger.error(t('apiError', 'Failed to fetch proxies via proxy-core'));
-    return BUILTIN_PROXIES.map(p => ({ ...p, source: 'Built-in' }));
-  }
-}
+// Single source of truth: lib/proxy-core. The copy that lived here had already
+// drifted (missing the elite entry), so a proxy verified by the CLI never showed
+// up in the panel's stable pool.
+const BUILTIN_PROXIES = proxyCore.BUILTIN_PROXIES;
 
 // ========== Free Proxy Cache ==========
+// proxy-core already owns the fetch cache (5 min) and the in-flight promise, so
+// the GUI keeps only a view of the last result it broadcast.
 let freeProxyCache = { proxies: [], time: 0, fetching: false };
 const PROXY_CACHE_TTL = 300000; // 5 min
 let autoFinding = false; // auto-find task lock
 let gsuScanLock = false; // google-signup fast scan task lock (module-level so it works across requests)
+
+// ===== Google OAuth state =====
+// These used to live inside handleRequest, so every request built a fresh session
+// Map: the OAuth callback created a token and the next request could not see it.
+const GOOGLE_CONFIG_FILE = path.join(HOME, '.free-proxy-tool', 'google-oauth.json');
+const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
+const sessions = new Map();
+
+function loadGoogleOAuthConfig() {
+  try { return JSON.parse(fs.readFileSync(GOOGLE_CONFIG_FILE, 'utf8')); } catch { return { clientId: '', clientSecret: '' }; }
+}
+function saveGoogleOAuthConfig(cfg) {
+  fs.mkdirSync(path.dirname(GOOGLE_CONFIG_FILE), { recursive: true });
+  fs.writeFileSync(GOOGLE_CONFIG_FILE, JSON.stringify(cfg, null, 2));
+}
+function createSession(userInfo) {
+  const token = require('crypto').randomBytes(32).toString('hex');
+  sessions.set(token, { ...userInfo, createdAt: Date.now() });
+  return token;
+}
+function getSession(token) {
+  if (!token) return null;
+  const s = sessions.get(token);
+  if (!s) return null;
+  if (Date.now() - s.createdAt > SESSION_TTL) { sessions.delete(token); return null; }
+  return s;
+}
+function destroySession(token) { sessions.delete(token); }
+function getSessionToken(req) {
+  const m = (req.headers.cookie || '').match(/fpt_session=([^;]+)/);
+  return m ? m[1] : null;
+}
 
 async function getFreeProxies(force = false) {
   const now = Date.now();
   if (!force && freeProxyCache.proxies.length > 0 && (now - freeProxyCache.time) < PROXY_CACHE_TTL) {
     return freeProxyCache;
   }
-  // If a fetch is in progress, wait for it to complete instead of returning stale/empty cache
-  if (freeProxyCache.fetching) {
-    while (freeProxyCache.fetching) {
-      await new Promise(r => setTimeout(r, 100));
-    }
-    return freeProxyCache;
-  }
-  freeProxyCache.fetching = true;
   try {
-    const proxies = await fetchProxies();
+    const proxies = (await proxyCore.getProxies(force)).map(p => ({ ...p, source: p.source || 'Unknown' }));
     freeProxyCache = { proxies, time: Date.now(), fetching: false };
     broadcast({ type: 'free-proxy-update', count: proxies.length });
-  } catch {
-    freeProxyCache.fetching = false;
+  } catch (e) {
+    logger.debug('getFreeProxies failed: ' + (e && e.message));
   }
   return freeProxyCache;
 }
@@ -399,89 +420,62 @@ async function getFreeProxies(force = false) {
 let refreshTimer = setInterval(() => getFreeProxies(), PROXY_CACHE_TTL);
 refreshTimer.unref?.();
 
-async function testProxy(proxy, timeout = 6000) {
-  const start = Date.now();
-  const testUrls = [
-    'https://api.ipify.org?format=json',
-    'https://httpbin.org/ip',
-    'https://ifconfig.me/ip',
-  ];
-  try {
-    const https = require('https');
-    let agent;
-    const proxyType = (proxy.type || 'socks5').toLowerCase();
-    if (proxyType === 'http' || proxyType === 'https') {
-      // HTTP proxy → use HttpProxyAgent
-      try {
-        const { HttpProxyAgent } = require('http-proxy-agent');
-        agent = new HttpProxyAgent(`http://${proxy.host}:${proxy.port}`);
-      } catch {}
-    } else {
-      // SOCKS4/SOCKS5 → use SocksProxyAgent with correct protocol prefix
-      try {
-        const { SocksProxyAgent } = require('socks-proxy-agent');
-        const proto = proxyType === 'socks4' ? 'socks4' : 'socks5';
-        agent = new SocksProxyAgent(`${proto}://${proxy.host}:${proxy.port}`);
-      } catch {
-        // Fallback: try HttpProxyAgent
-        try {
-          const { HttpProxyAgent } = require('http-proxy-agent');
-          agent = new HttpProxyAgent(`http://${proxy.host}:${proxy.port}`);
-        } catch {}
-      }
-    }
-    if (!agent) return { ...proxy, alive: false, latency: -1 };
-    // Try multiple test URLs, return on first success
-    for (const testUrl of testUrls) {
-      try {
-        let statusCode = 0;
-        const result = await new Promise((resolve, reject) => {
-          const req = https.get(testUrl, { agent, timeout, rejectUnauthorized: false }, res => {
-            statusCode = res.statusCode;
-            let d = '';
-            res.on('data', c => d += c);
-            res.on('end', () => resolve(d));
-          });
-          req.on('error', reject);
-          req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
-        });
-        // Only consider alive if HTTP status is 2xx
-        if (statusCode < 200 || statusCode >= 300) {
-          continue;
-        }
-        let ip = '';
-        try {
-          const parsed = JSON.parse(result);
-          ip = parsed.ip || parsed.origin || '';
-        } catch { ip = result.trim().split('\n')[0]; }
-        return { ...proxy, alive: true, latency: Date.now() - start, ip };
-      } catch { continue; }
-    }
-    return { ...proxy, alive: false, latency: -1 };
-  } catch {
-    return { ...proxy, alive: false, latency: -1 };
-  }
+// The actual test lives in lib/proxy-core (all probe URLs raced against one hard
+// deadline + agent cleanup). The GUI keeps its historical defaults: 6s per test and
+// socks5 for pool entries that carry no explicit type.
+function testProxy(proxy, timeout = 6000) {
+  const p = { ...(proxy || {}) };
+  if (!p.type) p.type = 'socks5';
+  return proxyCore.testProxy(p, timeout);
+}
+
+// Throttled WebSocket progress reporter.
+// Tests now finish one at a time (worker pool instead of fixed batches), so
+// broadcasting on every completion would flood the panel — coalesce to at most one
+// message per `interval` ms and always flush at the end.
+function progressReporter({ type = 'test-progress', total, includeResults = false, interval = 200, base = {} }) {
+  let tested = 0;
+  let alive = 0;
+  let pending = [];
+  let lastEmit = 0;
+  let extra = {};
+  const emit = (force) => {
+    if (!force && Date.now() - lastEmit < interval && tested < total) return;
+    lastEmit = Date.now();
+    const msg = { ...base, type, tested, total, alive, ...extra };
+    if (includeResults) msg.results = pending.splice(0); else pending = [];
+    broadcast(msg);
+  };
+  return {
+    next(result, extraFields) {
+      tested++;
+      if (result && result.alive) alive++;
+      if (includeResults && result) pending.push(result);
+      if (extraFields) extra = extraFields;
+      emit(false);
+    },
+    finish() { emit(true); return { tested, alive }; },
+    get tested() { return tested; },
+    get alive() { return alive; },
+  };
 }
 
 async function findBestProxy(maxTest = 50, wsClients = []) {
-  let proxies = await fetchProxies();
-  proxies = proxies.sort(() => Math.random() - 0.5).slice(0, maxTest);
+  // Use the shared 5-min cache. fetchProxies() re-downloaded all ~50 sources
+  // (8-30s of network) on every "find best" click.
+  const proxies = proxyCore.sampleProxies((await getFreeProxies()).proxies, maxTest);
   const startTime = Date.now();
   logger.info(`AutoFind: Starting to find best proxy among ${proxies.length} candidates`);
   const results = [];
-  const batchSize = 20;
-  let aliveCount = 0;
-  for (let i = 0; i < proxies.length; i += batchSize) {
-    const batch = proxies.slice(i, i + batchSize);
-    const batchResults = await Promise.all(batch.map(p => testProxy(p)));
-    results.push(...batchResults);
-    aliveCount += batchResults.filter(r => r.alive).length;
-    const tested = Math.min(i + batchSize, proxies.length);
-    // Broadcast progress via WebSocket
-    const progress = { type: 'test-progress', tested, total: proxies.length, results: batchResults, alive: aliveCount };
-    wsClients.forEach(ws => { try { ws.send(JSON.stringify(progress)); } catch {} });
-    logger.debug(`AutoFind: ${tested}/${proxies.length} done, alive: ${aliveCount}`);
-  }
+  const progress = progressReporter({ total: proxies.length });
+  await mapPool(proxies, 20, p => testProxy(p), (r) => {
+    results.push(r);
+    progress.next(r);
+    if (progress.tested % 10 === 0 || progress.tested === proxies.length) {
+      logger.debug(`AutoFind: ${progress.tested}/${proxies.length} done, alive: ${progress.alive}`);
+    }
+  });
+  progress.finish();
   stats.recordBatch(results);
   const alive = results.filter(r => r.alive).sort((a, b) => a.latency - b.latency);
   const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -510,16 +504,55 @@ function sendJSON(res, data, status = 200) {
   res.end(JSON.stringify(data));
 }
 
+// Static file cache: the panel is a single ~170KB HTML file (plus JS/CSS), and it
+// used to be re-read from disk and sent uncompressed on every request/reload.
+const staticCache = new Map(); // absolute path -> { mtimeMs, size, raw, gzip, mtimeHeader }
+const GZIP_MIN_BYTES = 8 * 1024;
+const GZIP_EXTS = new Set(['.html', '.css', '.js', '.json', '.svg', '.txt']);
+
 function sendHTML(res, filePath) {
   const ext = path.extname(filePath);
   const mime = MIME_TYPES[ext] || 'application/octet-stream';
-  try {
-    const content = fs.readFileSync(filePath);
-    res.writeHead(200, { 'Content-Type': mime + '; charset=utf-8' });
-    res.end(content);
-  } catch {
-    res.writeHead(404); res.end('Not Found');
+
+  let st;
+  try { st = fs.statSync(filePath); } catch { res.writeHead(404); res.end('Not Found'); return; }
+  if (!st.isFile()) { res.writeHead(404); res.end('Not Found'); return; }
+
+  let entry = staticCache.get(filePath);
+  if (!entry || entry.mtimeMs !== st.mtimeMs || entry.size !== st.size) {
+    let raw;
+    try { raw = fs.readFileSync(filePath); } catch { res.writeHead(404); res.end('Not Found'); return; }
+    let gzip = null;
+    if (GZIP_EXTS.has(ext) && raw.length >= GZIP_MIN_BYTES) {
+      try { gzip = zlib.gzipSync(raw, { level: 6 }); } catch { gzip = null; }
+    }
+    entry = { mtimeMs: st.mtimeMs, size: st.size, raw, gzip, mtimeHeader: new Date(st.mtimeMs).toUTCString() };
+    staticCache.set(filePath, entry);
   }
+
+  const req = res.req;
+  const headers = {
+    'Content-Type': mime + '; charset=utf-8',
+    'Last-Modified': entry.mtimeHeader,
+    'Cache-Control': 'no-cache',
+    'Vary': 'Accept-Encoding',
+  };
+
+  // Cheap revalidation: reloads cost a 304 instead of the whole file.
+  const ims = req && req.headers && req.headers['if-modified-since'];
+  if (ims && Date.parse(ims) >= Math.floor(entry.mtimeMs / 1000) * 1000) {
+    res.writeHead(304, headers);
+    res.end();
+    return;
+  }
+
+  const acceptEncoding = (req && req.headers && req.headers['accept-encoding']) || '';
+  const useGzip = !!(entry.gzip && /\bgzip\b/.test(acceptEncoding));
+  const body = useGzip ? entry.gzip : entry.raw;
+  if (useGzip) headers['Content-Encoding'] = 'gzip';
+  headers['Content-Length'] = body.length;
+  res.writeHead(200, headers);
+  res.end(body);
 }
 
 function parseBody(req) {
@@ -614,8 +647,10 @@ async function handleRequest(req, res) {
   }
 
   if (pathname === '/api/proxies' && req.method === 'GET') {
-    const proxies = await fetchProxies();
-    return sendJSON(res, { count: proxies.length, proxies: proxies.slice(0, 50) });
+    // Shared 5-min cache: a direct fetchProxies() re-downloaded all ~50 sources
+    // (8-30s of network) on every single request.
+    const cache = await getFreeProxies();
+    return sendJSON(res, { count: cache.proxies.length, proxies: cache.proxies.slice(0, 50) });
   }
 
   if (pathname === '/api/proxy/test' && req.method === 'POST') {
@@ -658,7 +693,7 @@ async function handleRequest(req, res) {
     if (!IS_WIN) return sendJSON(res, { connected: false, error: t('windowsOnly') });
     WARP.connect();
     await new Promise(r => setTimeout(r, 2000));
-    const s = WARP.status();
+    const s = WARP.status(true);
     return sendJSON(res, { connected: s ? s.connected : false });
   }
 
@@ -673,7 +708,10 @@ async function handleRequest(req, res) {
       running: !!(proxyServerInstance && serverRunning),
       port: serverPort || 1080,
       host: '127.0.0.1',
-      type: 'SOCKS5'
+      // ProxyServer is an HTTP proxy (absolute-form GET + CONNECT tunnel). It used to
+      // report 'SOCKS5' here, which made the panel tell users to configure a SOCKS
+      // proxy that does not exist on that port.
+      type: 'HTTP'
     });
   }
 
@@ -854,7 +892,7 @@ async function handleRequest(req, res) {
       }
       if (startedInstance && proxyServerInstance === startedInstance) {
         try { startedInstance.stop(); rollback.proxyStopped = true; } catch {}
-        proxyServerInstance = previousRunning ? null : null; // ensure cleared either way
+        proxyServerInstance = null;
         serverRunning = false;
       }
       logger.error('Google Signup launch failed: ' + e.message + ' (rolled back: ' + JSON.stringify(rollback) + ')');
@@ -882,7 +920,7 @@ async function handleRequest(req, res) {
   //   • Returns 202 Accepted in <100ms
   //   • Runs scan in background with progressive stages (fetch → light validate → save)
   //   • Broadcasts 'gsu-scan-progress' via WebSocket so UI can show N/M, ETA, and found-so-far
-  //   • Lightweight 4-layer validation (not the full 7-layer of find-google-signup-proxies.js)
+  //   • Lightweight 4-layer validation (a trimmed version of the CLI's elite scan),
   //     so you see results in ~10-25s instead of minutes.
   if (pathname === '/api/google-signup/scan' && req.method === 'POST') {
     if (gsuScanLock) {
@@ -1001,9 +1039,22 @@ async function handleRequest(req, res) {
 
         const passed = [];
         let processed = 0;
-        for (let i = 0; i < prioritized.length; i += BATCH) {
-          const batch = prioritized.slice(i, i + BATCH);
-          const batchResults = await Promise.all(batch.map(async (p) => {
+        let lastBroadcast = 0;
+        const broadcastProgress = (force) => {
+          const now = Date.now();
+          if (!force && now - lastBroadcast < 250) return;
+          lastBroadcast = now;
+          broadcast({
+            type: 'gsu-scan-progress',
+            done: processed,
+            total: prioritized.length,
+            found: passed.length,
+            top: passed.slice(0, 5).map(p => ({ host: p.host, port: p.port, avg: p.avgLatency, score: p.googleSignupScore })),
+            elapsedMs: Date.now() - t0,
+          });
+        };
+
+        await mapPool(prioritized, BATCH, async (p) => {
             let score = 0;
             let latencySum = 0, latencyCnt = 0;
             // L1 first (fastest): if IP check fails > 3s, skip heavier Google checks to speed up
@@ -1033,20 +1084,14 @@ async function handleRequest(req, res) {
               note: score >= 6 ? '⭐⭐⭐⭐⭐ Google-ready' : score >= 5 ? '⭐⭐⭐⭐ Good' : '⭐⭐⭐ Passed',
               foundAt: Date.now(),
             };
-          }));
-          for (const r of batchResults) if (r) passed.push(r);
-          processed += batch.length;
-          // Limit memory + speed: once we have 8+ solid (score>=4) candidates, finish early
-          broadcast({
-            type: 'gsu-scan-progress',
-            done: processed,
-            total: prioritized.length,
-            found: passed.length,
-            top: passed.slice(0, 5).map(p => ({ host: p.host, port: p.port, avg: p.avgLatency, score: p.googleSignupScore })),
-            elapsedMs: Date.now() - t0,
-          });
-          if (passed.length >= 8) break;
-        }
+        }, (r) => {
+          processed++;
+          if (r) passed.push(r);
+          broadcastProgress(passed.length >= 8);
+        },
+        // Early finish: once we have 8+ solid (score>=4) candidates, stop pulling new items
+        () => passed.length >= 8);
+        broadcastProgress(true);
 
         // --- Phase 3: Merge into saved list (top scores first, dedupe by host:port) ---
         broadcast({ type: 'gsu-scan-phase', phase: 3, label: 'saving', count: passed.length });
@@ -1103,29 +1148,21 @@ async function handleRequest(req, res) {
     const maxTest = body.max || 50;
     const batchSize = body.batchSize || 20;
     const cache = await getFreeProxies(true);
-    // Run in background, stream results via WebSocket with proper batching + logging
+    // Run in background, stream throttled progress via WebSocket
     (async () => {
       const toTest = cache.proxies.slice(0, maxTest);
       const startTime = Date.now();
-      logger.info(`FreeProxyTest: Starting to test ${toTest.length} free proxies (batch: ${batchSize})`);
+      logger.info(`FreeProxyTest: Starting to test ${toTest.length} free proxies (concurrency: ${batchSize})`);
       const results = [];
-      let aliveCount = 0;
-      for (let i = 0; i < toTest.length; i += batchSize) {
-        const batch = toTest.slice(i, i + batchSize);
-        const batchResults = await Promise.all(batch.map(p => testProxy(p, 6000)));
-        for (const r of batchResults) {
-          if (r.alive) {
-            stats.recordTest(r);
-            aliveCount++;
-          }
-          results.push(r);
-        }
-        const testedSoFar = Math.min(i + batchSize, toTest.length);
-        broadcast({ type: 'test-progress', tested: testedSoFar, total: toTest.length, results: batchResults, alive: aliveCount });
-        logger.debug(`FreeProxyTest: ${testedSoFar}/${toTest.length} done, alive so far: ${aliveCount}`);
-      }
+      const progress = progressReporter({ total: toTest.length });
+      await mapPool(toTest, batchSize, p => testProxy(p, 6000), (r) => {
+        results.push(r);
+        if (r.alive) stats.recordTest(r);
+        progress.next(r);
+      });
+      progress.finish();
       const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(1);
-      const alive = results.filter(r => r.alive);
+      const alive = results.filter(r => r.alive).sort((a, b) => a.latency - b.latency);
       logger.info(`FreeProxyTest: Done. ${alive.length}/${toTest.length} alive in ${elapsedSec}s, sorted by latency (top: ${alive.slice(0, 5).map(a => a.latency + 'ms').join(', ')})`);
       broadcast({ type: 'test-complete', alive, total: toTest.length });
     })();
@@ -1139,39 +1176,29 @@ async function handleRequest(req, res) {
     (async () => {
       const startTime = Date.now();
       logger.info(`StableTest: Starting to test ${list.length} stable proxies`);
-      let aliveCount = 0;
-      for (let i = 0; i < list.length; i += batchSize) {
-        const batch = list.slice(i, i + batchSize);
-        const batchResults = await Promise.all(batch.map(p => testProxy(p, 6000)));
-        for (let r of batchResults) {
+      // key -> index: per-result updates are O(1) instead of a findIndex scan each time
+      const indexOf = new Map();
+      list.forEach((p, i) => indexOf.set(p.host + ':' + p.port, i));
+      const progress = progressReporter({ total: list.length });
+      await mapPool(list, batchSize, p => testProxy(p, 6000), (r) => {
+        const idx = indexOf.get(r.host + ':' + r.port);
+        const entry = idx === undefined ? null : list[idx];
+        if (entry) {
+          entry.tests = (entry.tests || 0) + 1;
+          entry.lastTested = Date.now();
           if (r.alive) {
-            aliveCount++;
-            // Update the proxy in the list
-            const idx = list.findIndex(p => p.host === r.host && p.port === r.port);
-            if (idx >= 0) {
-              list[idx].latency = r.latency;
-              list[idx].ip = r.ip || '';
-              list[idx].tests = (list[idx].tests || 0) + 1;
-              list[idx].hint = false;
-              list[idx].lastTested = Date.now();
-            }
-            stats.recordTest(r);
-          } else {
-            // Mark as dead but keep in list (don't remove, just update)
-            const idx = list.findIndex(p => p.host === r.host && p.port === r.port);
-            if (idx >= 0) {
-              list[idx].tests = (list[idx].tests || 0) + 1;
-              list[idx].lastTested = Date.now();
-              if (list[idx].latency > 0 && !list[idx].hint) {
-                list[idx].latency = -1; // mark as dead
-              }
-            }
+            entry.latency = r.latency;
+            entry.ip = r.ip || '';
+            entry.hint = false;
+          } else if (entry.latency > 0 && !entry.hint) {
+            entry.latency = -1; // mark as dead (keep in list)
           }
         }
-        const testedSoFar = Math.min(i + batchSize, list.length);
-        broadcast({ type: 'test-progress', tested: testedSoFar, total: list.length, alive: aliveCount });
-        logger.debug(`StableTest: ${testedSoFar}/${list.length} done, alive: ${aliveCount}`);
-      }
+        if (r.alive) stats.recordTest(r);
+        progress.next(r);
+      });
+      progress.finish();
+      const aliveCount = progress.alive;
       saveStableProxies(list);
       const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(1);
       logger.info(`StableTest: Done. ${aliveCount}/${list.length} alive in ${elapsedSec}s`);
@@ -1198,45 +1225,42 @@ async function handleRequest(req, res) {
         if (!proxyList || proxyList.length === 0) {
           proxyList = BUILTIN_PROXIES.map(p => ({ ...p, source: 'Built-in' }));
         }
-        // Always include all built-in proxies (preserve them), then randomly sample the rest
+        // Always include all built-in proxies (preserve them), then sample the rest
+        // with the same stratified picker the CLI uses — a uniform random draw over a
+        // 130k-entry pool almost never lands on a working proxy.
         const builtinSet = new Set(BUILTIN_PROXIES.map(p => p.host + ':' + p.port));
         const builtinsToTest = proxyList.filter(p => builtinSet.has(p.host + ':' + p.port));
         const others = proxyList.filter(p => !builtinSet.has(p.host + ':' + p.port));
-        const sampled = others.sort(() => Math.random() - 0.5).slice(0, Math.max(0, maxTest - builtinsToTest.length));
+        const sampled = proxyCore.sampleProxies(others, Math.max(0, maxTest - builtinsToTest.length));
         const toTest = [...builtinsToTest, ...sampled];
         broadcast({ type: 'auto-find-stage', stage: 'test', message: t('autoFindStarted', toTest.length), tested: 0, total: toTest.length });
 
         // Round 1: initial test (batch for speed)
         let survivors = [];
         const batchSize = 20;
-        for (let i = 0; i < toTest.length; i += batchSize) {
-          const batch = toTest.slice(i, i + batchSize);
-          const batchResults = await Promise.all(batch.map(p => testProxy(p, 3000)));
-          for (const r of batchResults) {
-            const isBuiltin = builtinSet.has(r.host + ':' + r.port);
-            if (r.alive && (isBuiltin || r.latency <= maxLatency)) survivors.push(r);
-            if (r.alive) stats.recordTest(r);
-          }
-          broadcast({ type: 'auto-find-progress', stage: 'test', tested: Math.min(i + batchSize, toTest.length), total: toTest.length, alive: survivors.length, current: batchResults[batchResults.length - 1] });
-        }
+        const testProgress = progressReporter({ type: 'auto-find-progress', total: toTest.length, base: { stage: 'test' } });
+        await mapPool(toTest, batchSize, p => testProxy(p, 3000), (r) => {
+          const isBuiltin = builtinSet.has(r.host + ':' + r.port);
+          if (r.alive && (isBuiltin || r.latency <= maxLatency)) survivors.push(r);
+          if (r.alive) stats.recordTest(r);
+          testProgress.next(r, { current: r, alive: survivors.length });
+        });
+        testProgress.finish();
 
         // Confirmation rounds: re-test survivors to confirm stability
         for (let round = 2; round <= confirmRounds; round++) {
           broadcast({ type: 'auto-find-stage', stage: 'confirm', message: t('loading'), tested: 0, total: survivors.length });
           const confirmed = [];
-          for (let i = 0; i < survivors.length; i += batchSize) {
-            const batch = survivors.slice(i, i + batchSize);
-            const batchResults = await Promise.all(batch.map(p => testProxy(p, 3000)));
-            for (let j = 0; j < batchResults.length; j++) {
-              const r = batchResults[j];
-              const isBuiltin = builtinSet.has(r.host + ':' + r.port);
-              if (r.alive && (isBuiltin || r.latency <= maxLatency)) {
-                const prev = batch[j];
-                confirmed.push({ ...prev, latency: Math.round((prev.latency + r.latency) / 2), tests: (prev.tests || 1) + 1 });
-              }
+          const confirmProgress = progressReporter({ type: 'auto-find-progress', total: survivors.length, base: { stage: 'confirm', round } });
+          await mapPool(survivors, batchSize, p => testProxy(p, 3000), (r, i) => {
+            const prev = survivors[i];
+            const isBuiltin = builtinSet.has(r.host + ':' + r.port);
+            if (r.alive && (isBuiltin || r.latency <= maxLatency)) {
+              confirmed.push({ ...prev, latency: Math.round((prev.latency + r.latency) / 2), tests: (prev.tests || 1) + 1 });
             }
-            broadcast({ type: 'auto-find-progress', stage: 'confirm', round, tested: Math.min(i + batchSize, survivors.length), total: survivors.length, alive: confirmed.length, current: batchResults[batchResults.length - 1] });
-          }
+            confirmProgress.next(r, { current: r, alive: confirmed.length });
+          });
+          confirmProgress.finish();
           survivors = confirmed;
         }
 
@@ -1254,8 +1278,14 @@ async function handleRequest(req, res) {
           if (!old) {
             map.set(key, { host: p.host, port: p.port, type: p.type, latency: p.latency, ip: p.ip || '', source: isBuiltin ? 'Built-in' : (p.source || ''), tests: p.tests || 1, builtin: isBuiltin, added: Date.now() });
           } else {
-            // keep lower latency, bump tests count
-            if (p.latency < old.latency) old.latency = p.latency;
+            // Only adopt a measured latency over an unmeasured one, or when it is
+            // actually faster. The old check `p.latency < old.latency` was true for
+            // every untested entry (latency 0/-1), so a verified 900ms proxy could
+            // overwrite a 120ms one.
+            if (!(old.latency > 0) || (p.latency > 0 && p.latency < old.latency)) {
+              old.latency = p.latency;
+              old.ip = p.ip || old.ip;
+            }
             old.tests = (old.tests || 1) + (p.tests || 1);
             old.lastChecked = Date.now();
             if (isBuiltin) old.builtin = true;
@@ -1325,7 +1355,6 @@ async function handleRequest(req, res) {
 
   // ===== Logs API =====
   if (pathname === '/api/logs' && req.method === 'GET') {
-    const logger = require(path.join(PROJECT_ROOT, 'lib', 'logger'));
     const limit = parseInt(url.searchParams.get('limit')) || 200;
     const level = url.searchParams.get('level') || 'all';
     return sendJSON(res, {
@@ -1335,53 +1364,33 @@ async function handleRequest(req, res) {
     });
   }
   if (pathname === '/api/logs/clear' && req.method === 'POST') {
-    const logger = require(path.join(PROJECT_ROOT, 'lib', 'logger'));
     logger.clearLogs();
     return sendJSON(res, { success: true });
   }
 
   // ===== Config API =====
+  // Shared with the CLI (lib/utils): one config file, one mtime-based cache.
+  const CONFIG_DEFAULTS = {
+    defaultMode: 'auto',
+    defaultPort: 1080,
+    guiPort: 3000,
+    autoStartWarp: true,
+    logLevel: 'info',
+    logToFile: true,
+    proxyTestCount: 30,
+  };
   if (pathname === '/api/config' && req.method === 'GET') {
-    const fs = require('fs');
-    const os = require('os');
-    const CONFIG_DIR = path.join(os.homedir(), '.free-proxy-tool');
-    const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
-    let cfg = {};
-    try { cfg = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')); } catch {}
-    const defaults = {
-      defaultMode: 'auto',
-      defaultPort: 1080,
-      guiPort: 3000,
-      autoStartWarp: true,
-      logLevel: 'info',
-      logToFile: true,
-      proxyTestCount: 30,
-    };
-    return sendJSON(res, { config: { ...defaults, ...cfg } });
+    return sendJSON(res, { config: { ...CONFIG_DEFAULTS, ...loadConfig() } });
   }
   if (pathname === '/api/config' && req.method === 'POST') {
-    const fs = require('fs');
-    const os = require('os');
-    const CONFIG_DIR = path.join(os.homedir(), '.free-proxy-tool');
-    const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
     const body = await parseBody(req);
-    let cfg = {};
-    try { cfg = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')); } catch {}
-    if (body.key !== undefined) {
-      cfg[body.key] = body.value;
-    }
-    if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify(cfg, null, 2));
+    const cfg = loadConfig();
+    if (body.key !== undefined) cfg[body.key] = body.value;
+    saveConfig(cfg);
     return sendJSON(res, { success: true, config: cfg });
   }
   if (pathname === '/api/config/reset' && req.method === 'POST') {
-    const fs = require('fs');
-    const os = require('os');
-    const CONFIG_DIR = path.join(os.homedir(), '.free-proxy-tool');
-    const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
-    if (fs.existsSync(CONFIG_FILE)) {
-      fs.writeFileSync(CONFIG_FILE, '{}');
-    }
+    saveConfig({});
     return sendJSON(res, { success: true });
   }
 
@@ -1692,39 +1701,6 @@ async function handleRequest(req, res) {
   }
 
   // ===== Google OAuth Authentication =====
-  const GOOGLE_CONFIG_FILE = path.join(require('os').homedir(), '.free-proxy-tool', 'google-oauth.json');
-  function loadGoogleOAuthConfig() {
-    try { return JSON.parse(fs.readFileSync(GOOGLE_CONFIG_FILE, 'utf8')); } catch { return { clientId: '', clientSecret: '' }; }
-  }
-  function saveGoogleOAuthConfig(cfg) {
-    const dir = path.dirname(GOOGLE_CONFIG_FILE);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(GOOGLE_CONFIG_FILE, JSON.stringify(cfg, null, 2));
-  }
-
-  // Simple session store (token → user info, expires in 7 days)
-  const sessions = new Map();
-  const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
-  function createSession(userInfo) {
-    const token = require('crypto').randomBytes(32).toString('hex');
-    sessions.set(token, { ...userInfo, createdAt: Date.now() });
-    return token;
-  }
-  function getSession(token) {
-    if (!token) return null;
-    const s = sessions.get(token);
-    if (!s) return null;
-    if (Date.now() - s.createdAt > SESSION_TTL) { sessions.delete(token); return null; }
-    return s;
-  }
-  function destroySession(token) { sessions.delete(token); }
-
-  function getSessionToken(req) {
-    const cookie = req.headers.cookie || '';
-    const m = cookie.match(/fpt_session=([^;]+)/);
-    return m ? m[1] : null;
-  }
-
   // GET /api/auth/google — redirect to Google OAuth consent screen
   if (pathname === '/api/auth/google' && req.method === 'GET') {
     const cfg = loadGoogleOAuthConfig();
@@ -1879,11 +1855,8 @@ async function handleRequest(req, res) {
     res.writeHead(404); res.end('Not Found');
     return;
   }
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-    return sendHTML(res, filePath);
-  }
-
-  res.writeHead(404); res.end('Not Found');
+  // sendHTML() stats the file itself (and 404s), so no extra existsSync/statSync here
+  return sendHTML(res, filePath);
   } catch (err) {
     const msg = err?.message ?? String(err);
     try { logger.error('Request error: ' + msg, { url: pathname, rawUrl: reqUrl, stack: err?.stack?.slice(0, 300) }); } catch {}

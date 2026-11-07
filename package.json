@@ -44,10 +44,10 @@
   "dependencies": {
     "asciichart": "^1.5.25",
     "chalk": "^4.1.2",
-    "commander": "^11.0.0",
     "http-proxy-agent": "^9.1.0",
     "inquirer": "^14.0.2",
     "ora": "^5.4.1",
+    "socks": "^2.8.10",
     "socks-proxy-agent": "^10.1.0",
     "ws": "^8.21.0"
   },
@@ -55,10 +55,7 @@
     "electron": "^43.0.0"
   },
   "devDependencies": {
-    "@neutralinojs/neu": "^11.7.2",
-    "electron-builder": "^25.0.0",
-    "png-to-ico": "^3.0.2",
-    "sharp": "^0.35.3"
+    "electron-builder": "^25.0.0"
   },
   "build": {
     "appId": "com.freeproxytool.app",
@@ -78,7 +75,12 @@
     ],
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "icon": "icon.ico"
     },

@@ -139,7 +139,7 @@ Feature panels include:
 - **Charts**: asciichart (terminal) / Chart.js (HTML)
 - **TUI**: inquirer + chalk + ora
 - **Desktop**: Electron (optional)
-- **Browser**: Neutralino.js (optional)
+- **Browser**: Electron (optional)
 
 ## Project Structure
 
@@ -160,7 +160,7 @@ free-proxy-tool/
 │   └── warp.js           # WARP management
 ├── tui/index.js          # Terminal UI
 ├── electron/main.js      # Electron desktop app
-├── browser/              # Neutralino browser
+├── browser/              # Dedicated Electron browser
 ├── fpt.bat               # Quick launch
 └── start-gui.bat         # One-click GUI launch
 ```

@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { spawn } = require('child_process');
@@ -321,10 +320,12 @@ async function main() {
         if (currentProxyList.length <= 1) return false;
         currentProxyIndex = (currentProxyIndex + 1) % currentProxyList.length;
         const next = currentProxyList[currentProxyIndex];
-        server.upstream = next;
+        // Must go through setUpstream: it rebuilds the agent. Assigning
+        // server.upstream directly left the old agent in place, so the switch
+        // never actually changed the exit.
+        server.setUpstream(next);
         const score = proxyCore.scoreProxy(next);
         log('warn', `Auto-switched to: ${next.host}:${next.port} (Latency: ${next.latency}ms, Score: ${score})`);
-        logger.info(`Auto-switch proxy: ${next.host}:${next.port}`);
         return true;
       }
 
@@ -704,7 +705,7 @@ async function main() {
       console.log('    node index.js gui 8080           Start Web UI on specific port');
       console.log('    node index.js tui                Start terminal UI');
       console.log('    node index.js desktop            Start Electron desktop app');
-      console.log('    node index.js browser            Start dedicated browser (Neutralino)');
+      console.log('    node index.js browser            Start dedicated Electron browser');
       console.log('');
       break;
     }
@@ -744,6 +745,9 @@ async function speedTest(proxy, sizeKB = 100) {
     return { success: true, speed: speedStr, bytes: result, time };
   } catch (e) {
     return { success: false, error: e.message };
+  } finally {
+    // The agent owns an open tunnel socket — release it when the test is over.
+    try { agent.destroy(); } catch {}
   }
 }
 

@@ -4,37 +4,24 @@
  * Interactive terminal interface using inquirer + chalk + ora
  */
 
-const inquirer = require('inquirer');
+// inquirer@14 is ESM-first: from CJS, require('inquirer') returns a module
+// namespace ({ __esModule, default }) where the API lives on `.default`, so
+// `inquirer.prompt(...)` threw "inquirer.prompt is not a function" and the TUI
+// could not even open its menu. Normalise the interop shape here.
+const inquirer = (() => {
+  const mod = require('inquirer');
+  if (mod && typeof mod.prompt === 'function') return mod;
+  if (mod && mod.default && typeof mod.default.prompt === 'function') return mod.default;
+  return mod;
+})();
 const chalk = require('chalk');
 const ora = require('ora');
 const path = require('path');
-const fs = require('fs');
-const os = require('os');
 
 const PROJECT_ROOT = path.join(__dirname, '..');
 const stats = require(path.join(PROJECT_ROOT, 'lib', 'stats'));
-
-// Reuse core modules
-const { execSync } = require('child_process');
-
-function run(cmd, timeout = 8000) {
-  try { return execSync(cmd, { encoding: 'utf8', timeout, windowsHide: true }).trim(); } catch { return null; }
-}
-
-function httpGet(url, timeout = 8000) {
-  const http = require('http');
-  const https = require('https');
-  return new Promise((resolve, reject) => {
-    const client = url.startsWith('https') ? https : http;
-    const req = client.get(url, { timeout, rejectUnauthorized: false }, res => {
-      let data = '';
-      res.on('data', c => data += c);
-      res.on('end', () => resolve(data));
-    });
-    req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
-  });
-}
+const proxyCore = require(path.join(PROJECT_ROOT, 'lib', 'proxy-core'));
+const { shuffleArray, mapPool } = require(path.join(PROJECT_ROOT, 'lib', 'utils'));
 
 // ========== Helpers ==========
 const C = {
@@ -52,84 +39,22 @@ function banner() {
 }
 
 // ========== WARP ==========
-const WARP = {
-  installed() {
-    if (os.platform() === 'win32') {
-      const p = 'C:\\Program Files\\Cloudflare\\Cloudflare WARP\\warp-cli.exe';
-      if (fs.existsSync(p)) return true;
-    }
-    const r = run('warp-cli --version');
-    return r && r.includes('warp');
-  },
-  status() {
-    const r = run('warp-cli status');
-    if (!r) return null;
-    return { connected: r.includes('Connected'), raw: r };
-  },
-  register() { return run('warp-cli registration new', 15000); },
-  connect() { run('warp-cli connect', 10000); return true; },
-  disconnect() { run('warp-cli disconnect'); return true; }
-};
+// Reuse lib/warp so the TUI finds warp-cli in Program Files, not just on PATH.
+const WARP = require(path.join(PROJECT_ROOT, 'lib', 'warp'));
 
 // ========== Proxy ==========
-const BUILTIN_PROXIES = [
-  // 🛡️ HIGH ANONYMITY (Elite) - verified 2026-08-20
-  { host: '203.19.38.114', port: 1080, type: 'http' }, // avg=355ms elite
-  { host: '24.249.199.4', port: 4145, type: 'socks5' },
-  { host: '174.75.211.222', port: 4145, type: 'socks5' },
-  { host: '72.195.34.58', port: 4145, type: 'socks5' },
-  { host: '72.195.114.169', port: 4145, type: 'socks5' },
-  { host: '174.64.199.79', port: 4145, type: 'socks5' },
-];
-
 async function fetchProxies() {
-  const sources = [
-    { url: 'https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt', type: 'socks5' },
-    { url: 'https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/socks5.txt', type: 'socks5' },
-    { url: 'https://proxy.scdn.io/text.php', type: 'http' },
-  ];
-  let proxies = [];
-  for (const src of sources) {
-    try {
-      const data = await httpGet(src.url);
-      const list = data.split('\n').filter(l => l.trim()).map(l => {
-        const [h, p] = l.trim().split(':');
-        return h && p ? { host: h, port: parseInt(p), type: src.type } : null;
-      }).filter(Boolean);
-      proxies.push(...list);
-    } catch {}
-  }
-  return proxies.length > 0 ? proxies : [...BUILTIN_PROXIES];
+  return proxyCore.getProxies();
 }
 
-async function testProxy(proxy, timeout = 4000) {
-  const start = Date.now();
-  try {
-    const https = require('https');
-    let agent;
-    try {
-      const { SocksProxyAgent } = require('socks-proxy-agent');
-      agent = new SocksProxyAgent(`socks5://${proxy.host}:${proxy.port}`);
-    } catch {
-      try {
-        const { HttpProxyAgent } = require('http-proxy-agent');
-        agent = new HttpProxyAgent(`http://${proxy.host}:${proxy.port}`);
-      } catch {}
-    }
-    const result = await new Promise((resolve, reject) => {
-      const req = https.get('https://api.ipify.org?format=json', { agent, timeout, rejectUnauthorized: false }, res => {
-        let d = '';
-        res.on('data', c => d += c);
-        res.on('end', () => resolve(d));
-      });
-      req.on('error', reject);
-      req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
-    });
-    const ip = JSON.parse(result).ip;
-    return { ...proxy, alive: true, latency: Date.now() - start, ip };
-  } catch {
-    return { ...proxy, alive: false, latency: -1 };
-  }
+// The real test lives in lib/proxy-core: it picks the right agent for the proxy
+// type (this copy always forced a SOCKS5 agent, so plain HTTP proxies never
+// tested correctly), races the test URLs against one deadline, and releases the
+// agent afterwards instead of leaking a socket per test.
+function testProxy(proxy, timeout = 4000) {
+  const p = { ...(proxy || {}) };
+  if (!p.type) p.type = 'socks5';
+  return proxyCore.testProxy(p, timeout);
 }
 
 // ========== ASCII Chart Helpers ==========
@@ -183,17 +108,15 @@ async function showProxyTest() {
     return;
   }
 
-  proxies = proxies.sort(() => Math.random() - 0.5).slice(0, count);
+  proxies = shuffleArray(proxies).slice(0, count);
   const results = [];
-  const batchSize = 5;
+  const concurrency = 10;
 
-  for (let i = 0; i < proxies.length; i += batchSize) {
-    const batch = proxies.slice(i, i + batchSize);
-    const batchResults = await Promise.all(batch.map(p => testProxy(p)));
-    results.push(...batchResults);
-    const tested = Math.min(i + batchSize, proxies.length);
-    spinner.text = `Testing ${tested}/${proxies.length}...`;
-  }
+  // Worker pool instead of batch barriers: one slow proxy no longer stalls the rest.
+  await mapPool(proxies, concurrency, p => testProxy(p), (r) => {
+    results.push(r);
+    spinner.text = `Testing ${results.length}/${proxies.length}...`;
+  });
 
   stats.recordBatch(results);
   const alive = results.filter(r => r.alive).sort((a, b) => a.latency - b.latency);
@@ -252,7 +175,7 @@ async function showWarp() {
   console.log('');
 
   const { action } = await inquirer.prompt([{
-    type: 'list', name: 'action', message: 'Select action:',
+    type: 'select', name: 'action', message: 'Select action:',
     choices: [
       { name: 'Connect WARP', value: 'connect' },
       { name: 'Disconnect WARP', value: 'disconnect' },
@@ -263,8 +186,7 @@ async function showWarp() {
 
   if (action === 'connect') {
     const spinner = ora('Connecting...').start();
-    WARP.connect();
-    await new Promise(r => setTimeout(r, 2000));
+    await WARP.connect();
     const s = WARP.status();
     if (s && s.connected) spinner.succeed('WARP Connected');
     else spinner.warn('Connecting, please check status later');
@@ -274,8 +196,8 @@ async function showWarp() {
   } else if (action === 'register') {
     const spinner = ora('Registering...').start();
     const r = WARP.register();
-    if (r && !r.toLowerCase().includes('error')) spinner.succeed('Registration successful');
-    else spinner.fail('Registration failed: ' + (r || 'Unknown error'));
+    if (r && r.success) spinner.succeed('Registration successful');
+    else spinner.fail('Registration failed: ' + ((r && r.raw) || 'Unknown error'));
   }
   console.log('');
 }
@@ -345,7 +267,7 @@ async function mainMenu() {
 
   while (true) {
     const { action } = await inquirer.prompt([{
-      type: 'list', name: 'action', message: 'Select action:',
+      type: 'select', name: 'action', message: 'Select action:',
       choices: [
         { name: '📊 Dashboard', value: 'dashboard' },
         { name: '🔍 Test Proxies (Batch)', value: 'test-all' },

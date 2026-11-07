@@ -3,11 +3,13 @@ browser/bin/
 browser/app/neutralino.js
 gui/proxy-apps.json
 gui/stable-proxies.json
+gui/google-signup-proxies.json
 gui/launch_*.bat
 *.bak
 server.log
 server.err
 *.png
+!browser/app/lib/leaflet/images/*.png
 
 # IDE
 .vscode/

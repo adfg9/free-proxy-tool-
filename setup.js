@@ -69,48 +69,14 @@ async function main() {
     }
   }
 
-  // Step 3: Download Neutralino binaries
+  // Step 3: Verify the Electron engine (the dedicated browser is Electron-based;
+  // the old Neutralino download steps were dead weight — browser/bin never exists).
   info('Checking browser engine...');
-  const neuExe = path.join(BROWSER_DIR, 'bin', 'neutralino-win_x64.exe');
-  if (!fs.existsSync(neuExe)) {
-    info('Downloading Neutralino engine...');
-    try {
-      execSync('npx neu update', {
-        cwd: BROWSER_DIR, stdio: 'inherit',
-        env: { ...process.env, NODE_TLS_REJECT_UNAUTHORIZED: '0' }
-      });
-      ok('Browser engine downloaded');
-    } catch {
-      warn('Browser engine download failed, browser may not function');
-    }
-  } else {
-    ok('Browser engine ready');
-  }
+  const electronExe = path.join(ROOT, 'node_modules', 'electron', 'dist', 'electron.exe');
+  if (fs.existsSync(electronExe)) ok('Electron engine ready');
+  else warn('Electron not installed, run: npm install');
 
-  // Step 4: Download Neutralino client library
-  info('Checking client library...');
-  const neuClient = path.join(APP_DIR, 'neutralino.js');
-  if (!fs.existsSync(neuClient)) {
-    info('Downloading client library...');
-    try {
-      const tmpDir = path.join(ROOT, '.tmp');
-      if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
-      execSync('npm pack @neutralinojs/lib --pack-destination ' + tmpDir, { stdio: 'inherit' });
-      const tgz = fs.readdirSync(tmpDir).find(f => f.endsWith('.tgz'));
-      if (tgz) {
-        execSync('tar -xzf ' + path.join(tmpDir, tgz) + ' -C ' + tmpDir);
-        fs.copyFileSync(path.join(tmpDir, 'package', 'dist', 'neutralino.js'), neuClient);
-        fs.rmSync(tmpDir, { recursive: true, force: true });
-        ok('Client library downloaded');
-      }
-    } catch {
-      warn('Client library download failed, browser may not function');
-    }
-  } else {
-    ok('Client library ready');
-  }
-
-  // Step 5: Create desktop shortcut
+  // Step 4: Create desktop shortcut
   info('Creating desktop shortcut...');
   try {
     const ps = [
